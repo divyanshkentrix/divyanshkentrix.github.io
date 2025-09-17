@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>State Overview - Maharashtra | United Breweries</title>
+    
+    <!-- Chart.js v4 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8f5e9 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header with 3D effect */
+        .header {
+            background: linear-gradient(135deg, #2E7D32 0%, #43A047 100%);
+            color: white;
+            padding: 16px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transform: translateZ(0);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .location-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Kentrix Branding */
+        .powered-by {
+            background: linear-gradient(135deg, #fff 0%, #f5f7fa 100%);
+            padding: 8px 15px;
+            text-align: center;
+            font-size: 11px;
+            color: #616161;
+            border-bottom: 2px solid #2E7D32;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .powered-by strong {
+            color: #2E7D32;
+            font-weight: 600;
+        }
+
+        /* Page Navigation with 3D */
+        .page-indicator {
+            background: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2E7D32;
+            position: relative;
+            transform: translateZ(0);
+        }
+
+        .page-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #C8E6C9;
+            transition: all 0.3s;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .dot:hover {
+            transform: scale(1.2) translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .dot.active {
+            background: #2E7D32;
+            width: 28px;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(46,125,50,0.4);
+        }
+
+        /* Container */
+        .container {
+            padding: 20px;
+            max-width: 100%;
+        }
+
+        /* 3D Cards */
+        .card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f8f8 100%);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.1),
+                0 1px 8px rgba(0,0,0,0.06);
+            position: relative;
+            transform: translateZ(0);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 
+                0 15px 40px rgba(0,0,0,0.15),
+                0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #2E7D32, #66BB6A, #2E7D32);
+            border-radius: 20px 20px 0 0;
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -100% 0; }
+            100% { background-position: 100% 0; }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            color: #1B5E20;
+            font-size: 17px;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .card-subtitle {
+            color: #757575;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        /* 3D Metrics */
+        .metric-box {
+            background: linear-gradient(145deg, #ffffff 0%, #fafafa 100%);
+            border-left: 5px solid #2E7D32;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 
+                5px 5px 15px rgba(0,0,0,0.08),
+                -5px -5px 15px rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
+        }
+
+        .metric-box:hover {
+            transform: translateX(5px);
+            box-shadow: 
+                8px 8px 20px rgba(0,0,0,0.1),
+                -5px -5px 20px rgba(255,255,255,0.9);
+        }
+
+        .metric-info {
+            flex: 1;
+        }
+
+        .metric-label {
+            color: #757575;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            color: #2E7D32;
+            font-size: 26px;
+            font-weight: bold;
+            line-height: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .metric-change {
+            color: #66BB6A;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .metric-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(145deg, #E8F5E9 0%, #C8E6C9 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 
+                3px 3px 8px rgba(0,0,0,0.1),
+                -3px -3px 8px rgba(255,255,255,0.8);
+        }
+
+        /* 3D Stat Grid */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background: linear-gradient(145deg, #E8F5E9 0%, #C8E6C9 100%);
+            padding: 18px;
+            border-radius: 14px;
+            text-align: center;
+            box-shadow: 
+                5px 5px 10px rgba(0,0,0,0.1),
+                -5px -5px 10px rgba(255,255,255,0.8),
+                inset 1px 1px 2px rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                8px 8px 15px rgba(0,0,0,0.15),
+                -5px -5px 15px rgba(255,255,255,0.9);
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 4px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #616161;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* 3D Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(145deg, #fafafa 0%, #ffffff 100%);
+            border-radius: 15px;
+            box-shadow: 
+                inset 2px 2px 5px rgba(0,0,0,0.05),
+                inset -2px -2px 5px rgba(255,255,255,0.8);
+        }
+
+        .chart-container-small {
+            height: 250px;
+        }
+
+        /* UB Insights Box */
+        .ub-insight-box {
+            background: linear-gradient(145deg, #FFF8E1 0%, #FFE082 100%);
+            border-left: 5px solid #FF9800;
+            padding: 14px;
+            border-radius: 12px;
+            margin: 14px 0;
+            box-shadow: 
+                5px 5px 15px rgba(0,0,0,0.08),
+                -5px -5px 15px rgba(255,255,255,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ub-insight-box::after {
+            content: '🍺';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 30px;
+            opacity: 0.15;
+        }
+
+        .ub-insight-title {
+            color: #E65100;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ub-insight-text {
+            color: #424242;
+            font-size: 13px;
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Page sections */
+        .page-section {
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* 3D Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            padding-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(145deg, #2E7D32 0%, #43A047 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 
+                5px 5px 15px rgba(0,0,0,0.2),
+                -5px -5px 15px rgba(255,255,255,0.1);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                8px 8px 20px rgba(0,0,0,0.25),
+                -5px -5px 20px rgba(255,255,255,0.2);
+        }
+
+        .nav-btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .nav-btn:disabled {
+            background: linear-gradient(145deg, #C8E6C9 0%, #E8F5E9 100%);
+            cursor: not-allowed;
+            opacity: 0.6;
+            box-shadow: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 380px) {
+            .metric-value {
+                font-size: 22px;
+            }
+            
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        /* 3D effect for charts */
+        canvas {
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>State Overview - Maharashtra</h1>
+            <div class="location-badge">📍 Mumbai</div>
+        </div>
+    </div>
+
+    <!-- Kentrix Branding -->
+    <div class="powered-by">
+        Insights Powered by <strong>Kentrix</strong> - Consumer Intelligence & Location Analytics
+    </div>
+
+    <!-- Page Indicator -->
+    <div class="page-indicator">
+        <span id="pageTitle">Demographic Profile - Population</span>
+        <div class="page-dots">
+            <span class="dot active" data-page="0"></span>
+            <span class="dot" data-page="1"></span>
+            <span class="dot" data-page="2"></span>
+            <span class="dot" data-page="3"></span>
+            <span class="dot" data-page="4"></span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        
+        <!-- Page 1: Population -->
+        <div class="page-section active" id="page-0">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Population Overview</div>
+                        <div class="card-subtitle">Total Market Size: 133.6 Million</div>
+                    </div>
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-info">
+                        <div class="metric-label">Urban Population</div>
+                        <div class="metric-value">67.5M</div>
+                        <div class="metric-change">50.5% - Premium segment focus</div>
+                    </div>
+                    <div class="metric-icon">🏙️</div>
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-info">
+                        <div class="metric-label">Rural Population</div>
+                        <div class="metric-value">66.2M</div>
+                        <div class="metric-change">49.5% - Volume growth potential</div>
+                    </div>
+                    <div class="metric-icon">🌾</div>
+                </div>
+
+                <div class="ub-insight-box">
+                    <div class="ub-insight-title">UB Market Opportunity</div>
+                    <div class="ub-insight-text">Balanced urban-rural split offers dual strategy: Premium brands in urban (67.5M) and strong beer variants for rural penetration (66.2M)</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Gender Distribution</div>
+                </div>
+                
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">71.4M</div>
+                        <div class="stat-label">Male (53.5%)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">62.2M</div>
+                        <div class="stat-label">Female (46.5%)</div>
+                    </div>
+                </div>
+
+                <div class="chart-container chart-container-small">
+                    <canvas id="genderChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Household Distribution</div>
+                </div>
+                <div class="chart-container chart-container-small">
+                    <canvas id="householdChart"></canvas>
+                </div>
+                
+                <div class="ub-insight-box">
+                    <div class="ub-insight-title">UB Distribution Focus</div>
+                    <div class="ub-insight-text">29.3M households present massive distribution opportunity. Urban 15M households for premium outlets, Rural 14.3M for traditional trade expansion</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: Age Demographics -->
+        <div class="page-section" id="page-1">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Age Demographics</div>
+                        <div class="card-subtitle">Consumer Age Profile</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ageChart"></canvas>
+                </div>
+                <div class="ub-insight-box">
+                    <div class="ub-insight-title">UB Target Demographics</div>
+                    <div class="ub-insight-text">56% population under 40 years - prime target for beer consumption. Focus on 20-39 segment (27%) for premium brands and lifestyle positioning</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Gender Distribution by Age</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ageGenderChart"></canvas>
+                </div>
+                
+                <div class="ub-insight-box">
+                    <div class="ub-insight-title">UB Marketing Strategy</div>
+                    <div class="ub-insight-text">Male 20-39 segment (15%) = 20M consumers - core target for strong beer. Growing female acceptance in urban areas opens premium segment opportunities</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 3: Income Distribution -->
+        <div class="page-section" id="page-2">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Urban Income Distribution</div>
+                        <div class="card-subtitle">Purchasing Power Analysis</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="urbanIncomeChart"></canvas>
+                </div>
+                <div class="ub-insight-box">
+                    <div class="ub-insight-title">UB Premium Opportunity</div>
+                    <div class="ub-insight-text">32.8% urban households (₹40K-130K) ideal for mainstream brands. Top 10% (>₹170K) target for premium imports and craft beers like Kingfisher Ultra</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Rural Income Distribution</div>
+                        <div class="card-subtitle">Volume Market Potential</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ruralIncomeChart"></canvas>
+                </div>
+                
+                <div class="ub-insight-box">
+                    <div class="ub-insight-title">UB Rural Strategy</div>
+                    <div class="ub-insight-text">41% rural households (₹10K-50K) present volume opportunity for strong beer variants. Focus on affordable SKUs and smaller pack sizes</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: Consumer Segments -->
+        <div class="page-section" id="page-3">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Urban Consumer Segments</div>
+                        <div class="card-subtitle">Lifestyle Classifications for Brand Positioning</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="urbanSegmentsChart"></canvas>
+                </div>
+                
+                <div class="ub-insight-box">
+                    <div class="ub-insight-title">UB Brand Portfolio Mapping</div>
+                    <div class="ub-insight-text">Elite & New Wealth (15.8%) - Heineken, Amstel | Conservative & Upcoming (17.3%) - Kingfisher Premium | Workers (7.8%) - Kingfisher Strong</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Rural Consumer Segments</div>
+                        <div class="card-subtitle">Rural Market Segmentation</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ruralSegmentsChart"></canvas>
+                </div>
+                
+                <div class="ub-insight-box">
+                    <div class="ub-insight-title">UB Rural Expansion</div>
+                    <div class="ub-insight-text">Aspiring Enthusiasts (17.6%) key for market expansion. Focus on aspirational branding and festival season promotions for 30% rural segments</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 5: FMCG Spending -->
+        <div class="page-section" id="page-4">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Annual FMCG & Beverage Spending</div>
+                        <div class="card-subtitle">Consumer Spending Capacity Analysis</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="fmcgChart"></canvas>
+                </div>
+                <div class="ub-insight-box">
+                    <div class="ub-insight-title">UB Wallet Share Opportunity</div>
+                    <div class="ub-insight-text">₹20-30K FMCG spend segment (33%) indicates strong purchasing power for premium beer. Target 5-8% wallet share from beverage allocation</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Beverage Market Potential</div>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">8.4%</div>
+                        <div class="stat-label">Premium<br>Import Beers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">40.8%</div>
+                        <div class="stat-label">Mainstream<br>Kingfisher</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">39.2%</div>
+                        <div class="stat-label">Strong Beer<br>Volume Market</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">11.6%</div>
+                        <div class="stat-label">Entry Level<br>Growth Segment</div>
+                    </div>
+                </div>
+                
+                <div class="ub-insight-box">
+                    <div class="ub-insight-title">UB Portfolio Strategy</div>
+                    <div class="ub-insight-text">Maharashtra's diverse spending patterns support full portfolio approach: Premium (8.4%), Mainstream (40.8%), Strong (39.2%), Entry (11.6%)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-buttons">
+            <button class="nav-btn" id="prevBtn" onclick="changePage(-1)">← Previous</button>
+            <button class="nav-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        // Complete Maharashtra Data
+        const data = {
+            population: {
+                urban: 67454106,
+                rural: 66191180,
+                male: 71439449,
+                female: 62205837
+            },
+            households: {
+                total: 29.3,
+                urban: 15.0,
+                rural: 14.3
+            },
+            age_groups: {
+                labels: ['0-19', '20-39', '40-59', '60+'],
+                total: [29, 27, 27, 14],
+                male: [16, 15, 14, 7],
+                female: [13, 12, 13, 7]
+            },
+            urban_income: {
+                '< 20K': 1.56,
+                '20-40K': 6.37,
+                '40-80K': 14.25,
+                '80-130K': 18.51,
+                '130-170K': 5.81,
+                '170-230K': 2.50,
+                '230-300K': 1.19,
+                '> 300K': 1.11
+            },
+            rural_income: {
+                '< 10K': 14.28,
+                '10-30K': 11.62,
+                '30-50K': 15.19,
+                '50-70K': 6.24,
+                '70-100K': 0.88,
+                '100-150K': 0.48,
+                '150-200K': 0.01,
+                '> 200K': 0.00
+            },
+            urban_segments: {
+                'Elite': 8.99,
+                'New Wealth': 6.79,
+                'Aspiring': 3.23,
+                'Conservative': 7.77,
+                'Fast Climbers': 5.03,
+                'Upcoming': 9.50,
+                'Skilled': 1.38,
+                'Workers': 7.78
+            },
+            rural_segments: {
+                'Village Elite': 4.60,
+                'Aspiring': 17.61,
+                'Fortunate': 8.60,
+                'Rurban New': 0.00,
+                'Mainstream': 0.00,
+                'Rurban Climb': 1.77,
+                'Savvy Rural': 3.66,
+                'Rural Workers': 13.28
+            },
+            fmcg_spending: {
+                '> 35K': 8.40,
+                '30-35K': 7.91,
+                '25-30K': 19.37,
+                '20-25K': 13.55,
+                '17-20K': 12.12,
+                '14-17K': 12.72,
+                '11-14K': 14.35,
+                '9-11K': 9.27,
+                '7-9K': 0.00,
+                '< 7K': 2.30
+            }
+        };
+
+        // Page management
+        let currentPage = 0;
+        const totalPages = 5;
+        const pageTitles = [
+            'Demographic Profile - Population',
+            'Demographic Profile - Age',
+            'Socio Economic Profile - Urban & Rural', 
+            'Consumer Segments Lifestyle - Urban & Rural',
+            'Spend on Food & FMCG'
+        ];
+
+        function changePage(direction) {
+            document.getElementById(`page-${currentPage}`).classList.remove('active');
+            currentPage = Math.max(0, Math.min(totalPages - 1, currentPage + direction));
+            document.getElementById(`page-${currentPage}`).classList.add('active');
+            updatePageIndicator();
+        }
+
+        function updatePageIndicator() {
+            document.getElementById('pageTitle').textContent = pageTitles[currentPage];
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentPage);
+            });
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+        }
+
+        // Register the plugin
+        Chart.register(ChartDataLabels);
+
+        // Set 3D-like defaults
+        Chart.defaults.plugins.datalabels.display = true;
+        Chart.defaults.elements.bar.borderRadius = 8;
+        Chart.defaults.elements.bar.borderSkipped = false;
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAllCharts();
+            updatePageIndicator();
+
+            // Dot navigation
+            document.querySelectorAll('.dot').forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const targetPage = parseInt(this.dataset.page);
+                    document.getElementById(`page-${currentPage}`).classList.remove('active');
+                    currentPage = targetPage;
+                    document.getElementById(`page-${currentPage}`).classList.add('active');
+                    updatePageIndicator();
+                });
+            });
+        });
+
+        function initializeAllCharts() {
+            // 1. Gender Distribution Chart with 3D effect
+            const genderCtx = document.getElementById('genderChart');
+            if (genderCtx) {
+                new Chart(genderCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Male (53.5%)', 'Female (46.5%)'],
+                        datasets: [{
+                            data: [53.5, 46.5],
+                            backgroundColor: [
+                                'rgba(66, 165, 245, 0.9)',
+                                'rgba(236, 64, 122, 0.9)'
+                            ],
+                            borderColor: '#fff',
+                            borderWidth: 3,
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { 
+                                    font: { size: 12 },
+                                    padding: 20
+                                }
+                            },
+                            datalabels: {
+                                color: '#fff',
+                                font: { size: 16, weight: 'bold' },
+                                formatter: (value) => value + '%',
+                                textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. Household Chart with 3D effect
+            const householdCtx = document.getElementById('householdChart');
+            if (householdCtx) {
+                const gradient = householdCtx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+                gradient.addColorStop(0, 'rgba(46, 125, 50, 0.9)');
+                gradient.addColorStop(1, 'rgba(102, 187, 106, 0.6)');
+
+                new Chart(householdCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Total', 'Urban', 'Rural'],
+                        datasets: [{
+                            label: 'Households (M)',
+                            data: [29.3, 15.0, 14.3],
+                            backgroundColor: gradient,
+                            borderColor: 'rgba(46, 125, 50, 1)',
+                            borderWidth: 2,
+                            borderRadius: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 13, weight: 'bold' },
+                                formatter: (value) => value + 'M',
+                                color: '#2E7D32'
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                ticks: { callback: value => value + 'M' }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // 3. Age Distribution Chart with 3D effect
+            const ageCtx = document.getElementById('ageChart');
+            if (ageCtx) {
+                new Chart(ageCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.age_groups.labels,
+                        datasets: [{
+                            label: 'Population %',
+                            data: data.age_groups.total,
+                            backgroundColor: [
+                                'rgba(66, 165, 245, 0.8)',
+                                'rgba(102, 187, 106, 0.8)',
+                                'rgba(255, 167, 38, 0.8)',
+                                'rgba(236, 64, 122, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(66, 165, 245, 1)',
+                                'rgba(102, 187, 106, 1)',
+                                'rgba(255, 167, 38, 1)',
+                                'rgba(236, 64, 122, 1)'
+                            ],
+                            borderWidth: 2,
+                            borderRadius: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 13, weight: 'bold' },
+                                formatter: (value) => value + '%',
+                                color: '#424242'
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                max: 35,
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                ticks: { callback: value => value + '%' }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // 4. Age Gender Chart with 3D effect
+            const ageGenderCtx = document.getElementById('ageGenderChart');
+            if (ageGenderCtx) {
+                new Chart(ageGenderCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.age_groups.labels,
+                        datasets: [
+                            {
+                                label: 'Male',
+                                data: data.age_groups.male,
+                                backgroundColor: 'rgba(66, 165, 245, 0.8)',
+                                borderColor: 'rgba(66, 165, 245, 1)',
+                                borderWidth: 2,
+                                borderRadius: 8
+                            },
+                            {
+                                label: 'Female',
+                                data: data.age_groups.female,
+                                backgroundColor: 'rgba(236, 64, 122, 0.8)',
+                                borderColor: 'rgba(236, 64, 122, 1)',
+                                borderWidth: 2,
+                                borderRadius: 8
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { font: { size: 12 }, padding: 15 }
+                            },
+                            datalabels: {
+                                font: { size: 11, weight: 'bold' },
+                                formatter: (value) => value + '%',
+                                color: '#fff'
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                ticks: { callback: value => value + '%' }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // 5. Urban Income Chart with 3D effect
+            const urbanIncomeCtx = document.getElementById('urbanIncomeChart');
+            if (urbanIncomeCtx) {
+                const gradient = urbanIncomeCtx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, 'rgba(46, 125, 50, 0.9)');
+                gradient.addColorStop(1, 'rgba(46, 125, 50, 0.5)');
+
+                new Chart(urbanIncomeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.urban_income),
+                        datasets: [{
+                            label: 'Urban Income %',
+                            data: Object.values(data.urban_income),
+                            backgroundColor: gradient,
+                            borderColor: 'rgba(46, 125, 50, 1)',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 10, weight: 'bold' },
+                                formatter: (value) => value.toFixed(1) + '%',
+                                color: '#2E7D32'
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                max: 20,
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                ticks: { callback: value => value + '%' }
+                            },
+                            x: { 
+                                ticks: { font: { size: 10 } },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 6. Rural Income Chart with 3D effect
+            const ruralIncomeCtx = document.getElementById('ruralIncomeChart');
+            if (ruralIncomeCtx) {
+                const gradient = ruralIncomeCtx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, 'rgba(102, 187, 106, 0.9)');
+                gradient.addColorStop(1, 'rgba(102, 187, 106, 0.5)');
+
+                new Chart(ruralIncomeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.rural_income),
+                        datasets: [{
+                            label: 'Rural Income %',
+                            data: Object.values(data.rural_income),
+                            backgroundColor: gradient,
+                            borderColor: 'rgba(102, 187, 106, 1)',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 10, weight: 'bold' },
+                                formatter: (value) => value.toFixed(1) + '%',
+                                color: '#43A047'
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                max: 20,
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                ticks: { callback: value => value + '%' }
+                            },
+                            x: { 
+                                ticks: { font: { size: 10 } },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 7. Urban Segments Chart with 3D effect
+            const urbanSegmentsCtx = document.getElementById('urbanSegmentsChart');
+            if (urbanSegmentsCtx) {
+                new Chart(urbanSegmentsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.urban_segments),
+                        datasets: [{
+                            label: 'Urban Segments %',
+                            data: Object.values(data.urban_segments),
+                            backgroundColor: [
+                                'rgba(46, 125, 50, 0.85)',
+                                'rgba(67, 160, 71, 0.85)',
+                                'rgba(102, 187, 106, 0.85)',
+                                'rgba(129, 199, 132, 0.85)',
+                                'rgba(165, 214, 167, 0.85)',
+                                'rgba(200, 230, 201, 0.85)',
+                                'rgba(232, 245, 233, 0.85)',
+                                'rgba(76, 175, 80, 0.85)'
+                            ],
+                            borderColor: 'rgba(46, 125, 50, 1)',
+                            borderWidth: 1,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'right',
+                                font: { size: 11, weight: 'bold' },
+                                formatter: (value) => value.toFixed(1) + '%',
+                                color: '#2E7D32'
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                beginAtZero: true,
+                                max: 12,
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                ticks: { callback: value => value + '%' }
+                            },
+                            y: { 
+                                ticks: { font: { size: 11 } },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 8. Rural Segments Chart with 3D effect
+            const ruralSegmentsCtx = document.getElementById('ruralSegmentsChart');
+            if (ruralSegmentsCtx) {
+                new Chart(ruralSegmentsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.rural_segments),
+                        datasets: [{
+                            label: 'Rural Segments %',
+                            data: Object.values(data.rural_segments),
+                            backgroundColor: [
+                                'rgba(255, 152, 0, 0.85)',
+                                'rgba(255, 167, 38, 0.85)',
+                                'rgba(255, 183, 77, 0.85)',
+                                'rgba(255, 204, 128, 0.85)',
+                                'rgba(255, 224, 178, 0.85)',
+                                'rgba(255, 236, 179, 0.85)',
+                                'rgba(255, 248, 225, 0.85)',
+                                'rgba(255, 171, 64, 0.85)'
+                            ],
+                            borderColor: 'rgba(255, 152, 0, 1)',
+                            borderWidth: 1,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'right',
+                                font: { size: 11, weight: 'bold' },
+                                formatter: (value) => value.toFixed(1) + '%',
+                                color: '#E65100'
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                beginAtZero: true,
+                                max: 20,
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                ticks: { callback: value => value + '%' }
+                            },
+                            y: { 
+                                ticks: { font: { size: 11 } },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 9. FMCG Spending Chart with 3D effect
+            const fmcgCtx = document.getElementById('fmcgChart');
+            if (fmcgCtx) {
+                const gradient = fmcgCtx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, 'rgba(255, 152, 0, 0.9)');
+                gradient.addColorStop(1, 'rgba(255, 204, 0, 0.5)');
+
+                new Chart(fmcgCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.fmcg_spending),
+                        datasets: [{
+                            label: 'FMCG Spending %',
+                            data: Object.values(data.fmcg_spending),
+                            backgroundColor: gradient,
+                            borderColor: 'rgba(255, 152, 0, 1)',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 10, weight: 'bold' },
+                                formatter: (value) => value > 0 ? value.toFixed(1) + '%' : '',
+                                color: '#E65100'
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                max: 25,
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                ticks: { callback: value => value + '%' }
+                            },
+                            x: { 
+                                ticks: { 
+                                    font: { size: 9 },
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
