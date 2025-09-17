@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>State Overview - Maharashtra | Business Intelligence</title>
+    
+    <!-- Chart.js v4 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0f0a;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated gradient background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(46, 125, 50, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(102, 187, 106, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(76, 175, 80, 0.08) 0%, transparent 50%),
+                linear-gradient(180deg, #0a0f0a 0%, #1a2f1a 100%);
+            animation: backgroundShift 20s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(46, 125, 50, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.4;
+            }
+            90% {
+                opacity: 0.4;
+            }
+            to {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Glassmorphic header */
+        .header {
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.9) 0%, rgba(76, 175, 80, 0.7) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: white;
+            padding: 20px 24px;
+            box-shadow: 
+                0 8px 32px rgba(46, 125, 50, 0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2),
+                inset 0 -1px 0 rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #fff, #C8E6C9, #fff);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientText 3s ease infinite;
+        }
+
+        @keyframes gradientText {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .location-badge {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 400;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 15px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .location-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(46, 125, 50, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.15);
+        }
+
+        /* Page Navigation - Futuristic */
+        .page-indicator {
+            background: rgba(20, 30, 20, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 16px 24px;
+            box-shadow: 
+                0 4px 20px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 15px;
+            font-weight: 400;
+            color: #A5D6A7;
+            position: relative;
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+            overflow: hidden;
+        }
+
+        .page-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(46, 125, 50, 0.1), transparent);
+            animation: sweep 8s infinite;
+        }
+
+        @keyframes sweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .page-dots {
+            display: flex;
+            gap: 12px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(46, 125, 50, 0.3);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .dot::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .dot:hover::after {
+            background: radial-gradient(circle, transparent 40%, rgba(46, 125, 50, 0.3) 100%);
+        }
+
+        .dot:hover {
+            transform: scale(1.3);
+            background: rgba(76, 175, 80, 0.5);
+            border-color: rgba(46, 125, 50, 0.5);
+            box-shadow: 0 0 20px rgba(46, 125, 50, 0.6);
+        }
+
+        .dot.active {
+            background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+            width: 36px;
+            border-radius: 20px;
+            box-shadow: 
+                0 0 25px rgba(46, 125, 50, 0.6),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            border-color: rgba(102, 187, 106, 0.5);
+        }
+
+        /* Container */
+        .container {
+            padding: 30px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Glassmorphic Cards */
+        .card {
+            background: rgba(20, 35, 20, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(46, 125, 50, 0.2);
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 
+                0 15px 40px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                inset 0 -1px 0 rgba(0,0,0,0.3);
+            position: relative;
+            transform: translateZ(0);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4CAF50, transparent);
+            animation: cardSweep 3s infinite;
+        }
+
+        @keyframes cardSweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 50px rgba(46, 125, 50, 0.25),
+                0 10px 30px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            border-color: rgba(76, 175, 80, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .card-title {
+            color: #A5D6A7;
+            font-size: 20px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative;
+            padding-bottom: 8px;
+        }
+
+        .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, #4CAF50, transparent);
+            animation: expandLine 2s ease-in-out infinite;
+        }
+
+        @keyframes expandLine {
+            0%, 100% { width: 50px; }
+            50% { width: 100px; }
+        }
+
+        .card-subtitle {
+            color: rgba(165, 214, 167, 0.7);
+            font-size: 13px;
+            margin-top: 6px;
+            font-weight: 300;
+        }
+
+        /* Neumorphic Metrics */
+        .metric-box {
+            background: linear-gradient(145deg, rgba(25, 40, 25, 0.8), rgba(15, 25, 15, 0.9));
+            border: 1px solid rgba(46, 125, 50, 0.15);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 
+                8px 8px 20px rgba(0,0,0,0.4),
+                -8px -8px 20px rgba(46, 125, 50, 0.05),
+                inset 1px 1px 2px rgba(46, 125, 50, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(46, 125, 50, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .metric-box:hover::before {
+            opacity: 1;
+        }
+
+        .metric-box:hover {
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 
+                12px 12px 30px rgba(0,0,0,0.5),
+                -8px -8px 25px rgba(46, 125, 50, 0.08),
+                inset 2px 2px 4px rgba(46, 125, 50, 0.15);
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .metric-info {
+            flex: 1;
+            z-index: 1;
+        }
+
+        .metric-label {
+            color: rgba(165, 214, 167, 0.6);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            color: #66BB6A;
+            font-size: 32px;
+            font-weight: 200;
+            line-height: 1;
+            text-shadow: 
+                0 0 20px rgba(102, 187, 106, 0.5),
+                0 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: -1px;
+        }
+
+        .metric-change {
+            color: rgba(129, 199, 132, 0.8);
+            font-size: 12px;
+            margin-top: 6px;
+            font-weight: 300;
+        }
+
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(145deg, rgba(46, 125, 50, 0.2), rgba(76, 175, 80, 0.1));
+            border: 1px solid rgba(46, 125, 50, 0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 
+                4px 4px 10px rgba(0,0,0,0.3),
+                -4px -4px 10px rgba(46, 125, 50, 0.05),
+                inset 1px 1px 2px rgba(255,255,255,0.05);
+            transition: all 0.4s ease;
+            z-index: 1;
+        }
+
+        .metric-box:hover .metric-icon {
+            transform: rotate(10deg) scale(1.1);
+            box-shadow: 
+                6px 6px 15px rgba(0,0,0,0.4),
+                -4px -4px 12px rgba(46, 125, 50, 0.08);
+        }
+
+        /* Holographic Stat Grid */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .stat-item {
+            background: linear-gradient(145deg, rgba(30, 45, 30, 0.6), rgba(20, 30, 20, 0.8));
+            border: 1px solid rgba(46, 125, 50, 0.2);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 
+                6px 6px 15px rgba(0,0,0,0.3),
+                -6px -6px 15px rgba(46, 125, 50, 0.03),
+                inset 1px 1px 3px rgba(46, 125, 50, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle, rgba(102, 187, 106, 0.2) 0%, transparent 40%);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .stat-item:hover::before {
+            top: -150%;
+            left: -150%;
+            opacity: 1;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-6px) scale(1.05) rotate(1deg);
+            box-shadow: 
+                10px 10px 25px rgba(0,0,0,0.4),
+                -6px -6px 20px rgba(46, 125, 50, 0.06),
+                0 0 30px rgba(46, 125, 50, 0.2);
+            border-color: rgba(76, 175, 80, 0.4);
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 200;
+            color: #81C784;
+            margin-bottom: 6px;
+            text-shadow: 
+                0 0 15px rgba(129, 199, 132, 0.6),
+                0 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: -0.5px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: rgba(165, 214, 167, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 500;
+        }
+
+        /* Chart Container with glow */
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin: 24px 0;
+            padding: 20px;
+            background: linear-gradient(145deg, rgba(15, 25, 15, 0.6), rgba(25, 40, 25, 0.4));
+            border: 1px solid rgba(46, 125, 50, 0.15);
+            border-radius: 20px;
+            box-shadow: 
+                inset 4px 4px 10px rgba(0,0,0,0.3),
+                inset -4px -4px 10px rgba(46, 125, 50, 0.05);
+            overflow: hidden;
+        }
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 30%, rgba(46, 125, 50, 0.05) 100%);
+            pointer-events: none;
+        }
+
+        .chart-container-small {
+            height: 280px;
+        }
+
+        /* Premium Insight Box */
+        .insight-box {
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.15) 0%, rgba(76, 175, 80, 0.08) 100%);
+            border-left: 3px solid #4CAF50;
+            border-right: 1px solid rgba(46, 125, 50, 0.2);
+            border-top: 1px solid rgba(46, 125, 50, 0.2);
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+            padding: 18px;
+            border-radius: 16px;
+            margin: 20px 0;
+            box-shadow: 
+                6px 6px 20px rgba(0,0,0,0.3),
+                -6px -6px 20px rgba(46, 125, 50, 0.02),
+                inset 1px 1px 3px rgba(76, 175, 80, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .insight-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent, #66BB6A, transparent);
+            animation: insightPulse 2s ease infinite;
+        }
+
+        @keyframes insightPulse {
+            0%, 100% { opacity: 1; transform: scaleY(1); }
+            50% { opacity: 0.6; transform: scaleY(0.95); }
+        }
+
+        .insight-box::after {
+            content: '💡';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 40px;
+            opacity: 0.05;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: translateY(-50%) rotate(0deg); }
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        .insight-box:hover {
+            transform: translateX(4px);
+            box-shadow: 
+                8px 8px 25px rgba(0,0,0,0.35),
+                -6px -6px 25px rgba(46, 125, 50, 0.03),
+                inset 2px 2px 5px rgba(76, 175, 80, 0.15);
+            border-left-width: 4px;
+        }
+
+        .insight-title {
+            color: #81C784;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .insight-text {
+            color: rgba(200, 230, 201, 0.9);
+            font-size: 14px;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+            font-weight: 300;
+        }
+
+        /* Page sections */
+        .page-section {
+            display: none;
+            animation: pageSlide 0.6s ease;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes pageSlide {
+            from {
+                opacity: 0;
+                transform: translateX(40px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        /* Futuristic Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 40px 0 20px;
+            position: relative;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.8) 0%, rgba(76, 175, 80, 0.6) 100%);
+            color: white;
+            border: 1px solid rgba(102, 187, 106, 0.3);
+            padding: 14px 32px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 400;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 6px 20px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1),
+                inset 0 -1px 0 rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .nav-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 
+                0 10px 30px rgba(46, 125, 50, 0.4),
+                0 5px 15px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+            border-color: rgba(129, 199, 132, 0.5);
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .nav-btn:active {
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        .nav-btn:disabled {
+            background: linear-gradient(135deg, rgba(60, 60, 60, 0.4) 0%, rgba(80, 80, 80, 0.3) 100%);
+            cursor: not-allowed;
+            opacity: 0.4;
+            box-shadow: none;
+            border-color: rgba(100, 100, 100, 0.2);
+        }
+
+        /* Kentrix Credits Footer */
+        .footer-credits {
+            background: linear-gradient(180deg, rgba(10, 15, 10, 0.9) 0%, rgba(5, 10, 5, 1) 100%);
+            border-top: 1px solid rgba(46, 125, 50, 0.2);
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            margin-top: 40px;
+            overflow: hidden;
+        }
+
+        .footer-credits::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #4CAF50, transparent);
+            animation: footerGlow 3s ease infinite;
+        }
+
+        @keyframes footerGlow {
+            0%, 100% { opacity: 0.5; transform: scaleX(0.5); }
+            50% { opacity: 1; transform: scaleX(1); }
+        }
+
+        .kentrix-logo {
+            font-size: 24px;
+            font-weight: 300;
+            color: #66BB6A;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+            text-shadow: 
+                0 0 20px rgba(102, 187, 106, 0.5),
+                0 2px 4px rgba(0,0,0,0.3);
+            animation: logoGlow 2s ease infinite;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% { text-shadow: 0 0 20px rgba(102, 187, 106, 0.5), 0 2px 4px rgba(0,0,0,0.3); }
+            50% { text-shadow: 0 0 30px rgba(102, 187, 106, 0.8), 0 2px 6px rgba(0,0,0,0.4); }
+        }
+
+        .footer-tagline {
+            color: rgba(165, 214, 167, 0.6);
+            font-size: 12px;
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+
+        .footer-copyright {
+            color: rgba(129, 199, 132, 0.4);
+            font-size: 11px;
+            margin-top: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 380px) {
+            .metric-value {
+                font-size: 26px;
+            }
+            
+            .stat-value {
+                font-size: 22px;
+            }
+
+            .chart-container {
+                height: 260px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .nav-btn {
+                padding: 12px 24px;
+                font-size: 12px;
+            }
+        }
+
+        /* Chart glow effect */
+        canvas {
+            filter: drop-shadow(0 4px 15px rgba(46, 125, 50, 0.2));
+            border-radius: 10px;
+        }
+
+        /* Loading animation for charts */
+        @keyframes chartLoad {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .chart-container canvas {
+            animation: chartLoad 1s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating particles effect -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>State Overview - Maharashtra</h1>
+            <div class="location-badge">📍 Mumbai</div>
+        </div>
+    </div>
+
+    <!-- Page Indicator -->
+    <div class="page-indicator">
+        <span id="pageTitle">Demographic Profile - Population</span>
+        <div class="page-dots">
+            <span class="dot active" data-page="0"></span>
+            <span class="dot" data-page="1"></span>
+            <span class="dot" data-page="2"></span>
+            <span class="dot" data-page="3"></span>
+            <span class="dot" data-page="4"></span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        
+        <!-- Page 1: Population -->
+        <div class="page-section active" id="page-0">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Population Overview</div>
+                        <div class="card-subtitle">Total Market Size: 133.6 Million</div>
+                    </div>
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-info">
+                        <div class="metric-label">Urban Population</div>
+                        <div class="metric-value">67.5M</div>
+                        <div class="metric-change">50.5% - Premium & modern retail focus</div>
+                    </div>
+                    <div class="metric-icon">🏙️</div>
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-info">
+                        <div class="metric-label">Rural Population</div>
+                        <div class="metric-value">66.2M</div>
+                        <div class="metric-change">49.5% - Traditional retail & value segment</div>
+                    </div>
+                    <div class="metric-icon">🌾</div>
+                </div>
+
+                <div class="insight-box">
+                    <div class="insight-title">Market Opportunity</div>
+                    <div class="insight-text">Balanced urban-rural distribution enables dual market strategy: Premium products in urban centers (67.5M) and value-focused offerings for rural markets (66.2M)</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Gender Distribution</div>
+                </div>
+                
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">71.4M</div>
+                        <div class="stat-label">Male (53.5%)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">62.2M</div>
+                        <div class="stat-label">Female (46.5%)</div>
+                    </div>
+                </div>
+
+                <div class="chart-container chart-container-small">
+                    <canvas id="genderChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Household Distribution</div>
+                </div>
+                <div class="chart-container chart-container-small">
+                    <canvas id="householdChart"></canvas>
+                </div>
+                
+                <div class="insight-box">
+                    <div class="insight-title">Distribution Strategy</div>
+                    <div class="insight-text">29.3M households represent diverse market segments. Urban 15M households for modern trade channels, Rural 14.3M for traditional distribution networks</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: Age Demographics -->
+        <div class="page-section" id="page-1">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Age Demographics</div>
+                        <div class="card-subtitle">Consumer Age Profile</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ageChart"></canvas>
+                </div>
+                <div class="insight-box">
+                    <div class="insight-title">Demographic Opportunity</div>
+                    <div class="insight-text">56% population under 40 years indicates strong youth market. The 20-39 segment (27%) represents early adopters for innovative products and digital engagement</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Gender Distribution by Age</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ageGenderChart"></canvas>
+                </div>
+                
+                <div class="insight-box">
+                    <div class="insight-title">Targeted Segmentation</div>
+                    <div class="insight-text">Working age population (20-59) comprises 54% of total market. Gender-balanced demographics enable diverse product portfolio strategies across categories</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 3: Income Distribution -->
+        <div class="page-section" id="page-2">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Urban Income Distribution</div>
+                        <div class="card-subtitle">Purchasing Power Analysis</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="urbanIncomeChart"></canvas>
+                </div>
+                <div class="insight-box">
+                    <div class="insight-title">Premium Market Potential</div>
+                    <div class="insight-text">32.8% urban households (₹40K-130K) represent mass premium segment. Top 10% (>₹170K) are key targets for luxury and premium product categories</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Rural Income Distribution</div>
+                        <div class="card-subtitle">Volume Market Potential</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ruralIncomeChart"></canvas>
+                </div>
+                
+                <div class="insight-box">
+                    <div class="insight-title">Mass Market Strategy</div>
+                    <div class="insight-text">41% rural households (₹10K-50K) form core mass market. Focus on value products, smaller SKUs, and affordable pricing strategies for volume growth</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: Consumer Segments -->
+        <div class="page-section" id="page-3">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Urban Consumer Segments</div>
+                        <div class="card-subtitle">Lifestyle Classifications for Market Positioning</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="urbanSegmentsChart"></canvas>
+                </div>
+                
+                <div class="insight-box">
+                    <div class="insight-title">Portfolio Mapping</div>
+                    <div class="insight-text">Elite & New Wealth (15.8%) - Premium segment | Conservative & Upcoming (17.3%) - Mass premium | Workers (7.8%) - Value segment</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Rural Consumer Segments</div>
+                        <div class="card-subtitle">Rural Market Segmentation</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ruralSegmentsChart"></canvas>
+                </div>
+                
+                <div class="insight-box">
+                    <div class="insight-title">Rural Expansion</div>
+                    <div class="insight-text">Aspiring Enthusiasts (17.6%) drive category expansion. Focus on aspirational positioning and seasonal promotions for 30% addressable rural segments</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 5: FMCG Spending -->
+        <div class="page-section" id="page-4">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Annual FMCG Spending</div>
+                        <div class="card-subtitle">Consumer Spending Capacity Analysis</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="fmcgChart"></canvas>
+                </div>
+                <div class="insight-box">
+                    <div class="insight-title">Wallet Share Opportunity</div>
+                    <div class="insight-text">₹20-30K FMCG spend segment (33%) indicates healthy disposable income. Target increased category penetration across middle-income households</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Market Segmentation Strategy</div>
+                </div>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">8.4%</div>
+                        <div class="stat-label">Premium<br>Category</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">40.8%</div>
+                        <div class="stat-label">Mass Premium<br>Segment</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">39.2%</div>
+                        <div class="stat-label">Popular<br>Mass Market</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">11.6%</div>
+                        <div class="stat-label">Entry Level<br>Value Segment</div>
+                    </div>
+                </div>
+                
+                <div class="insight-box">
+                    <div class="insight-title">Category Strategy</div>
+                    <div class="insight-text">Maharashtra's diverse economic profile supports multi-tier approach: Premium (8.4%), Mass Premium (40.8%), Popular (39.2%), Entry (11.6%)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-buttons">
+            <button class="nav-btn" id="prevBtn" onclick="changePage(-1)">← Previous</button>
+            <button class="nav-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
+        </div>
+    </div>
+
+    <!-- Footer Credits -->
+    <footer class="footer-credits">
+        <div class="kentrix-logo">KENTRIX</div>
+        <div class="footer-tagline">Consumer Intelligence & Location Analytics Platform</div>
+        <div class="footer-copyright">© 2024 Kentrix. Powered by AI-driven Consumer Insights.</div>
+    </footer>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 15;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = particle.style.height = Math.random() * 15 + 5 + 'px';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 20 + 20) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Complete Maharashtra Data
+        const data = {
+            population: {
+                urban: 67454106,
+                rural: 66191180,
+                male: 71439449,
+                female: 62205837
+            },
+            households: {
+                total: 29.3,
+                urban: 15.0,
+                rural: 14.3
+            },
+            age_groups: {
+                labels: ['0-19', '20-39', '40-59', '60+'],
+                total: [29, 27, 27, 14],
+                male: [16, 15, 14, 7],
+                female: [13, 12, 13, 7]
+            },
+            urban_income: {
+                '< 20K': 1.56,
+                '20-40K': 6.37,
+                '40-80K': 14.25,
+                '80-130K': 18.51,
+                '130-170K': 5.81,
+                '170-230K': 2.50,
+                '230-300K': 1.19,
+                '> 300K': 1.11
+            },
+            rural_income: {
+                '< 10K': 14.28,
+                '10-30K': 11.62,
+                '30-50K': 15.19,
+                '50-70K': 6.24,
+                '70-100K': 0.88,
+                '100-150K': 0.48,
+                '150-200K': 0.01,
+                '> 200K': 0.00
+            },
+            urban_segments: {
+                'Elite': 8.99,
+                'New Wealth': 6.79,
+                'Aspiring': 3.23,
+                'Conservative': 7.77,
+                'Fast Climbers': 5.03,
+                'Upcoming': 9.50,
+                'Skilled': 1.38,
+                'Workers': 7.78
+            },
+            rural_segments: {
+                'Village Elite': 4.60,
+                'Aspiring': 17.61,
+                'Fortunate': 8.60,
+                'Rurban New': 0.00,
+                'Mainstream': 0.00,
+                'Rurban Climb': 1.77,
+                'Savvy Rural': 3.66,
+                'Rural Workers': 13.28
+            },
+            fmcg_spending: {
+                '> 35K': 8.40,
+                '30-35K': 7.91,
+                '25-30K': 19.37,
+                '20-25K': 13.55,
+                '17-20K': 12.12,
+                '14-17K': 12.72,
+                '11-14K': 14.35,
+                '9-11K': 9.27,
+                '7-9K': 0.00,
+                '< 7K': 2.30
+            }
+        };
+
+        // Page management
+        let currentPage = 0;
+        const totalPages = 5;
+        const pageTitles = [
+            'Demographic Profile - Population',
+            'Demographic Profile - Age',
+            'Socio Economic Profile - Urban & Rural', 
+            'Consumer Segments Lifestyle - Urban & Rural',
+            'Spend on Food & FMCG'
+        ];
+
+        function changePage(direction) {
+            document.getElementById(`page-${currentPage}`).classList.remove('active');
+            currentPage = Math.max(0, Math.min(totalPages - 1, currentPage + direction));
+            document.getElementById(`page-${currentPage}`).classList.add('active');
+            updatePageIndicator();
+        }
+
+        function updatePageIndicator() {
+            document.getElementById('pageTitle').textContent = pageTitles[currentPage];
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentPage);
+            });
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+        }
+
+        // Register the plugin
+        Chart.register(ChartDataLabels);
+
+        // Set chart defaults for dark theme
+        Chart.defaults.color = 'rgba(165, 214, 167, 0.8)';
+        Chart.defaults.borderColor = 'rgba(46, 125, 50, 0.1)';
+        Chart.defaults.plugins.datalabels.display = true;
+        Chart.defaults.elements.bar.borderRadius = 8;
+        Chart.defaults.elements.bar.borderSkipped = false;
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            initializeAllCharts();
+            updatePageIndicator();
+
+            // Dot navigation
+            document.querySelectorAll('.dot').forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const targetPage = parseInt(this.dataset.page);
+                    document.getElementById(`page-${currentPage}`).classList.remove('active');
+                    currentPage = targetPage;
+                    document.getElementById(`page-${currentPage}`).classList.add('active');
+                    updatePageIndicator();
+                });
+            });
+        });
+
+        function initializeAllCharts() {
+            // Define monochrome green color palette with gradients
+            const monochromeColors = {
+                primary: 'rgba(46, 125, 50, 0.85)',
+                secondary: 'rgba(76, 175, 80, 0.75)',
+                light: 'rgba(129, 199, 132, 0.65)',
+                lighter: 'rgba(165, 214, 167, 0.55)',
+                lightest: 'rgba(200, 230, 201, 0.45)',
+                border: 'rgba(46, 125, 50, 0.8)',
+                glow: 'rgba(102, 187, 106, 0.3)'
+            };
+
+            // Generate gradient shades of green
+            function getGreenShades(count) {
+                const shades = [];
+                for (let i = 0; i < count; i++) {
+                    const opacity = 0.85 - (i * 0.5 / count);
+                    shades.push(`rgba(46, 125, 50, ${Math.max(0.35, opacity)})`);
+                }
+                return shades;
+            }
+
+            // 1. Gender Distribution Chart
+            const genderCtx = document.getElementById('genderChart');
+            if (genderCtx) {
+                new Chart(genderCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Male (53.5%)', 'Female (46.5%)'],
+                        datasets: [{
+                            data: [53.5, 46.5],
+                            backgroundColor: [monochromeColors.primary, monochromeColors.light],
+                            borderColor: 'rgba(10, 15, 10, 0.8)',
+                            borderWidth: 3,
+                            hoverOffset: 20,
+                            hoverBorderColor: monochromeColors.glow,
+                            hoverBorderWidth: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { 
+                                    font: { size: 13, weight: '300' },
+                                    padding: 20,
+                                    color: 'rgba(165, 214, 167, 0.8)'
+                                }
+                            },
+                            datalabels: {
+                                color: '#C8E6C9',
+                                font: { size: 18, weight: '300' },
+                                formatter: (value) => value + '%',
+                                textShadow: '2px 2px 6px rgba(0,0,0,0.8)'
+                            }
+                        },
+                        animation: {
+                            animateRotate: true,
+                            animateScale: true,
+                            duration: 2000,
+                            easing: 'easeOutQuart'
+                        }
+                    }
+                });
+            }
+
+            // 2. Household Chart
+            const householdCtx = document.getElementById('householdChart');
+            if (householdCtx) {
+                const gradient = householdCtx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+                gradient.addColorStop(0, 'rgba(46, 125, 50, 0.9)');
+                gradient.addColorStop(0.5, 'rgba(76, 175, 80, 0.7)');
+                gradient.addColorStop(1, 'rgba(102, 187, 106, 0.4)');
+
+                new Chart(householdCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Total', 'Urban', 'Rural'],
+                        datasets: [{
+                            label: 'Households (M)',
+                            data: [29.3, 15.0, 14.3],
+                            backgroundColor: gradient,
+                            borderColor: monochromeColors.border,
+                            borderWidth: 2,
+                            borderRadius: 12,
+                            hoverBackgroundColor: 'rgba(76, 175, 80, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 14, weight: '400' },
+                                formatter: (value) => value + 'M',
+                                color: '#81C784',
+                                offset: 8
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.08)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + 'M',
+                                    color: 'rgba(165, 214, 167, 0.7)',
+                                    font: { size: 11 }
+                                }
+                            },
+                            x: { 
+                                grid: { display: false },
+                                ticks: {
+                                    color: 'rgba(165, 214, 167, 0.8)',
+                                    font: { size: 12 }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeOutBounce'
+                        }
+                    }
+                });
+            }
+
+            // Continue with all other charts using similar enhanced styling...
+            // I'll implement the rest of the charts with the same enhanced visual approach
+
+            // 3. Age Distribution Chart
+            const ageCtx = document.getElementById('ageChart');
+            if (ageCtx) {
+                const ageGradient = ageCtx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+                ageGradient.addColorStop(0, 'rgba(46, 125, 50, 0.9)');
+                ageGradient.addColorStop(1, 'rgba(46, 125, 50, 0.3)');
+
+                new Chart(ageCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.age_groups.labels,
+                        datasets: [{
+                            label: 'Population %',
+                            data: data.age_groups.total,
+                            backgroundColor: getGreenShades(4),
+                            borderColor: monochromeColors.border,
+                            borderWidth: 2,
+                            borderRadius: 12,
+                            hoverBackgroundColor: 'rgba(102, 187, 106, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 14, weight: '400' },
+                                formatter: (value) => value + '%',
+                                color: '#81C784',
+                                offset: 8
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                max: 35,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.08)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: 'rgba(165, 214, 167, 0.7)',
+                                    font: { size: 11 }
+                                }
+                            },
+                            x: { 
+                                grid: { display: false },
+                                ticks: {
+                                    color: 'rgba(165, 214, 167, 0.8)',
+                                    font: { size: 12 }
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 2000,
+                            delay: (context) => context.dataIndex * 200,
+                            easing: 'easeOutQuart'
+                        }
+                    }
+                });
+            }
+
+            // 4. Age Gender Chart
+            const ageGenderCtx = document.getElementById('ageGenderChart');
+            if (ageGenderCtx) {
+                new Chart(ageGenderCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.age_groups.labels,
+                        datasets: [
+                            {
+                                label: 'Male',
+                                data: data.age_groups.male,
+                                backgroundColor: 'rgba(46, 125, 50, 0.7)',
+                                borderColor: monochromeColors.border,
+                                borderWidth: 2,
+                                borderRadius: 10
+                            },
+                            {
+                                label: 'Female',
+                                data: data.age_groups.female,
+                                backgroundColor: 'rgba(129, 199, 132, 0.5)',
+                                borderColor: 'rgba(129, 199, 132, 0.8)',
+                                borderWidth: 2,
+                                borderRadius: 10
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { 
+                                    font: { size: 12, weight: '300' },
+                                    padding: 15,
+                                    color: 'rgba(165, 214, 167, 0.8)'
+                                }
+                            },
+                            datalabels: {
+                                font: { size: 11, weight: '400' },
+                                formatter: (value) => value + '%',
+                                color: '#C8E6C9'
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.08)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: 'rgba(165, 214, 167, 0.7)',
+                                    font: { size: 11 }
+                                }
+                            },
+                            x: { 
+                                grid: { display: false },
+                                ticks: {
+                                    color: 'rgba(165, 214, 167, 0.8)',
+                                    font: { size: 12 }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 5. Urban Income Chart
+            const urbanIncomeCtx = document.getElementById('urbanIncomeChart');
+            if (urbanIncomeCtx) {
+                const urbanGradient = urbanIncomeCtx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+                urbanGradient.addColorStop(0, 'rgba(46, 125, 50, 0.9)');
+                urbanGradient.addColorStop(1, 'rgba(46, 125, 50, 0.3)');
+
+                new Chart(urbanIncomeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.urban_income),
+                        datasets: [{
+                            label: 'Urban Income %',
+                            data: Object.values(data.urban_income),
+                            backgroundColor: getGreenShades(8),
+                            borderColor: monochromeColors.border,
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 10, weight: '400' },
+                                formatter: (value) => value.toFixed(1) + '%',
+                                color: '#81C784',
+                                offset: 5
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                max: 20,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.08)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: 'rgba(165, 214, 167, 0.7)',
+                                    font: { size: 10 }
+                                }
+                            },
+                            x: { 
+                                ticks: { 
+                                    font: { size: 10 },
+                                    color: 'rgba(165, 214, 167, 0.7)'
+                                },
+                                grid: { display: false }
+                            }
+                        },
+                        animation: {
+                            duration: 1500,
+                            delay: (context) => context.dataIndex * 100
+                        }
+                    }
+                });
+            }
+
+            // 6. Rural Income Chart
+            const ruralIncomeCtx = document.getElementById('ruralIncomeChart');
+            if (ruralIncomeCtx) {
+                new Chart(ruralIncomeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.rural_income),
+                        datasets: [{
+                            label: 'Rural Income %',
+                            data: Object.values(data.rural_income),
+                            backgroundColor: getGreenShades(8).reverse(),
+                            borderColor: monochromeColors.border,
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 10, weight: '400' },
+                                formatter: (value) => value.toFixed(1) + '%',
+                                color: '#A5D6A7',
+                                offset: 5
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                max: 20,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.08)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: 'rgba(165, 214, 167, 0.7)',
+                                    font: { size: 10 }
+                                }
+                            },
+                            x: { 
+                                ticks: { 
+                                    font: { size: 10 },
+                                    color: 'rgba(165, 214, 167, 0.7)'
+                                },
+                                grid: { display: false }
+                            }
+                        },
+                        animation: {
+                            duration: 1500,
+                            delay: (context) => context.dataIndex * 100
+                        }
+                    }
+                });
+            }
+
+            // 7. Urban Segments Chart
+            const urbanSegmentsCtx = document.getElementById('urbanSegmentsChart');
+            if (urbanSegmentsCtx) {
+                new Chart(urbanSegmentsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.urban_segments),
+                        datasets: [{
+                            label: 'Urban Segments %',
+                            data: Object.values(data.urban_segments),
+                            backgroundColor: getGreenShades(8),
+                            borderColor: monochromeColors.border,
+                            borderWidth: 1,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'right',
+                                font: { size: 11, weight: '400' },
+                                formatter: (value) => value.toFixed(1) + '%',
+                                color: '#81C784',
+                                offset: 8
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                beginAtZero: true,
+                                max: 12,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.08)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: 'rgba(165, 214, 167, 0.7)',
+                                    font: { size: 10 }
+                                }
+                            },
+                            y: { 
+                                ticks: { 
+                                    font: { size: 11 },
+                                    color: 'rgba(165, 214, 167, 0.8)'
+                                },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 8. Rural Segments Chart
+            const ruralSegmentsCtx = document.getElementById('ruralSegmentsChart');
+            if (ruralSegmentsCtx) {
+                new Chart(ruralSegmentsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.rural_segments),
+                        datasets: [{
+                            label: 'Rural Segments %',
+                            data: Object.values(data.rural_segments),
+                            backgroundColor: getGreenShades(8).reverse(),
+                            borderColor: monochromeColors.border,
+                            borderWidth: 1,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'right',
+                                font: { size: 11, weight: '400' },
+                                formatter: (value) => value.toFixed(1) + '%',
+                                color: '#A5D6A7',
+                                offset: 8
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                beginAtZero: true,
+                                max: 20,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.08)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: 'rgba(165, 214, 167, 0.7)',
+                                    font: { size: 10 }
+                                }
+                            },
+                            y: { 
+                                ticks: { 
+                                    font: { size: 11 },
+                                    color: 'rgba(165, 214, 167, 0.8)'
+                                },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 9. FMCG Spending Chart
+            const fmcgCtx = document.getElementById('fmcgChart');
+            if (fmcgCtx) {
+                const fmcgGradient = fmcgCtx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+                fmcgGradient.addColorStop(0, 'rgba(46, 125, 50, 0.9)');
+                fmcgGradient.addColorStop(0.5, 'rgba(76, 175, 80, 0.6)');
+                fmcgGradient.addColorStop(1, 'rgba(129, 199, 132, 0.4)');
+
+                new Chart(fmcgCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.fmcg_spending),
+                        datasets: [{
+                            label: 'FMCG Spending %',
+                            data: Object.values(data.fmcg_spending),
+                            backgroundColor: fmcgGradient,
+                            borderColor: monochromeColors.border,
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 10, weight: '400' },
+                                formatter: (value) => value > 0 ? value.toFixed(1) + '%' : '',
+                                color: '#81C784',
+                                offset: 5
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                max: 25,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.08)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: 'rgba(165, 214, 167, 0.7)',
+                                    font: { size: 10 }
+                                }
+                            },
+                            x: { 
+                                ticks: { 
+                                    font: { size: 9 },
+                                    maxRotation: 45,
+                                    minRotation: 45,
+                                    color: 'rgba(165, 214, 167, 0.7)'
+                                },
+                                grid: { display: false }
+                            }
+                        },
+                        animation: {
+                            duration: 2000,
+                            delay: (context) => context.dataIndex * 150,
+                            easing: 'easeOutQuart'
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
