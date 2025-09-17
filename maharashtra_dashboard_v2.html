@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Maharashtra Intelligence Dashboard - Executive View</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header - Matching App Flow Green Theme */
+        .header {
+            background: linear-gradient(135deg, #2E7D32 0%, #43A047 100%);
+            color: white;
+            padding: 16px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .location-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Page Navigation */
+        .page-indicator {
+            background: white;
+            padding: 12px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2E7D32;
+        }
+
+        .page-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #C8E6C9;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: #2E7D32;
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        /* Swipeable Container */
+        .swipe-container {
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            display: flex;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 20px;
+        }
+
+        .page {
+            min-width: 100%;
+            scroll-snap-align: start;
+            padding: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            color: #1B5E20;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-subtitle {
+            color: #757575;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        /* Executive Summary Metrics */
+        .executive-metric {
+            background: linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%);
+            border-left: 4px solid #2E7D32;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .executive-metric:active {
+            transform: scale(0.98);
+        }
+
+        .metric-info {
+            flex: 1;
+        }
+
+        .metric-label {
+            color: #757575;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            color: #2E7D32;
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .metric-change {
+            color: #66BB6A;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        /* 3D Cylinder Bars */
+        .cylinder-chart {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 200px;
+            margin: 20px 0;
+            padding: 0 10px;
+        }
+
+        .cylinder-bar {
+            flex: 1;
+            max-width: 80px;
+            margin: 0 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .cylinder {
+            width: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .cylinder-body {
+            background: linear-gradient(180deg, #66BB6A 0%, #2E7D32 100%);
+            border-radius: 8px;
+            position: relative;
+            min-height: 40px;
+            box-shadow: 0 10px 20px rgba(46, 125, 50, 0.3);
+        }
+
+        .cylinder-top {
+            position: absolute;
+            top: -8px;
+            left: 0;
+            right: 0;
+            height: 16px;
+            background: #66BB6A;
+            border-radius: 50%;
+            border: 2px solid #4CAF50;
+        }
+
+        .cylinder-value {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #2E7D32;
+            font-weight: bold;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .cylinder-label {
+            margin-top: 12px;
+            color: #616161;
+            font-size: 11px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Progress Rings for Percentages */
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 1s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        /* Horizontal Progress Bars with Values */
+        .h-progress {
+            margin: 12px 0;
+        }
+
+        .h-progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .h-progress-label {
+            color: #424242;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .h-progress-value {
+            color: #2E7D32;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .h-progress-bar {
+            height: 24px;
+            background: #E8F5E9;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .h-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2E7D32 0%, #66BB6A 100%);
+            border-radius: 12px;
+            transition: width 1s ease;
+            position: relative;
+            box-shadow: 0 0 10px rgba(46, 125, 50, 0.3);
+        }
+
+        .h-progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 12px 12px 0 0;
+        }
+
+        /* Simple Grid Stats */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-item:active {
+            transform: scale(0.95);
+        }
+
+        .stat-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #616161;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Donut Chart Container */
+        .donut-container {
+            position: relative;
+            height: 200px;
+            margin: 20px 0;
+        }
+
+        .donut-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .donut-center-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2E7D32;
+        }
+
+        .donut-center-label {
+            font-size: 11px;
+            color: #757575;
+            text-transform: uppercase;
+        }
+
+        /* Canvas */
+        canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+            background: white;
+            padding: 8px;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .nav-btn {
+            background: #2E7D32;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 18px;
+        }
+
+        .nav-btn:hover {
+            background: #1B5E20;
+            transform: scale(1.1);
+        }
+
+        .nav-btn:disabled {
+            background: #C8E6C9;
+            cursor: not-allowed;
+        }
+
+        /* Insights Box */
+        .insight-box {
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+            border-left: 4px solid #FF9800;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+
+        .insight-title {
+            color: #E65100;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .insight-text {
+            color: #424242;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #E8F5E9;
+            border-radius: 50%;
+            border-top-color: #2E7D32;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 380px) {
+            .metric-value {
+                font-size: 20px;
+            }
+            
+            .stat-value {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>Maharashtra Intelligence</h1>
+            <div class="location-badge">📍 Mumbai</div>
+        </div>
+    </div>
+
+    <!-- Page Indicator -->
+    <div class="page-indicator">
+        <span id="pageTitle">Demographic Profile - Population</span>
+        <div class="page-dots">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </div>
+
+    <!-- Swipeable Pages Container -->
+    <div class="swipe-container" id="swipeContainer">
+        
+        <!-- Page 1: Demographic Profile - Population -->
+        <div class="page">
+            <!-- Executive Summary Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Population Overview</div>
+                        <div class="card-subtitle">Total: 133.6 Million</div>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="executive-metric">
+                    <div class="metric-info">
+                        <div class="metric-label">Urban Population</div>
+                        <div class="metric-value">67.5M</div>
+                        <div class="metric-change">50.5% of total</div>
+                    </div>
+                    <div class="metric-icon">🏙️</div>
+                </div>
+
+                <div class="executive-metric">
+                    <div class="metric-info">
+                        <div class="metric-label">Rural Population</div>
+                        <div class="metric-value">66.2M</div>
+                        <div class="metric-change">49.5% of total</div>
+                    </div>
+                    <div class="metric-icon">🌾</div>
+                </div>
+            </div>
+
+            <!-- Gender Distribution -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Gender Distribution</div>
+                </div>
+                
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-icon">👨</div>
+                        <div class="stat-value">71.4M</div>
+                        <div class="stat-label">Male (53.5%)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">👩</div>
+                        <div class="stat-value">62.2M</div>
+                        <div class="stat-label">Female (46.5%)</div>
+                    </div>
+                </div>
+
+                <div class="donut-container">
+                    <canvas id="genderDonut"></canvas>
+                    <div class="donut-center">
+                        <div class="donut-center-value">133.6M</div>
+                        <div class="donut-center-label">Total</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Households -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Household Distribution</div>
+                </div>
+                
+                <div class="cylinder-chart">
+                    <div class="cylinder-bar">
+                        <div class="cylinder-value">29.3M</div>
+                        <div class="cylinder" style="height: 100%">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-body" style="height: 100px; background: linear-gradient(180deg, #4CAF50 0%, #2E7D32 100%);"></div>
+                        </div>
+                        <div class="cylinder-label">Total</div>
+                    </div>
+                    <div class="cylinder-bar">
+                        <div class="cylinder-value">15.0M</div>
+                        <div class="cylinder" style="height: 51%">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-body" style="height: 51px; background: linear-gradient(180deg, #66BB6A 0%, #43A047 100%);"></div>
+                        </div>
+                        <div class="cylinder-label">Urban</div>
+                    </div>
+                    <div class="cylinder-bar">
+                        <div class="cylinder-value">14.3M</div>
+                        <div class="cylinder" style="height: 49%">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-body" style="height: 49px; background: linear-gradient(180deg, #81C784 0%, #66BB6A 100%);"></div>
+                        </div>
+                        <div class="cylinder-label">Rural</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: Demographic Profile - Age -->
+        <div class="page">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Age Demographics</div>
+                        <div class="card-subtitle">Distribution by Age Groups</div>
+                    </div>
+                </div>
+
+                <!-- 3D Cylinder Chart for Age Groups -->
+                <div class="cylinder-chart">
+                    <div class="cylinder-bar">
+                        <div class="cylinder-value">29%</div>
+                        <div class="cylinder" style="height: 75%">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-body" style="height: 75px; background: linear-gradient(180deg, #42A5F5 0%, #1E88E5 100%);"></div>
+                        </div>
+                        <div class="cylinder-label">0-19 yrs</div>
+                    </div>
+                    <div class="cylinder-bar">
+                        <div class="cylinder-value">27%</div>
+                        <div class="cylinder" style="height: 70%">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-body" style="height: 70px; background: linear-gradient(180deg, #66BB6A 0%, #43A047 100%);"></div>
+                        </div>
+                        <div class="cylinder-label">20-39 yrs</div>
+                    </div>
+                    <div class="cylinder-bar">
+                        <div class="cylinder-value">27%</div>
+                        <div class="cylinder" style="height: 70%">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-body" style="height: 70px; background: linear-gradient(180deg, #FFA726 0%, #FF9800 100%);"></div>
+                        </div>
+                        <div class="cylinder-label">40-59 yrs</div>
+                    </div>
+                    <div class="cylinder-bar">
+                        <div class="cylinder-value">14%</div>
+                        <div class="cylinder" style="height: 40%">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-body" style="height: 40px; background: linear-gradient(180deg, #EC407A 0%, #E91E63 100%);"></div>
+                        </div>
+                        <div class="cylinder-label">60+ yrs</div>
+                    </div>
+                </div>
+
+                <div class="insight-box">
+                    <div class="insight-title">Key Insight</div>
+                    <div class="insight-text">Young demographic with 56% population under 40 years - ideal for consumer goods and digital services</div>
+                </div>
+            </div>
+
+            <!-- Gender Split by Age -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Gender Distribution by Age</div>
+                </div>
+                
+                <canvas id="ageGenderChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Page 3: Socio Economic Profile -->
+        <div class="page">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Urban Income Distribution</div>
+                        <div class="card-subtitle">Annual Household Income (INR)</div>
+                    </div>
+                </div>
+
+                <div class="h-progress">
+                    <div class="h-progress-header">
+                        <span class="h-progress-label">₹80K - 130K</span>
+                        <span class="h-progress-value">18.5%</span>
+                    </div>
+                    <div class="h-progress-bar">
+                        <div class="h-progress-fill" style="width: 37%"></div>
+                    </div>
+                </div>
+
+                <div class="h-progress">
+                    <div class="h-progress-header">
+                        <span class="h-progress-label">₹40K - 80K</span>
+                        <span class="h-progress-value">14.3%</span>
+                    </div>
+                    <div class="h-progress-bar">
+                        <div class="h-progress-fill" style="width: 29%"></div>
+                    </div>
+                </div>
+
+                <div class="h-progress">
+                    <div class="h-progress-header">
+                        <span class="h-progress-label">₹20K - 40K</span>
+                        <span class="h-progress-value">6.4%</span>
+                    </div>
+                    <div class="h-progress-bar">
+                        <div class="h-progress-fill" style="width: 13%"></div>
+                    </div>
+                </div>
+
+                <div class="h-progress">
+                    <div class="h-progress-header">
+                        <span class="h-progress-label">₹130K - 170K</span>
+                        <span class="h-progress-value">5.8%</span>
+                    </div>
+                    <div class="h-progress-bar">
+                        <div class="h-progress-fill" style="width: 12%"></div>
+                    </div>
+                </div>
+
+                <div class="h-progress">
+                    <div class="h-progress-header">
+                        <span class="h-progress-label">Above ₹300K</span>
+                        <span class="h-progress-value">1.1%</span>
+                    </div>
+                    <div class="h-progress-bar">
+                        <div class="h-progress-fill" style="width: 3%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Rural Income Distribution</div>
+                        <div class="card-subtitle">Annual Household Income (INR)</div>
+                    </div>
+                </div>
+
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">15.2%</div>
+                        <div class="stat-label">₹30K - 50K</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">14.3%</div>
+                        <div class="stat-label">Below ₹10K</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">11.6%</div>
+                        <div class="stat-label">₹10K - 30K</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">6.2%</div>
+                        <div class="stat-label">₹50K - 70K</div>
+                    </div>
+                </div>
+
+                <div class="insight-box">
+                    <div class="insight-title">Market Opportunity</div>
+                    <div class="insight-text">Urban middle class (₹40K-130K) represents 32.8% - prime target for retail expansion</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: Consumer Segments -->
+        <div class="page">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Urban Consumer Segments</div>
+                        <div class="card-subtitle">Lifestyle Classification</div>
+                    </div>
+                </div>
+
+                <div class="executive-metric">
+                    <div class="metric-info">
+                        <div class="metric-label">Established Elite</div>
+                        <div class="metric-value">9.0%</div>
+                        <div class="metric-change">Premium segment</div>
+                    </div>
+                    <div class="metric-icon">👑</div>
+                </div>
+
+                <div class="executive-metric">
+                    <div class="metric-info">
+                        <div class="metric-label">Conservative Middle</div>
+                        <div class="metric-value">7.8%</div>
+                        <div class="metric-change">Value seekers</div>
+                    </div>
+                    <div class="metric-icon">🏠</div>
+                </div>
+
+                <div class="executive-metric">
+                    <div class="metric-info">
+                        <div class="metric-label">New Wealth</div>
+                        <div class="metric-value">6.8%</div>
+                        <div class="metric-change">Aspirational buyers</div>
+                    </div>
+                    <div class="metric-icon">💎</div>
+                </div>
+
+                <div class="executive-metric">
+                    <div class="metric-info">
+                        <div class="metric-label">Fast Climbers</div>
+                        <div class="metric-value">5.0%</div>
+                        <div class="metric-change">Growth segment</div>
+                    </div>
+                    <div class="metric-icon">📈</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Rural Consumer Segments</div>
+                        <div class="card-subtitle">Top Categories</div>
+                    </div>
+                </div>
+
+                <canvas id="ruralSegmentsChart"></canvas>
+
+                <div class="insight-box">
+                    <div class="insight-title">Rural Opportunity</div>
+                    <div class="insight-text">Aspiring Enthusiasts (17.6%) show high growth potential for FMCG penetration</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 5: FMCG Spending -->
+        <div class="page">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Annual FMCG Spending</div>
+                        <div class="card-subtitle">Food & Consumer Goods (INR)</div>
+                    </div>
+                </div>
+
+                <!-- 3D Cylinder Chart for Top Spending Brackets -->
+                <div class="cylinder-chart">
+                    <div class="cylinder-bar">
+                        <div class="cylinder-value">19.4%</div>
+                        <div class="cylinder" style="height: 100%">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-body" style="height: 100px; background: linear-gradient(180deg, #FF9800 0%, #F57C00 100%);"></div>
+                        </div>
+                        <div class="cylinder-label">₹25-30K</div>
+                    </div>
+                    <div class="cylinder-bar">
+                        <div class="cylinder-value">14.3%</div>
+                        <div class="cylinder" style="height: 74%">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-body" style="height: 74px; background: linear-gradient(180deg, #FFA726 0%, #FF9800 100%);"></div>
+                        </div>
+                        <div class="cylinder-label">₹11-14K</div>
+                    </div>
+                    <div class="cylinder-bar">
+                        <div class="cylinder-value">13.6%</div>
+                        <div class="cylinder" style="height: 70%">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-body" style="height: 70px; background: linear-gradient(180deg, #FFB74D 0%, #FFA726 100%);"></div>
+                        </div>
+                        <div class="cylinder-label">₹20-25K</div>
+                    </div>
+                    <div class="cylinder-bar">
+                        <div class="cylinder-value">12.7%</div>
+                        <div class="cylinder" style="height: 65%">
+                            <div class="cylinder-top"></div>
+                            <div class="cylinder-body" style="height: 65px; background: linear-gradient(180deg, #FFCC80 0%, #FFB74D 100%);"></div>
+                        </div>
+                        <div class="cylinder-label">₹14-17K</div>
+                    </div>
+                </div>
+
+                <div class="insight-box">
+                    <div class="insight-title">Spending Pattern</div>
+                    <div class="insight-text">Mid-range spending (₹20-30K) accounts for 33% - focus area for value brands</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">Premium vs Value Segments</div>
+                        <div class="card-subtitle">FMCG Spending Distribution</div>
+                    </div>
+                </div>
+
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-value">8.4%</div>
+                        <div class="stat-label">Above ₹35K<br>Premium</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-value">45.8%</div>
+                        <div class="stat-label">₹20K - 35K<br>Mid-Market</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">🛒</div>
+                        <div class="stat-value">39.2%</div>
+                        <div class="stat-label">₹11K - 20K<br>Value</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon">📉</div>
+                        <div class="stat-value">6.6%</div>
+                        <div class="stat-label">Below ₹11K<br>Budget</div>
+                    </div>
+                </div>
+
+                <canvas id="fmcgDistChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn" onclick="navigate(-1)">←</button>
+        <button class="nav-btn" id="nextBtn" onclick="navigate(1)">→</button>
+    </div>
+
+    <script>
+        // Data
+        const data = {
+            population: {
+                total: 133645286,
+                urban: 67454106,
+                rural: 66191180,
+                male: 71439449,
+                female: 62205837
+            },
+            households: {
+                total: 29278832,
+                urban: 15019962,
+                rural: 14258870
+            },
+            age_groups: {
+                '0-19': { male: 16, female: 13 },
+                '20-39': { male: 15, female: 12 },
+                '40-59': { male: 14, female: 13 },
+                '60+': { male: 7, female: 7 }
+            }
+        };
+
+        // Page tracking
+        let currentPage = 0;
+        const totalPages = 5;
+        const pageTitles = [
+            'Demographic Profile - Population',
+            'Demographic Profile - Age',
+            'Socio Economic Profile',
+            'Consumer Segments Lifestyle',
+            'Spend on Food & FMCG'
+        ];
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            setupSwipeNavigation();
+            updatePageIndicator();
+        });
+
+        // Navigation
+        function navigate(direction) {
+            const container = document.getElementById('swipeContainer');
+            currentPage = Math.max(0, Math.min(totalPages - 1, currentPage + direction));
+            container.scrollTo({
+                left: currentPage * window.innerWidth,
+                behavior: 'smooth'
+            });
+            updatePageIndicator();
+        }
+
+        function updatePageIndicator() {
+            document.getElementById('pageTitle').textContent = pageTitles[currentPage];
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentPage);
+            });
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+        }
+
+        function setupSwipeNavigation() {
+            const container = document.getElementById('swipeContainer');
+            container.addEventListener('scroll', () => {
+                const pageWidth = window.innerWidth;
+                const scrollPosition = container.scrollLeft;
+                currentPage = Math.round(scrollPosition / pageWidth);
+                updatePageIndicator();
+            });
+        }
+
+        // Chart initialization
+        function initializeCharts() {
+            // Gender Donut Chart
+            const genderCtx = document.getElementById('genderDonut').getContext('2d');
+            new Chart(genderCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Male', 'Female'],
+                    datasets: [{
+                        data: [53.5, 46.5],
+                        backgroundColor: [
+                            'rgba(66, 165, 245, 0.9)',
+                            'rgba(236, 64, 122, 0.9)'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Age Gender Distribution
+            const ageGenderCtx = document.getElementById('ageGenderChart').getContext('2d');
+            new Chart(ageGenderCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-19', '20-39', '40-59', '60+'],
+                    datasets: [
+                        {
+                            label: 'Male',
+                            data: [16, 15, 14, 7],
+                            backgroundColor: 'rgba(66, 165, 245, 0.8)',
+                            borderRadius: 8
+                        },
+                        {
+                            label: 'Female',
+                            data: [13, 12, 13, 7],
+                            backgroundColor: 'rgba(236, 64, 122, 0.8)',
+                            borderRadius: 8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 12 },
+                                padding: 10
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Rural Segments Chart
+            const ruralSegmentsCtx = document.getElementById('ruralSegmentsChart').getContext('2d');
+            new Chart(ruralSegmentsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Aspiring Enthusiasts', 'Fortunate Climbers', 'Village Elite'],
+                    datasets: [{
+                        data: [17.6, 8.6, 4.6],
+                        backgroundColor: [
+                            'rgba(46, 125, 50, 0.8)',
+                            'rgba(67, 160, 71, 0.8)',
+                            'rgba(102, 187, 106, 0.8)'
+                        ],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // FMCG Distribution Chart
+            const fmcgDistCtx = document.getElementById('fmcgDistChart').getContext('2d');
+            new Chart(fmcgDistCtx, {
+                type: 'line',
+                data: {
+                    labels: ['>35K', '30-35K', '25-30K', '20-25K', '17-20K', '14-17K', '11-14K'],
+                    datasets: [{
+                        label: 'FMCG Spending %',
+                        data: [8.4, 7.9, 19.4, 13.6, 12.1, 12.7, 14.3],
+                        borderColor: 'rgba(255, 152, 0, 1)',
+                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(255, 152, 0, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: { size: 10 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
