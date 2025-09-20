@@ -1,0 +1,2671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Store Overview | Catchment Intelligence</title>
+    
+    <!-- Chart.js v4 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated gradient background - REDUCED OPACITY for better contrast */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(46, 125, 50, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(102, 187, 106, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(76, 175, 80, 0.01) 0%, transparent 50%),
+                linear-gradient(180deg, #fafffe 0%, #f0f8f1 100%);
+            animation: backgroundShift 20s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(46, 125, 50, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.2;
+            }
+            90% {
+                opacity: 0.2;
+            }
+            to {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Glassmorphic header - DARKER for better contrast */
+        .header {
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.95) 0%, rgba(76, 175, 80, 0.85) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: white;
+            padding: 20px 24px;
+            box-shadow: 
+                0 8px 32px rgba(46, 125, 50, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2),
+                inset 0 -1px 0 rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 400;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Store Selector Dropdown */
+        .store-selector {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #ffffff;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 15px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            outline: none;
+            min-width: 400px;
+        }
+
+        .store-selector:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(46, 125, 50, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .store-selector option {
+            background: #2E7D32;
+            color: white;
+            padding: 5px;
+        }
+
+        /* Store Info Banner */
+        .store-info {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 248, 241, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            padding: 20px 24px;
+            box-shadow: 
+                0 4px 20px rgba(46, 125, 50, 0.15),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+        }
+
+        .store-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .store-detail-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #757575;
+            font-weight: 600;
+        }
+
+        .store-detail-value {
+            font-size: 16px;
+            color: #1B5E20;
+            font-weight: 600;
+        }
+
+        /* Page Navigation - ENHANCED CONTRAST */
+        .page-indicator {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            padding: 16px 24px;
+            box-shadow: 
+                0 4px 20px rgba(46, 125, 50, 0.15),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 15px;
+            font-weight: 500;
+            color: #1B5E20;
+            position: relative;
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+            overflow: hidden;
+        }
+
+        .page-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(46, 125, 50, 0.05), transparent);
+            animation: sweep 8s infinite;
+        }
+
+        @keyframes sweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .page-dots {
+            display: flex;
+            gap: 12px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(46, 125, 50, 0.3);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+        }
+
+        .dot::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .dot:hover::after {
+            background: radial-gradient(circle, transparent 40%, rgba(46, 125, 50, 0.2) 100%);
+        }
+
+        .dot:hover {
+            transform: scale(1.3);
+            background: rgba(76, 175, 80, 0.6);
+            border-color: rgba(46, 125, 50, 0.4);
+            box-shadow: 0 0 20px rgba(46, 125, 50, 0.4);
+        }
+
+        .dot.active {
+            background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+            width: 36px;
+            border-radius: 20px;
+            box-shadow: 
+                0 0 25px rgba(46, 125, 50, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.5);
+            border-color: rgba(102, 187, 106, 0.4);
+        }
+
+        /* Container */
+        .container {
+            padding: 30px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Glassmorphic Cards - ENHANCED CONTRAST */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(46, 125, 50, 0.2);
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 
+                0 8px 32px rgba(46, 125, 50, 0.12),
+                0 2px 8px rgba(0,0,0,0.06),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+            position: relative;
+            transform: translateZ(0);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4CAF50, transparent);
+            animation: cardSweep 3s infinite;
+        }
+
+        @keyframes cardSweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 50px rgba(46, 125, 50, 0.18),
+                0 10px 20px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,1);
+            border-color: rgba(76, 175, 80, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .card-title {
+            color: #0D4F0D;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            position: relative;
+            padding-bottom: 8px;
+        }
+
+        .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #2E7D32, transparent);
+            animation: expandLine 2s ease-in-out infinite;
+        }
+
+        @keyframes expandLine {
+            0%, 100% { width: 50px; }
+            50% { width: 100px; }
+        }
+
+        .card-subtitle {
+            color: #2E7D32;
+            font-size: 14px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* Neumorphic Metrics - ENHANCED CONTRAST */
+        .metric-box {
+            background: linear-gradient(145deg, #ffffff, #f5faf6);
+            border: 1px solid rgba(46, 125, 50, 0.15);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 
+                8px 8px 20px rgba(46, 125, 50, 0.1),
+                -8px -8px 20px rgba(255, 255, 255, 0.9),
+                inset 1px 1px 2px rgba(46, 125, 50, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(46, 125, 50, 0.08) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .metric-box:hover::before {
+            opacity: 1;
+        }
+
+        .metric-box:hover {
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 
+                12px 12px 30px rgba(46, 125, 50, 0.15),
+                -8px -8px 25px rgba(255, 255, 255, 1),
+                inset 2px 2px 4px rgba(46, 125, 50, 0.1);
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .metric-info {
+            flex: 1;
+            z-index: 1;
+        }
+
+        .metric-label {
+            color: #424242;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            color: #1B5E20;
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1;
+            text-shadow: 
+                2px 2px 4px rgba(46, 125, 50, 0.15);
+            letter-spacing: -1px;
+        }
+
+        .metric-change {
+            color: #2E7D32;
+            font-size: 13px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(145deg, #C8E6C9, #A5D6A7);
+            border: 1px solid rgba(46, 125, 50, 0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 
+                4px 4px 10px rgba(46, 125, 50, 0.15),
+                -4px -4px 10px rgba(255, 255, 255, 0.9),
+                inset 1px 1px 2px rgba(255,255,255,0.5);
+            transition: all 0.4s ease;
+            z-index: 1;
+        }
+
+        .metric-box:hover .metric-icon {
+            transform: rotate(10deg) scale(1.1);
+            box-shadow: 
+                6px 6px 15px rgba(46, 125, 50, 0.2),
+                -4px -4px 12px rgba(255, 255, 255, 1);
+        }
+
+        /* Holographic Stat Grid - ENHANCED CONTRAST */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .stat-item {
+            background: linear-gradient(145deg, #fafffe, #ebf7ec);
+            border: 1px solid rgba(46, 125, 50, 0.18);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 
+                6px 6px 15px rgba(46, 125, 50, 0.1),
+                -6px -6px 15px rgba(255, 255, 255, 0.95),
+                inset 1px 1px 3px rgba(46, 125, 50, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle, rgba(102, 187, 106, 0.15) 0%, transparent 40%);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .stat-item:hover::before {
+            top: -150%;
+            left: -150%;
+            opacity: 1;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-6px) scale(1.05) rotate(1deg);
+            box-shadow: 
+                10px 10px 25px rgba(46, 125, 50, 0.15),
+                -6px -6px 20px rgba(255, 255, 255, 1),
+                0 0 30px rgba(46, 125, 50, 0.1);
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1B5E20;
+            margin-bottom: 6px;
+            text-shadow: 
+                2px 2px 4px rgba(46, 125, 50, 0.15);
+            letter-spacing: -0.5px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #424242;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 600;
+        }
+
+        /* Chart Container with glow */
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin: 24px 0;
+            padding: 20px;
+            background: linear-gradient(145deg, #ffffff, #fafffe);
+            border: 1px solid rgba(46, 125, 50, 0.15);
+            border-radius: 20px;
+            box-shadow: 
+                inset 4px 4px 10px rgba(46, 125, 50, 0.08),
+                inset -4px -4px 10px rgba(255, 255, 255, 0.9);
+            overflow: hidden;
+        }
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 30%, rgba(46, 125, 50, 0.03) 100%);
+            pointer-events: none;
+        }
+
+        .chart-container-small {
+            height: 280px;
+        }
+
+        /* Premium Insight Box - ENHANCED CONTRAST */
+        .insight-box {
+            background: linear-gradient(135deg, rgba(232, 245, 233, 0.95) 0%, rgba(200, 230, 201, 0.7) 100%);
+            border-left: 4px solid #2E7D32;
+            border-right: 1px solid rgba(46, 125, 50, 0.2);
+            border-top: 1px solid rgba(46, 125, 50, 0.2);
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+            padding: 18px;
+            border-radius: 16px;
+            margin: 20px 0;
+            box-shadow: 
+                6px 6px 20px rgba(46, 125, 50, 0.1),
+                -6px -6px 20px rgba(255, 255, 255, 0.9),
+                inset 1px 1px 3px rgba(76, 175, 80, 0.08);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .insight-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent, #4CAF50, transparent);
+            animation: insightPulse 2s ease infinite;
+        }
+
+        @keyframes insightPulse {
+            0%, 100% { opacity: 1; transform: scaleY(1); }
+            50% { opacity: 0.6; transform: scaleY(0.95); }
+        }
+
+        .insight-box::after {
+            content: '💡';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 40px;
+            opacity: 0.05;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: translateY(-50%) rotate(0deg); }
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        .insight-box:hover {
+            transform: translateX(4px);
+            box-shadow: 
+                8px 8px 25px rgba(46, 125, 50, 0.12),
+                -6px -6px 25px rgba(255, 255, 255, 1),
+                inset 2px 2px 5px rgba(76, 175, 80, 0.1);
+            border-left-width: 5px;
+        }
+
+        .insight-title {
+            color: #1B5E20;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+        }
+
+        .insight-text {
+            color: #212121;
+            font-size: 14px;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+            font-weight: 500;
+        }
+
+        /* LSI Definitions Section */
+        .lsi-definition-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 248, 241, 0.95) 100%);
+            border: 1px solid rgba(46, 125, 50, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 
+                4px 4px 12px rgba(46, 125, 50, 0.08),
+                -4px -4px 12px rgba(255, 255, 255, 0.95);
+            transition: all 0.3s ease;
+        }
+
+        .lsi-definition-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 
+                6px 6px 18px rgba(46, 125, 50, 0.12),
+                -4px -4px 15px rgba(255, 255, 255, 1);
+        }
+
+        .lsi-definition-title {
+            color: #1B5E20;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(46, 125, 50, 0.15);
+        }
+
+        .lsi-definition-text {
+            color: #424242;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* Page sections */
+        .page-section {
+            display: none;
+            animation: pageSlide 0.6s ease;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes pageSlide {
+            from {
+                opacity: 0;
+                transform: translateX(40px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        /* Futuristic Navigation Buttons - ENHANCED CONTRAST */
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 40px 0 20px;
+            position: relative;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.95) 0%, rgba(76, 175, 80, 0.8) 100%);
+            color: white;
+            border: 1px solid rgba(102, 187, 106, 0.4);
+            padding: 14px 32px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 6px 20px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2),
+                inset 0 -1px 0 rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .nav-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 
+                0 10px 30px rgba(46, 125, 50, 0.5),
+                0 5px 15px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            border-color: rgba(129, 199, 132, 0.6);
+            text-shadow: 0 0 10px rgba(255,255,255,0.6);
+        }
+
+        .nav-btn:active {
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        .nav-btn:disabled {
+            background: linear-gradient(135deg, rgba(60, 60, 60, 0.5) 0%, rgba(80, 80, 80, 0.4) 100%);
+            cursor: not-allowed;
+            opacity: 0.5;
+            box-shadow: none;
+            border-color: rgba(100, 100, 100, 0.3);
+        }
+
+        /* Kentrix Credits Footer - MUCH SMALLER AND SINGLE LINE */
+        .footer-credits {
+            background: linear-gradient(180deg, rgba(250, 252, 251, 0.98) 0%, rgba(240, 248, 241, 1) 100%);
+            border-top: 1px solid rgba(46, 125, 50, 0.1);
+            padding: 12px 20px;
+            text-align: center;
+            position: relative;
+            margin-top: 40px;
+            overflow: hidden;
+        }
+
+        .footer-credits::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #66BB6A, transparent);
+            animation: footerGlow 3s ease infinite;
+        }
+
+        @keyframes footerGlow {
+            0%, 100% { opacity: 0.3; transform: scaleX(0.5); }
+            50% { opacity: 0.6; transform: scaleX(1); }
+        }
+
+        .footer-line {
+            color: #757575;
+            font-size: 10px;
+            letter-spacing: 0.8px;
+        }
+
+        .footer-line .brand {
+            color: #558B2F;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 18px;
+                letter-spacing: 1px;
+            }
+
+            .store-selector {
+                min-width: 200px;
+                font-size: 13px;
+                padding: 6px 12px;
+            }
+
+            .store-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stat-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+
+        @media (max-width: 380px) {
+            .metric-value {
+                font-size: 26px;
+            }
+            
+            .stat-value {
+                font-size: 22px;
+            }
+
+            .chart-container {
+                height: 260px;
+            }
+
+            .header h1 {
+                font-size: 16px;
+                letter-spacing: 0.8px;
+            }
+
+            .nav-btn {
+                padding: 12px 24px;
+                font-size: 12px;
+            }
+
+            .store-selector {
+                min-width: 150px;
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+        }
+
+        /* Chart glow effect */
+        canvas {
+            filter: drop-shadow(0 4px 15px rgba(46, 125, 50, 0.15));
+            border-radius: 10px;
+        }
+
+        /* Loading animation for charts */
+        @keyframes chartLoad {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .chart-container canvas {
+            animation: chartLoad 1s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating particles effect -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>Store Overview</h1>
+            <select class="store-selector" id="storeSelector" onchange="updateStore(this.value)">
+                <option value="51018_1">Smoke House Deli (51018)</option>
+                <option value="4379_2">World of Wines (4379)</option>
+                <option value="6065_3">Pankaj Wines (6065)</option>
+                <option value="1533_4">Central Lunch Home (1533)</option>
+                <option value="69334_5">Seven 11 (69334)</option>
+                <option value="28509_6">Social (28509)</option>
+                <option value="10008_7">Warden Wines - Liquor Mart Round (10008)</option>
+                <option value="10010_8">Warden Wine Mart GJ (10010)</option>
+                <option value="26406_9">Mahabaleshwar Lunch Home (26406)</option>
+                <option value="NEW_10">World of Wines Palates (NEW)</option>
+                <option value="5084_11">Modern Wines (5084)</option>
+                <option value="1270_12">Bombay Wines (1270)</option>
+                <option value="2185_13">Durga Lunch Home (2185)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Store Information Banner -->
+    <div class="store-info" id="storeInfo">
+        <div class="store-detail">
+            <span class="store-detail-label">Outlet ID</span>
+            <span class="store-detail-value" id="outletId">51018</span>
+        </div>
+        <div class="store-detail">
+            <span class="store-detail-label">Outlet Name</span>
+            <span class="store-detail-value" id="outletName">Smoke House Deli</span>
+        </div>
+        <div class="store-detail">
+            <span class="store-detail-label">Classification</span>
+            <span class="store-detail-value" id="outletClass">MONT</span>
+        </div>
+        <div class="store-detail">
+            <span class="store-detail-label">Location</span>
+            <span class="store-detail-value" id="outletLocation">18.9217° N, 72.8324° E</span>
+        </div>
+        <div class="store-detail">
+            <span class="store-detail-label">Catchment</span>
+            <span class="store-detail-value" id="outletCatchment">15 min drive</span>
+        </div>
+    </div>
+
+    <!-- Page Indicator -->
+    <div class="page-indicator">
+        <span id="pageTitle">Catchment Demographics</span>
+        <div class="page-dots">
+            <span class="dot active" data-page="0" onclick="goToPage(0)"></span>
+            <span class="dot" data-page="1" onclick="goToPage(1)"></span>
+            <span class="dot" data-page="2" onclick="goToPage(2)"></span>
+            <span class="dot" data-page="3" onclick="goToPage(3)"></span>
+            <span class="dot" data-page="4" onclick="goToPage(4)"></span>
+            <span class="dot" data-page="5" onclick="goToPage(5)"></span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container" id="mainContainer">
+        <!-- Content will be dynamically generated -->
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn" onclick="changePage(-1)">← Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
+    </div>
+
+    <!-- Footer Credits - SIMPLIFIED AND SMALLER -->
+    <footer class="footer-credits">
+        <div class="footer-line">
+            <span class="brand">KENTRIX</span> © 2024 • Consumer Intelligence & Location Analytics Platform
+        </div>
+    </footer>
+
+    <script>
+        // Complete store catchment data for all 15 outlets (treating duplicates as separate)
+        const storesData = {
+            "51018_1": {
+                        "outlet_id": "51018",
+                        "outlet_name": "Smoke House Deli",
+                        "classification": "MONT",
+                        "location": "18.9217000 72.8324000",
+                        "drive_time": "15",
+                        "total_population": 211608,
+                        "total_households": 50005,
+                        "predominant_lsi": "LSI 01",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 38.0,
+                                    "LSI 02 - Affluent New Wealth": 17.2,
+                                    "LSI 03 - Aspiring Middle Class": 5.1,
+                                    "LSI 04 - Conservative Middle Class": 4.8,
+                                    "LSI 05 - Successful Runner Up's": 22.3,
+                                    "LSI 06 - Upcomming Climbers": 1.3,
+                                    "LSI 07 - Struggling Climbers": 1.3,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 10.0,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 216000,
+                        "income_distribution": {
+                                    "> 4,00,000": 20.3,
+                                    "3,00,000 - 4,00,000": 10.5,
+                                    "2,50,000 - 3,00,000": 6.4,
+                                    "2,00,000 - 2,50,000": 2.5,
+                                    "1,60,000 - 2,00,000": 14.7,
+                                    "1,20,000 - 1,60,000": 5.7,
+                                    "80,000 - 1,20,000": 3.4,
+                                    "40,000 - 80,000": 25.9,
+                                    "20,000 - 40,000": 10.6,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 29.3,
+                                    "Food_FMCG": 17.0,
+                                    "Apparel": 6.0,
+                                    "Transportation": 6.6,
+                                    "Healthcare_Medical": 6.2,
+                                    "Financial_Savings": 16.2,
+                                    "Education": 7.4,
+                                    "Entertainment": 7.1,
+                                    "Others": 4.4
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 8.26,
+                                    "Male 0-9": 6.42,
+                                    "Female 10-19": 6.26,
+                                    "Male 10-19": 9.37,
+                                    "Female 20-29": 4.51,
+                                    "Male 20-29": 8.09,
+                                    "Female 30-39": 6.32,
+                                    "Male 30-39": 8.83,
+                                    "Female 40-49": 6.85,
+                                    "Male 40-49": 8.69,
+                                    "Female 50-59": 5.13,
+                                    "Male 50-59": 6.7,
+                                    "Female 60-69": 3.2,
+                                    "Male 60-69": 3.9,
+                                    "Female 70+": 3.81,
+                                    "Male 70+": 3.66
+                        }
+            },
+            "4379_2": {
+                        "outlet_id": "4379",
+                        "outlet_name": "World of Wines",
+                        "classification": "MOFT",
+                        "location": "18.9265000 72.8224000",
+                        "drive_time": "8",
+                        "total_population": 37910,
+                        "total_households": 8963,
+                        "predominant_lsi": "LSI 02",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 25.3,
+                                    "LSI 02 - Affluent New Wealth": 62.4,
+                                    "LSI 03 - Aspiring Middle Class": 0.0,
+                                    "LSI 04 - Conservative Middle Class": 0.0,
+                                    "LSI 05 - Successful Runner Up's": 0.0,
+                                    "LSI 06 - Upcomming Climbers": 0.0,
+                                    "LSI 07 - Struggling Climbers": 0.0,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 12.3,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 386000,
+                        "income_distribution": {
+                                    "> 4,00,000": 60.4,
+                                    "3,00,000 - 4,00,000": 13.5,
+                                    "2,50,000 - 3,00,000": 9.9,
+                                    "2,00,000 - 2,50,000": 3.4,
+                                    "1,60,000 - 2,00,000": 0.4,
+                                    "1,20,000 - 1,60,000": 0.0,
+                                    "80,000 - 1,20,000": 0.0,
+                                    "40,000 - 80,000": 0.0,
+                                    "20,000 - 40,000": 12.4,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 29.9,
+                                    "Food_FMCG": 15.4,
+                                    "Apparel": 5.9,
+                                    "Transportation": 7.3,
+                                    "Healthcare_Medical": 6.0,
+                                    "Financial_Savings": 16.9,
+                                    "Education": 7.0,
+                                    "Entertainment": 7.5,
+                                    "Others": 4.2
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 7.78,
+                                    "Male 0-9": 6.49,
+                                    "Female 10-19": 6.49,
+                                    "Male 10-19": 8.73,
+                                    "Female 20-29": 4.41,
+                                    "Male 20-29": 7.32,
+                                    "Female 30-39": 6.29,
+                                    "Male 30-39": 8.34,
+                                    "Female 40-49": 7.06,
+                                    "Male 40-49": 8.39,
+                                    "Female 50-59": 5.64,
+                                    "Male 50-59": 6.79,
+                                    "Female 60-69": 3.48,
+                                    "Male 60-69": 4.24,
+                                    "Female 70+": 4.5,
+                                    "Male 70+": 4.05
+                        }
+            },
+            "6065_3": {
+                        "outlet_id": "6065",
+                        "outlet_name": "Pankaj Wines",
+                        "classification": "TOFT",
+                        "location": "19.0730000 72.8313000",
+                        "drive_time": "8",
+                        "total_population": 311209,
+                        "total_households": 74210,
+                        "predominant_lsi": "LSI 01",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 80.5,
+                                    "LSI 02 - Affluent New Wealth": 0.9,
+                                    "LSI 03 - Aspiring Middle Class": 1.6,
+                                    "LSI 04 - Conservative Middle Class": 5.5,
+                                    "LSI 05 - Successful Runner Up's": 2.4,
+                                    "LSI 06 - Upcomming Climbers": 0.2,
+                                    "LSI 07 - Struggling Climbers": 0.0,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 9.1,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 360000,
+                        "income_distribution": {
+                                    "> 4,00,000": 56.8,
+                                    "3,00,000 - 4,00,000": 17.5,
+                                    "2,50,000 - 3,00,000": 1.7,
+                                    "2,00,000 - 2,50,000": 3.5,
+                                    "1,60,000 - 2,00,000": 2.4,
+                                    "1,20,000 - 1,60,000": 5.2,
+                                    "80,000 - 1,20,000": 1.7,
+                                    "40,000 - 80,000": 2.5,
+                                    "20,000 - 40,000": 8.7,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 29.8,
+                                    "Food_FMCG": 15.6,
+                                    "Apparel": 5.9,
+                                    "Transportation": 7.2,
+                                    "Healthcare_Medical": 6.0,
+                                    "Financial_Savings": 16.8,
+                                    "Education": 7.1,
+                                    "Entertainment": 7.3,
+                                    "Others": 4.2
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 6.89,
+                                    "Male 0-9": 6.0,
+                                    "Female 10-19": 6.04,
+                                    "Male 10-19": 7.68,
+                                    "Female 20-29": 3.23,
+                                    "Male 20-29": 4.19,
+                                    "Female 30-39": 7.33,
+                                    "Male 30-39": 8.81,
+                                    "Female 40-49": 8.41,
+                                    "Male 40-49": 9.74,
+                                    "Female 50-59": 6.72,
+                                    "Male 50-59": 7.37,
+                                    "Female 60-69": 4.4,
+                                    "Male 60-69": 4.66,
+                                    "Female 70+": 4.36,
+                                    "Male 70+": 4.17
+                        }
+            },
+            "1533_4": {
+                        "outlet_id": "1533",
+                        "outlet_name": "Central Lunch Home",
+                        "classification": "TONT",
+                        "location": "18.9372000 72.8346000",
+                        "drive_time": "8",
+                        "total_population": 93023,
+                        "total_households": 20764,
+                        "predominant_lsi": "LSI 01",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 29.6,
+                                    "LSI 02 - Affluent New Wealth": 24.7,
+                                    "LSI 03 - Aspiring Middle Class": 21.5,
+                                    "LSI 04 - Conservative Middle Class": 22.8,
+                                    "LSI 05 - Successful Runner Up's": 1.2,
+                                    "LSI 06 - Upcomming Climbers": 0.0,
+                                    "LSI 07 - Struggling Climbers": 0.2,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 0.0,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 214000,
+                        "income_distribution": {
+                                    "> 4,00,000": 11.3,
+                                    "3,00,000 - 4,00,000": 1.7,
+                                    "2,50,000 - 3,00,000": 10.6,
+                                    "2,00,000 - 2,50,000": 6.1,
+                                    "1,60,000 - 2,00,000": 33.6,
+                                    "1,20,000 - 1,60,000": 29.1,
+                                    "80,000 - 1,20,000": 6.1,
+                                    "40,000 - 80,000": 1.5,
+                                    "20,000 - 40,000": 0.0,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 28.8,
+                                    "Food_FMCG": 18.0,
+                                    "Apparel": 6.0,
+                                    "Transportation": 5.9,
+                                    "Healthcare_Medical": 6.5,
+                                    "Financial_Savings": 15.9,
+                                    "Education": 7.4,
+                                    "Entertainment": 6.8,
+                                    "Others": 4.5
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 6.71,
+                                    "Male 0-9": 5.17,
+                                    "Female 10-19": 5.67,
+                                    "Male 10-19": 6.98,
+                                    "Female 20-29": 2.63,
+                                    "Male 20-29": 3.53,
+                                    "Female 30-39": 6.67,
+                                    "Male 30-39": 8.65,
+                                    "Female 40-49": 7.76,
+                                    "Male 40-49": 11.04,
+                                    "Female 50-59": 6.3,
+                                    "Male 50-59": 8.85,
+                                    "Female 60-69": 4.5,
+                                    "Male 60-69": 5.79,
+                                    "Female 70+": 4.78,
+                                    "Male 70+": 4.96
+                        }
+            },
+            "69334_5": {
+                        "outlet_id": "69334",
+                        "outlet_name": "Seven 11",
+                        "classification": "MT (MOFT)",
+                        "location": "18.9371000 72.8342000",
+                        "drive_time": "8",
+                        "total_population": 84756,
+                        "total_households": 19206,
+                        "predominant_lsi": "LSI 02",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 26.3,
+                                    "LSI 02 - Affluent New Wealth": 33.1,
+                                    "LSI 03 - Aspiring Middle Class": 19.9,
+                                    "LSI 04 - Conservative Middle Class": 19.0,
+                                    "LSI 05 - Successful Runner Up's": 1.3,
+                                    "LSI 06 - Upcomming Climbers": 0.0,
+                                    "LSI 07 - Struggling Climbers": 0.2,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 0.0,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 245000,
+                        "income_distribution": {
+                                    "> 4,00,000": 20.2,
+                                    "3,00,000 - 4,00,000": 3.4,
+                                    "2,50,000 - 3,00,000": 7.7,
+                                    "2,00,000 - 2,50,000": 7.8,
+                                    "1,60,000 - 2,00,000": 26.9,
+                                    "1,20,000 - 1,60,000": 30.1,
+                                    "80,000 - 1,20,000": 2.3,
+                                    "40,000 - 80,000": 1.6,
+                                    "20,000 - 40,000": 0.0,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 29.1,
+                                    "Food_FMCG": 17.3,
+                                    "Apparel": 6.0,
+                                    "Transportation": 6.3,
+                                    "Healthcare_Medical": 6.4,
+                                    "Financial_Savings": 16.1,
+                                    "Education": 7.3,
+                                    "Entertainment": 7.0,
+                                    "Others": 4.4
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 6.83,
+                                    "Male 0-9": 5.29,
+                                    "Female 10-19": 5.73,
+                                    "Male 10-19": 7.18,
+                                    "Female 20-29": 2.8,
+                                    "Male 20-29": 3.92,
+                                    "Female 30-39": 6.62,
+                                    "Male 30-39": 8.66,
+                                    "Female 40-49": 7.67,
+                                    "Male 40-49": 10.74,
+                                    "Female 50-59": 6.23,
+                                    "Male 50-59": 8.64,
+                                    "Female 60-69": 4.38,
+                                    "Male 60-69": 5.63,
+                                    "Female 70+": 4.78,
+                                    "Male 70+": 4.9
+                        }
+            },
+            "28509_6": {
+                        "outlet_id": "28509",
+                        "outlet_name": "Social",
+                        "classification": "MONT",
+                        "location": "18.9218000 72.8323000",
+                        "drive_time": "15",
+                        "total_population": 209666,
+                        "total_households": 49549,
+                        "predominant_lsi": "LSI 01",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 37.9,
+                                    "LSI 02 - Affluent New Wealth": 17.4,
+                                    "LSI 03 - Aspiring Middle Class": 5.1,
+                                    "LSI 04 - Conservative Middle Class": 4.8,
+                                    "LSI 05 - Successful Runner Up's": 22.2,
+                                    "LSI 06 - Upcomming Climbers": 1.3,
+                                    "LSI 07 - Struggling Climbers": 1.3,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 10.0,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 217000,
+                        "income_distribution": {
+                                    "> 4,00,000": 20.5,
+                                    "3,00,000 - 4,00,000": 10.6,
+                                    "2,50,000 - 3,00,000": 6.5,
+                                    "2,00,000 - 2,50,000": 2.5,
+                                    "1,60,000 - 2,00,000": 14.4,
+                                    "1,20,000 - 1,60,000": 5.7,
+                                    "80,000 - 1,20,000": 3.4,
+                                    "40,000 - 80,000": 25.8,
+                                    "20,000 - 40,000": 10.6,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 29.3,
+                                    "Food_FMCG": 17.0,
+                                    "Apparel": 6.0,
+                                    "Transportation": 6.6,
+                                    "Healthcare_Medical": 6.1,
+                                    "Financial_Savings": 16.1,
+                                    "Education": 7.4,
+                                    "Entertainment": 7.1,
+                                    "Others": 4.4
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 8.27,
+                                    "Male 0-9": 6.43,
+                                    "Female 10-19": 6.26,
+                                    "Male 10-19": 9.39,
+                                    "Female 20-29": 4.52,
+                                    "Male 20-29": 8.1,
+                                    "Female 30-39": 6.31,
+                                    "Male 30-39": 8.83,
+                                    "Female 40-49": 6.85,
+                                    "Male 40-49": 8.68,
+                                    "Female 50-59": 5.13,
+                                    "Male 50-59": 6.69,
+                                    "Female 60-69": 3.2,
+                                    "Male 60-69": 3.89,
+                                    "Female 70+": 3.8,
+                                    "Male 70+": 3.65
+                        }
+            },
+            "10008_7": {
+                        "outlet_id": "10008",
+                        "outlet_name": "Warden Wines - Liquor Mart (Round)",
+                        "classification": "TOFT",
+                        "location": "18.9648000 72.8042000",
+                        "drive_time": "8",
+                        "total_population": 184625,
+                        "total_households": 42009,
+                        "predominant_lsi": "LSI 01",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 84.8,
+                                    "LSI 02 - Affluent New Wealth": 8.6,
+                                    "LSI 03 - Aspiring Middle Class": 1.1,
+                                    "LSI 04 - Conservative Middle Class": 0.0,
+                                    "LSI 05 - Successful Runner Up's": 1.4,
+                                    "LSI 06 - Upcomming Climbers": 0.6,
+                                    "LSI 07 - Struggling Climbers": 0.0,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 3.5,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 513000,
+                        "income_distribution": {
+                                    "> 4,00,000": 70.7,
+                                    "3,00,000 - 4,00,000": 8.6,
+                                    "2,50,000 - 3,00,000": 5.5,
+                                    "2,00,000 - 2,50,000": 2.3,
+                                    "1,60,000 - 2,00,000": 6.6,
+                                    "1,20,000 - 1,60,000": 0.0,
+                                    "80,000 - 1,20,000": 0.9,
+                                    "40,000 - 80,000": 1.9,
+                                    "20,000 - 40,000": 3.4,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 29.9,
+                                    "Food_FMCG": 15.3,
+                                    "Apparel": 5.9,
+                                    "Transportation": 7.3,
+                                    "Healthcare_Medical": 6.0,
+                                    "Financial_Savings": 16.9,
+                                    "Education": 7.0,
+                                    "Entertainment": 7.4,
+                                    "Others": 4.1
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 5.5,
+                                    "Male 0-9": 4.91,
+                                    "Female 10-19": 5.05,
+                                    "Male 10-19": 6.02,
+                                    "Female 20-29": 1.98,
+                                    "Male 20-29": 2.47,
+                                    "Female 30-39": 6.27,
+                                    "Male 30-39": 7.27,
+                                    "Female 40-49": 7.9,
+                                    "Male 40-49": 9.5,
+                                    "Female 50-59": 7.35,
+                                    "Male 50-59": 8.1,
+                                    "Female 60-69": 5.75,
+                                    "Male 60-69": 6.22,
+                                    "Female 70+": 7.96,
+                                    "Male 70+": 7.75
+                        }
+            },
+            "10010_8": {
+                        "outlet_id": "10010",
+                        "outlet_name": "Warden Wine Mart (GJ)",
+                        "classification": "MOFT",
+                        "location": "18.9775000 72.8096000",
+                        "drive_time": "8",
+                        "total_population": 314617,
+                        "total_households": 70340,
+                        "predominant_lsi": "LSI 01",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 58.6,
+                                    "LSI 02 - Affluent New Wealth": 23.5,
+                                    "LSI 03 - Aspiring Middle Class": 4.4,
+                                    "LSI 04 - Conservative Middle Class": 0.0,
+                                    "LSI 05 - Successful Runner Up's": 1.2,
+                                    "LSI 06 - Upcomming Climbers": 2.0,
+                                    "LSI 07 - Struggling Climbers": 0.2,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 10.2,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 386000,
+                        "income_distribution": {
+                                    "> 4,00,000": 46.4,
+                                    "3,00,000 - 4,00,000": 13.3,
+                                    "2,50,000 - 3,00,000": 4.9,
+                                    "2,00,000 - 2,50,000": 9.7,
+                                    "1,60,000 - 2,00,000": 4.4,
+                                    "1,20,000 - 1,60,000": 3.5,
+                                    "80,000 - 1,20,000": 4.5,
+                                    "40,000 - 80,000": 3.1,
+                                    "20,000 - 40,000": 10.1,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 29.9,
+                                    "Food_FMCG": 15.7,
+                                    "Apparel": 5.9,
+                                    "Transportation": 7.2,
+                                    "Healthcare_Medical": 6.0,
+                                    "Financial_Savings": 16.7,
+                                    "Education": 7.0,
+                                    "Entertainment": 7.4,
+                                    "Others": 4.2
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 5.93,
+                                    "Male 0-9": 5.26,
+                                    "Female 10-19": 5.34,
+                                    "Male 10-19": 6.57,
+                                    "Female 20-29": 2.37,
+                                    "Male 20-29": 2.91,
+                                    "Female 30-39": 6.7,
+                                    "Male 30-39": 7.77,
+                                    "Female 40-49": 8.12,
+                                    "Male 40-49": 9.58,
+                                    "Female 50-59": 7.2,
+                                    "Male 50-59": 7.89,
+                                    "Female 60-69": 5.3,
+                                    "Male 60-69": 5.83,
+                                    "Female 70+": 6.68,
+                                    "Male 70+": 6.55
+                        }
+            },
+            "26406_9": {
+                        "outlet_id": "26406",
+                        "outlet_name": "Mahabaleshwar Lunch Home",
+                        "classification": "TONT",
+                        "location": "18.9729000 72.8144000",
+                        "drive_time": "8",
+                        "total_population": 192423,
+                        "total_households": 43225,
+                        "predominant_lsi": "LSI 01",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 70.7,
+                                    "LSI 02 - Affluent New Wealth": 15.6,
+                                    "LSI 03 - Aspiring Middle Class": 4.7,
+                                    "LSI 04 - Conservative Middle Class": 0.0,
+                                    "LSI 05 - Successful Runner Up's": 1.9,
+                                    "LSI 06 - Upcomming Climbers": 1.6,
+                                    "LSI 07 - Struggling Climbers": 0.1,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 5.6,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 422000,
+                        "income_distribution": {
+                                    "> 4,00,000": 54.1,
+                                    "3,00,000 - 4,00,000": 7.7,
+                                    "2,50,000 - 3,00,000": 5.7,
+                                    "2,00,000 - 2,50,000": 11.0,
+                                    "1,60,000 - 2,00,000": 3.2,
+                                    "1,20,000 - 1,60,000": 3.0,
+                                    "80,000 - 1,20,000": 6.4,
+                                    "40,000 - 80,000": 3.3,
+                                    "20,000 - 40,000": 5.5,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 29.8,
+                                    "Food_FMCG": 15.7,
+                                    "Apparel": 5.9,
+                                    "Transportation": 7.2,
+                                    "Healthcare_Medical": 6.0,
+                                    "Financial_Savings": 16.7,
+                                    "Education": 7.0,
+                                    "Entertainment": 7.4,
+                                    "Others": 4.2
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 5.67,
+                                    "Male 0-9": 5.12,
+                                    "Female 10-19": 5.26,
+                                    "Male 10-19": 6.21,
+                                    "Female 20-29": 2.18,
+                                    "Male 20-29": 2.64,
+                                    "Female 30-39": 6.53,
+                                    "Male 30-39": 7.47,
+                                    "Female 40-49": 8.08,
+                                    "Male 40-49": 9.53,
+                                    "Female 50-59": 7.29,
+                                    "Male 50-59": 7.89,
+                                    "Female 60-69": 5.56,
+                                    "Male 60-69": 5.93,
+                                    "Female 70+": 7.44,
+                                    "Male 70+": 7.19
+                        }
+            },
+            "NEW_10": {
+                        "outlet_id": "NEW",
+                        "outlet_name": "World of Wines (Palates)",
+                        "classification": "MONT",
+                        "location": "18.9265000 72.8224000",
+                        "drive_time": "15",
+                        "total_population": 315827,
+                        "total_households": 73404,
+                        "predominant_lsi": "LSI 01",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 61.4,
+                                    "LSI 02 - Affluent New Wealth": 13.1,
+                                    "LSI 03 - Aspiring Middle Class": 7.9,
+                                    "LSI 04 - Conservative Middle Class": 3.0,
+                                    "LSI 05 - Successful Runner Up's": 7.0,
+                                    "LSI 06 - Upcomming Climbers": 0.2,
+                                    "LSI 07 - Struggling Climbers": 0.5,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 6.8,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 312000,
+                        "income_distribution": {
+                                    "> 4,00,000": 32.9,
+                                    "3,00,000 - 4,00,000": 9.1,
+                                    "2,50,000 - 3,00,000": 8.9,
+                                    "2,00,000 - 2,50,000": 1.9,
+                                    "1,60,000 - 2,00,000": 18.5,
+                                    "1,20,000 - 1,60,000": 13.6,
+                                    "80,000 - 1,20,000": 0.0,
+                                    "40,000 - 80,000": 8.2,
+                                    "20,000 - 40,000": 7.0,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 29.5,
+                                    "Food_FMCG": 16.3,
+                                    "Apparel": 5.9,
+                                    "Transportation": 6.9,
+                                    "Healthcare_Medical": 6.1,
+                                    "Financial_Savings": 16.5,
+                                    "Education": 7.1,
+                                    "Entertainment": 7.2,
+                                    "Others": 4.4
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 7.01,
+                                    "Male 0-9": 5.65,
+                                    "Female 10-19": 5.71,
+                                    "Male 10-19": 7.76,
+                                    "Female 20-29": 3.29,
+                                    "Male 20-29": 5.28,
+                                    "Female 30-39": 6.34,
+                                    "Male 30-39": 8.28,
+                                    "Female 40-49": 7.32,
+                                    "Male 40-49": 9.52,
+                                    "Female 50-59": 6.04,
+                                    "Male 50-59": 7.65,
+                                    "Female 60-69": 4.32,
+                                    "Male 60-69": 5.15,
+                                    "Female 70+": 5.36,
+                                    "Male 70+": 5.33
+                        }
+            },
+            "5084_11": {
+                        "outlet_id": "5084",
+                        "outlet_name": "Modern Wines",
+                        "classification": "MOFT (OTC)",
+                        "location": "19.0154000 72.8338000",
+                        "drive_time": "8",
+                        "total_population": 281026,
+                        "total_households": 64364,
+                        "predominant_lsi": "LSI 02",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 21.7,
+                                    "LSI 02 - Affluent New Wealth": 65.8,
+                                    "LSI 03 - Aspiring Middle Class": 1.3,
+                                    "LSI 04 - Conservative Middle Class": 0.0,
+                                    "LSI 05 - Successful Runner Up's": 0.0,
+                                    "LSI 06 - Upcomming Climbers": 3.6,
+                                    "LSI 07 - Struggling Climbers": 1.0,
+                                    "LSI 08 - Trailers": 0.2,
+                                    "LSI 09 - Dependants": 6.3,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 275000,
+                        "income_distribution": {
+                                    "> 4,00,000": 8.8,
+                                    "3,00,000 - 4,00,000": 29.8,
+                                    "2,50,000 - 3,00,000": 32.6,
+                                    "2,00,000 - 2,50,000": 11.0,
+                                    "1,60,000 - 2,00,000": 1.4,
+                                    "1,20,000 - 1,60,000": 3.4,
+                                    "80,000 - 1,20,000": 1.8,
+                                    "40,000 - 80,000": 4.6,
+                                    "20,000 - 40,000": 6.4,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 29.5,
+                                    "Food_FMCG": 16.4,
+                                    "Apparel": 5.6,
+                                    "Transportation": 6.7,
+                                    "Healthcare_Medical": 6.0,
+                                    "Financial_Savings": 16.3,
+                                    "Education": 6.9,
+                                    "Entertainment": 7.5,
+                                    "Others": 5.1
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 6.46,
+                                    "Male 0-9": 5.71,
+                                    "Female 10-19": 5.43,
+                                    "Male 10-19": 7.53,
+                                    "Female 20-29": 2.79,
+                                    "Male 20-29": 3.54,
+                                    "Female 30-39": 7.3,
+                                    "Male 30-39": 8.56,
+                                    "Female 40-49": 8.16,
+                                    "Male 40-49": 9.45,
+                                    "Female 50-59": 7.12,
+                                    "Male 50-59": 7.78,
+                                    "Female 60-69": 4.91,
+                                    "Male 60-69": 5.56,
+                                    "Female 70+": 4.98,
+                                    "Male 70+": 4.7
+                        }
+            },
+            "1270_12": {
+                        "outlet_id": "1270",
+                        "outlet_name": "Bombay Wines",
+                        "classification": "TOFT",
+                        "location": "19.0345000 72.8418000",
+                        "drive_time": "8",
+                        "total_population": 272870,
+                        "total_households": 60517,
+                        "predominant_lsi": "LSI 01",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 38.3,
+                                    "LSI 02 - Affluent New Wealth": 14.2,
+                                    "LSI 03 - Aspiring Middle Class": 29.8,
+                                    "LSI 04 - Conservative Middle Class": 3.9,
+                                    "LSI 05 - Successful Runner Up's": 0.9,
+                                    "LSI 06 - Upcomming Climbers": 2.0,
+                                    "LSI 07 - Struggling Climbers": 0.0,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 10.9,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 218000,
+                        "income_distribution": {
+                                    "> 4,00,000": 0.1,
+                                    "3,00,000 - 4,00,000": 12.9,
+                                    "2,50,000 - 3,00,000": 21.8,
+                                    "2,00,000 - 2,50,000": 34.6,
+                                    "1,60,000 - 2,00,000": 8.4,
+                                    "1,20,000 - 1,60,000": 8.9,
+                                    "80,000 - 1,20,000": 0.7,
+                                    "40,000 - 80,000": 2.1,
+                                    "20,000 - 40,000": 10.5,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 28.9,
+                                    "Food_FMCG": 17.4,
+                                    "Apparel": 5.7,
+                                    "Transportation": 6.1,
+                                    "Healthcare_Medical": 6.4,
+                                    "Financial_Savings": 16.1,
+                                    "Education": 7.5,
+                                    "Entertainment": 7.0,
+                                    "Others": 4.9
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 6.43,
+                                    "Male 0-9": 6.09,
+                                    "Female 10-19": 5.91,
+                                    "Male 10-19": 7.44,
+                                    "Female 20-29": 3.08,
+                                    "Male 20-29": 3.69,
+                                    "Female 30-39": 7.2,
+                                    "Male 30-39": 7.98,
+                                    "Female 40-49": 8.26,
+                                    "Male 40-49": 8.82,
+                                    "Female 50-59": 7.08,
+                                    "Male 50-59": 7.23,
+                                    "Female 60-69": 5.1,
+                                    "Male 60-69": 5.21,
+                                    "Female 70+": 5.51,
+                                    "Male 70+": 4.98
+                        }
+            },
+            "2185_13": {
+                        "outlet_id": "2185",
+                        "outlet_name": "Durga Lunch Home",
+                        "classification": "TONT",
+                        "location": "19.0265000 72.8509000",
+                        "drive_time": "8",
+                        "total_population": 244396,
+                        "total_households": 56972,
+                        "predominant_lsi": "LSI 02",
+                        "lsi_distribution": {
+                                    "LSI 01 - Established Elite": 33.2,
+                                    "LSI 02 - Affluent New Wealth": 34.4,
+                                    "LSI 03 - Aspiring Middle Class": 3.9,
+                                    "LSI 04 - Conservative Middle Class": 13.3,
+                                    "LSI 05 - Successful Runner Up's": 2.9,
+                                    "LSI 06 - Upcomming Climbers": 4.4,
+                                    "LSI 07 - Struggling Climbers": 0.4,
+                                    "LSI 08 - Trailers": 0.0,
+                                    "LSI 09 - Dependants": 7.6,
+                                    "LSI 10 - Down the Road": 0.0,
+                                    "LSI 11 - Daily Survivors": 0.0,
+                                    "LSI 12 - Under the Bridge": 0.0
+                        },
+                        "avg_monthly_income": 241000,
+                        "income_distribution": {
+                                    "> 4,00,000": 11.9,
+                                    "3,00,000 - 4,00,000": 21.4,
+                                    "2,50,000 - 3,00,000": 10.5,
+                                    "2,00,000 - 2,50,000": 18.2,
+                                    "1,60,000 - 2,00,000": 13.0,
+                                    "1,20,000 - 1,60,000": 6.9,
+                                    "80,000 - 1,20,000": 4.8,
+                                    "40,000 - 80,000": 5.9,
+                                    "20,000 - 40,000": 7.3,
+                                    "< 20,000": 0.0
+                        },
+                        "spending": {
+                                    "Housing": 29.3,
+                                    "Food_FMCG": 17.0,
+                                    "Apparel": 5.8,
+                                    "Transportation": 6.5,
+                                    "Healthcare_Medical": 6.2,
+                                    "Financial_Savings": 16.2,
+                                    "Education": 7.3,
+                                    "Entertainment": 7.1,
+                                    "Others": 4.6
+                        },
+                        "age_gender_distribution": {
+                                    "Female 0-9": 6.97,
+                                    "Male 0-9": 6.14,
+                                    "Female 10-19": 5.79,
+                                    "Male 10-19": 8.15,
+                                    "Female 20-29": 3.41,
+                                    "Male 20-29": 4.43,
+                                    "Female 30-39": 7.37,
+                                    "Male 30-39": 8.73,
+                                    "Female 40-49": 7.96,
+                                    "Male 40-49": 8.99,
+                                    "Female 50-59": 6.63,
+                                    "Male 50-59": 7.19,
+                                    "Female 60-69": 4.56,
+                                    "Male 60-69": 5.15,
+                                    "Female 70+": 4.35,
+                                    "Male 70+": 4.18
+                        }
+            }
+};
+
+        // LSI Definitions
+        const lsiDefinitions = {
+            "1 - Established Urban Elite": "Wealthy, educated families accustomed to international luxury and quality standards; global mindset with polished lifestyle, frequent travels, and premium brand consumption. Decision-makers in society with influential networks.",
+            "2 - Affluent New Wealth": "Newly arrived, status-conscious Upper Class with high-level education; ambitious and developing international outlook. Technology-savvy early adopters who value premium experiences and invest in lifestyle upgrades.",
+            "3 - Aspiring Urban Middle Class": "Aspiring Middle Class value seekers with dominant university degrees; benchmark against higher classes for lifestyle choices. Career-focused professionals seeking quality within budget and investing in children's future.",
+            "4 - Conservative Urban Middle Class": "Focus on safeguarding achievements; seek pleasant, sheltered life without risks; eager for social recognition. Traditional values with modern conveniences, prioritizing security, savings, and family welfare.",
+            "5 - Successful Urban Runners Up": "Born from lesser-educated parents but striving for higher education; ambitious for success and comfortable living. First-generation professionals breaking socioeconomic barriers through hard work and determination.",
+            "6 - Upcoming Urban Climbers": "Ambitious to ascend from skilled worker level; focus on goals but lack systematic knowledge/skills; price-conscious consumers. Seeking opportunities for advancement while managing financial constraints carefully.",
+            "7 - Struggling Urban Climbers": "Typical day workers and laborers, skilled but always seeking daily work; dominantly illiterate; family-oriented with aspirations to provide better opportunities for their children. Focus on necessities and value deals.",
+            "8 - Trailers": "Low-income households struggling to meet basic needs; dependent on informal employment; limited access to education and healthcare. Focus on day-to-day survival.",
+            "9 - Dependants": "Households relying on support from family members or government assistance; limited income sources; focus on basic necessities and community support networks.",
+            "10 - Down the Road": "Marginalized communities with minimal income; often in informal settlements; limited access to basic services. Dependent on daily wages and community support.",
+            "11 - Daily Survivors": "Extremely low-income households living day-to-day; informal sector workers; minimal education; focus on immediate survival needs.",
+            "12 - Under the Bridge": "Most vulnerable segment; homeless or near-homeless conditions; dependent on charity and informal support; struggle for daily sustenance."
+        };
+        
+        // Current store selection
+        let currentStore = '51018_1';
+        let currentData = storesData[currentStore];
+        
+        // Chart instances
+        let chartInstances = {};
+
+        // Page management
+        let currentPage = 0;
+        const totalPages = 6;
+        const pageTitles = [
+            'Catchment Demographics',
+            'Lifestyle Segments (LSI) Distribution',
+            'Household Income Distribution',
+            'Monthly Spending Categories',
+            'Age & Gender Distribution',
+            'LSI Definitions & Segments'
+        ];
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            particlesContainer.innerHTML = '';
+            const particleCount = 15;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = particle.style.height = Math.random() * 15 + 5 + 'px';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 20 + 20) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Update store function
+        function updateStore(storeId) {
+            currentStore = storeId;
+            currentData = storesData[storeId];
+            
+            // Update store info banner
+            updateStoreInfo();
+            
+            // Reset to first page
+            currentPage = 0;
+            
+            // Regenerate all content
+            generateContent();
+            initializeAllCharts();
+            updatePageIndicator();
+            
+            // Scroll to top
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Update store information banner
+        function updateStoreInfo() {
+            const data = currentData;
+            const location = data.location.split(' ');
+            const lat = parseFloat(location[0]).toFixed(4);
+            const lng = parseFloat(location[1]).toFixed(4);
+            
+            document.getElementById('outletId').textContent = data.outlet_id;
+            document.getElementById('outletName').textContent = data.outlet_name;
+            document.getElementById('outletClass').textContent = data.classification;
+            document.getElementById('outletLocation').textContent = `${lat}° N, ${lng}° E`;
+            document.getElementById('outletCatchment').textContent = `${data.drive_time} min drive`;
+        }
+
+        // Generate dynamic insights
+        function generateInsight(type, data) {
+            const insights = {
+                marketSize: function() {
+                    const pop = data.total_population;
+                    const hh = data.total_households;
+                    const avgSize = (pop / hh).toFixed(1);
+                    return `Catchment covers ${pop.toLocaleString()} residents across ${hh.toLocaleString()} households with average household size of ${avgSize} members. This represents a significant market opportunity for targeted retail and service offerings.`;
+                },
+                predominantSegment: function() {
+                    const lsi = data.predominant_lsi;
+                    const segments = Object.entries(data.lsi_distribution).sort((a, b) => b[1] - a[1]);
+                    const top3 = segments.filter(s => s[1] > 0).slice(0, 3);
+                    if (top3.length >= 3) {
+                        return `${lsi} dominates the catchment at ${top3[0][1].toFixed(1)}%, followed by ${top3[1][0].split(' - ')[1]} (${top3[1][1].toFixed(1)}%) and ${top3[2][0].split(' - ')[1]} (${top3[2][1].toFixed(1)}%). Target premium offerings for elite segments and value products for middle segments.`;
+                    } else if (top3.length === 2) {
+                        return `${lsi} dominates the catchment at ${top3[0][1].toFixed(1)}%, followed by ${top3[1][0].split(' - ')[1]} (${top3[1][1].toFixed(1)}%). Focus on tailored offerings for these primary segments.`;
+                    } else {
+                        return `${lsi} strongly dominates the catchment at ${top3[0][1].toFixed(1)}%. Focus on specialized offerings for this concentrated segment.`;
+                    }
+                },
+                incomeOpportunity: function() {
+                    const avgIncome = data.avg_monthly_income;
+                    const highIncome = data.income_distribution["> 4,00,000"] + data.income_distribution["3,00,000 - 4,00,000"];
+                    const midIncome = data.income_distribution["80,000 - 1,20,000"] + data.income_distribution["40,000 - 80,000"];
+                    return `Average household income of ₹${avgIncome.toLocaleString()}/month indicates strong purchasing power. ${highIncome.toFixed(1)}% earn >₹3L/month (premium segment) while ${midIncome.toFixed(1)}% in ₹40K-1.2L range form core volume market.`;
+                },
+                spendingPriorities: function() {
+                    const housing = data.spending.Housing;
+                    const food = data.spending.Food_FMCG;
+                    const discretionary = data.spending.Apparel + data.spending.Entertainment;
+                    return `Housing (${housing.toFixed(1)}%) and Food/FMCG (${food.toFixed(1)}%) dominate wallet share. Discretionary spending on apparel & entertainment (${discretionary.toFixed(1)}%) presents growth opportunities for lifestyle brands.`;
+                },
+                ageGenderInsight: function() {
+                    const youth = (data.age_gender_distribution["Female 0-9"] + data.age_gender_distribution["Male 0-9"] +
+                                  data.age_gender_distribution["Female 10-19"] + data.age_gender_distribution["Male 10-19"]);
+                    const working = (data.age_gender_distribution["Female 20-29"] + data.age_gender_distribution["Male 20-29"] +
+                                    data.age_gender_distribution["Female 30-39"] + data.age_gender_distribution["Male 30-39"] +
+                                    data.age_gender_distribution["Female 40-49"] + data.age_gender_distribution["Male 40-49"]);
+                    const senior = (data.age_gender_distribution["Female 50-59"] + data.age_gender_distribution["Male 50-59"] +
+                                   data.age_gender_distribution["Female 60-69"] + data.age_gender_distribution["Male 60-69"] +
+                                   data.age_gender_distribution["Female 70+"] + data.age_gender_distribution["Male 70+"]);
+                    
+                    return `Youth (0-19) comprise ${youth.toFixed(1)}% of population, Working age (20-49) represents ${working.toFixed(1)}%, and Seniors (50+) account for ${senior.toFixed(1)}%. This demographic mix indicates opportunities for diverse product offerings across age groups.`;
+                }
+            };
+            
+            return insights[type] ? insights[type]() : '';
+        }
+
+        // Format number with commas
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // Generate content based on current store
+        function generateContent() {
+            const container = document.getElementById('mainContainer');
+            const data = currentData;
+            
+            container.innerHTML = `
+                <!-- Page 1: Catchment Demographics -->
+                <div class="page-section active" id="page-0">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Catchment Overview</div>
+                                <div class="card-subtitle">Market Size & Demographics</div>
+                            </div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-info">
+                                <div class="metric-label">Total Population</div>
+                                <div class="metric-value">${(data.total_population/1000).toFixed(1)}K</div>
+                                <div class="metric-change">Within ${data.drive_time} minute drive time</div>
+                            </div>
+                            <div class="metric-icon">👥</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-info">
+                                <div class="metric-label">Total Households</div>
+                                <div class="metric-value">${(data.total_households/1000).toFixed(1)}K</div>
+                                <div class="metric-change">Average size: ${(data.total_population/data.total_households).toFixed(1)} members</div>
+                            </div>
+                            <div class="metric-icon">🏠</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-info">
+                                <div class="metric-label">Predominant LSI Segment</div>
+                                <div class="metric-value">${data.predominant_lsi}</div>
+                                <div class="metric-change">${data.lsi_distribution[Object.keys(data.lsi_distribution).find(key => key.startsWith(data.predominant_lsi.replace('LSI ', 'LSI ')))].toFixed(1)}% of catchment</div>
+                            </div>
+                            <div class="metric-icon">🎯</div>
+                        </div>
+
+                        <div class="insight-box">
+                            <div class="insight-title">Market Size Analysis</div>
+                            <div class="insight-text">${generateInsight('marketSize', data)}</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Key Economic Indicators</div>
+                        </div>
+                        
+                        <div class="stat-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">₹${(data.avg_monthly_income/1000).toFixed(0)}K</div>
+                                <div class="stat-label">Avg Monthly Income</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(data.income_distribution["> 4,00,000"] + data.income_distribution["3,00,000 - 4,00,000"]).toFixed(1)}%</div>
+                                <div class="stat-label">High Income (>3L)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${data.spending.Food_FMCG.toFixed(1)}%</div>
+                                <div class="stat-label">Food & FMCG Spend</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(data.spending.Apparel + data.spending.Entertainment).toFixed(1)}%</div>
+                                <div class="stat-label">Lifestyle Spend</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 2: LSI Distribution -->
+                <div class="page-section" id="page-1">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Lifestyle Segments Distribution</div>
+                                <div class="card-subtitle">Consumer Segmentation by LSI</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="lsiChart"></canvas>
+                        </div>
+                        <div class="insight-box">
+                            <div class="insight-title">Segment Analysis</div>
+                            <div class="insight-text">${generateInsight('predominantSegment', data)}</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Top Consumer Segments</div>
+                        </div>
+                        <div class="chart-container chart-container-small">
+                            <canvas id="lsiPieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 3: Income Distribution -->
+                <div class="page-section" id="page-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Household Income Distribution</div>
+                                <div class="card-subtitle">Monthly Income Brackets (INR)</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="incomeChart"></canvas>
+                        </div>
+                        <div class="insight-box">
+                            <div class="insight-title">Income Opportunity</div>
+                            <div class="insight-text">${generateInsight('incomeOpportunity', data)}</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Income Segments Summary</div>
+                        </div>
+                        <div class="stat-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">${data.income_distribution["> 4,00,000"].toFixed(1)}%</div>
+                                <div class="stat-label">Ultra High<br/>(>4L/month)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(data.income_distribution["2,00,000 - 2,50,000"] + data.income_distribution["2,50,000 - 3,00,000"] + data.income_distribution["3,00,000 - 4,00,000"]).toFixed(1)}%</div>
+                                <div class="stat-label">High Income<br/>(2-4L/month)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(data.income_distribution["80,000 - 1,20,000"] + data.income_distribution["1,20,000 - 1,60,000"] + data.income_distribution["1,60,000 - 2,00,000"]).toFixed(1)}%</div>
+                                <div class="stat-label">Upper Middle<br/>(80K-2L/month)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(data.income_distribution["20,000 - 40,000"] + data.income_distribution["40,000 - 80,000"]).toFixed(1)}%</div>
+                                <div class="stat-label">Middle Income<br/>(20-80K/month)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 4: Spending Categories -->
+                <div class="page-section" id="page-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Monthly Spending Distribution</div>
+                                <div class="card-subtitle">Household Expenditure Categories (%)</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="spendingChart"></canvas>
+                        </div>
+                        <div class="insight-box">
+                            <div class="insight-title">Spending Priorities</div>
+                            <div class="insight-text">${generateInsight('spendingPriorities', data)}</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Spending Categories Breakdown</div>
+                        </div>
+                        <div class="chart-container chart-container-small">
+                            <canvas id="spendingDonutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 5: Age & Gender Distribution -->
+                <div class="page-section" id="page-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Age & Gender Distribution</div>
+                                <div class="card-subtitle">Population Demographics by Age Groups and Gender</div>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <canvas id="ageGenderChart"></canvas>
+                        </div>
+                        
+                        <div class="insight-box">
+                            <div class="insight-title">Demographic Analysis</div>
+                            <div class="insight-text">${generateInsight('ageGenderInsight', data)}</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Age Group Summary</div>
+                        </div>
+                        <div class="stat-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">${(data.age_gender_distribution["Female 0-9"] + data.age_gender_distribution["Male 0-9"] + data.age_gender_distribution["Female 10-19"] + data.age_gender_distribution["Male 10-19"]).toFixed(1)}%</div>
+                                <div class="stat-label">Youth<br/>(0-19 years)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(data.age_gender_distribution["Female 20-29"] + data.age_gender_distribution["Male 20-29"] + data.age_gender_distribution["Female 30-39"] + data.age_gender_distribution["Male 30-39"]).toFixed(1)}%</div>
+                                <div class="stat-label">Young Adults<br/>(20-39 years)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(data.age_gender_distribution["Female 40-49"] + data.age_gender_distribution["Male 40-49"] + data.age_gender_distribution["Female 50-59"] + data.age_gender_distribution["Male 50-59"]).toFixed(1)}%</div>
+                                <div class="stat-label">Middle Age<br/>(40-59 years)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(data.age_gender_distribution["Female 60-69"] + data.age_gender_distribution["Male 60-69"] + data.age_gender_distribution["Female 70+"] + data.age_gender_distribution["Male 70+"]).toFixed(1)}%</div>
+                                <div class="stat-label">Seniors<br/>(60+ years)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 6: LSI Definitions -->
+                <div class="page-section" id="page-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">LSI Segment Definitions</div>
+                                <div class="card-subtitle">Urban Consumer Lifestyle Classifications</div>
+                            </div>
+                        </div>
+                        
+                        ${Object.entries(lsiDefinitions).map(([key, value]) => `
+                            <div class="lsi-definition-card">
+                                <div class="lsi-definition-title">LSI ${key}</div>
+                                <div class="lsi-definition-text">${value}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function changePage(direction) {
+            document.getElementById(`page-${currentPage}`).classList.remove('active');
+            currentPage = Math.max(0, Math.min(totalPages - 1, currentPage + direction));
+            document.getElementById(`page-${currentPage}`).classList.add('active');
+            updatePageIndicator();
+            
+            // Scroll to top of the page smoothly
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function goToPage(pageNum) {
+            document.getElementById(`page-${currentPage}`).classList.remove('active');
+            currentPage = pageNum;
+            document.getElementById(`page-${currentPage}`).classList.add('active');
+            updatePageIndicator();
+            
+            // Scroll to top of the page smoothly
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function updatePageIndicator() {
+            document.getElementById('pageTitle').textContent = pageTitles[currentPage];
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentPage);
+            });
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+        }
+
+        // Register the plugin - Check if ChartDataLabels is available
+        if (typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+        }
+
+        // Set chart defaults for enhanced contrast
+        Chart.defaults.color = 'rgba(33, 33, 33, 0.9)';
+        Chart.defaults.borderColor = 'rgba(46, 125, 50, 0.15)';
+        
+        // Only set datalabels defaults if the plugin is available
+        if (typeof ChartDataLabels !== 'undefined') {
+            Chart.defaults.plugins.datalabels.display = true;
+        }
+        
+        Chart.defaults.elements.bar.borderRadius = 8;
+        Chart.defaults.elements.bar.borderSkipped = false;
+
+        function initializeAllCharts() {
+            const data = currentData;
+            
+            // Destroy existing charts
+            Object.values(chartInstances).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            chartInstances = {};
+            
+            // Define enhanced green color palette with better contrast
+            const monochromeColors = {
+                primary: 'rgba(46, 125, 50, 0.9)',
+                secondary: 'rgba(76, 175, 80, 0.8)',
+                light: 'rgba(129, 199, 132, 0.7)',
+                lighter: 'rgba(165, 214, 167, 0.6)',
+                lightest: 'rgba(200, 230, 201, 0.5)',
+                border: 'rgba(46, 125, 50, 0.9)',
+                glow: 'rgba(102, 187, 106, 0.4)'
+            };
+
+            // Generate gradient shades of green with better contrast
+            function getGreenShades(count) {
+                const shades = [];
+                for (let i = 0; i < count; i++) {
+                    const opacity = 0.9 - (i * 0.4 / count);
+                    shades.push(`rgba(46, 125, 50, ${Math.max(0.5, opacity)})`);
+                }
+                return shades;
+            }
+
+            // 1. LSI Distribution Chart - FIXED SECTION
+            const lsiCtx = document.getElementById('lsiChart');
+            if (lsiCtx) {
+                const lsiLabels = Object.keys(data.lsi_distribution).map(label => {
+                    const parts = label.split(' - ');
+                    return parts.length > 1 ? parts[1] : label;
+                });
+
+                chartInstances.lsi = new Chart(lsiCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: lsiLabels,
+                        datasets: [{
+                            label: 'Population %',
+                            data: Object.values(data.lsi_distribution),
+                            backgroundColor: getGreenShades(12),  // FIXED: Was incomplete as getG
+                            borderColor: monochromeColors.border,
+                            borderWidth: 1,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'right',
+                                font: { size: 11, weight: '700' },
+                                formatter: (value) => value > 0 ? value.toFixed(1) + '%' : '',
+                                color: '#0D4F0D',
+                                offset: 8
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                beginAtZero: true,
+                                max: Math.ceil(Math.max(...Object.values(data.lsi_distribution)) / 5) * 5,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.1)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: '#212121',
+                                    font: { size: 10, weight: '600' }
+                                }
+                            },
+                            y: { 
+                                ticks: { 
+                                    font: { size: 10, weight: '600' },
+                                    color: '#212121'
+                                },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. LSI Pie Chart
+            const lsiPieCtx = document.getElementById('lsiPieChart');
+            if (lsiPieCtx) {
+                const topLSI = Object.entries(data.lsi_distribution)
+                    .filter(([, value]) => value > 0)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+
+                chartInstances.lsiPie = new Chart(lsiPieCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: topLSI.map(([label]) => {
+                            const parts = label.split(' - ');
+                            return parts.length > 1 ? parts[1] : label;
+                        }),
+                        datasets: [{
+                            data: topLSI.map(([, value]) => value),
+                            backgroundColor: getGreenShades(topLSI.length),
+                            borderColor: monochromeColors.border,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: { size: 11, weight: '600' },
+                                    color: '#212121'
+                                }
+                            },
+                            datalabels: {
+                                color: '#ffffff',
+                                font: { size: 10, weight: '700' },
+                                formatter: (value) => value.toFixed(1) + '%'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 3. Income Distribution Chart
+            const incomeCtx = document.getElementById('incomeChart');
+            if (incomeCtx) {
+                chartInstances.income = new Chart(incomeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.income_distribution),
+                        datasets: [{
+                            label: 'Households %',
+                            data: Object.values(data.income_distribution),
+                            backgroundColor: getGreenShades(10),
+                            borderColor: monochromeColors.border,
+                            borderWidth: 1,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 10, weight: '700' },
+                                formatter: (value) => value > 0 ? value.toFixed(1) + '%' : '',
+                                color: '#0D4F0D',
+                                offset: 4
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                ticks: { 
+                                    maxRotation: 45,
+                                    font: { size: 9, weight: '600' },
+                                    color: '#212121'
+                                },
+                                grid: { display: false }
+                            },
+                            y: { 
+                                beginAtZero: true,
+                                max: Math.ceil(Math.max(...Object.values(data.income_distribution)) / 5) * 5,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.1)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: '#212121',
+                                    font: { size: 10, weight: '600' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 4. Spending Chart
+            const spendingCtx = document.getElementById('spendingChart');
+            if (spendingCtx) {
+                chartInstances.spending = new Chart(spendingCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(data.spending).map(key => key.replace('_', ' & ')),
+                        datasets: [{
+                            label: 'Spending %',
+                            data: Object.values(data.spending),
+                            backgroundColor: getGreenShades(9),
+                            borderColor: monochromeColors.border,
+                            borderWidth: 1,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 11, weight: '700' },
+                                formatter: (value) => value.toFixed(1) + '%',
+                                color: '#0D4F0D',
+                                offset: 4
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                ticks: { 
+                                    maxRotation: 45,
+                                    font: { size: 10, weight: '600' },
+                                    color: '#212121'
+                                },
+                                grid: { display: false }
+                            },
+                            y: { 
+                                beginAtZero: true,
+                                max: 35,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.1)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: '#212121',
+                                    font: { size: 10, weight: '600' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 5. Spending Donut Chart
+            const spendingDonutCtx = document.getElementById('spendingDonutChart');
+            if (spendingDonutCtx) {
+                chartInstances.spendingDonut = new Chart(spendingDonutCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(data.spending).map(key => key.replace('_', ' & ')),
+                        datasets: [{
+                            data: Object.values(data.spending),
+                            backgroundColor: getGreenShades(9),
+                            borderColor: monochromeColors.border,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15,
+                                    font: { size: 10, weight: '600' },
+                                    color: '#212121'
+                                }
+                            },
+                            datalabels: {
+                                color: '#ffffff',
+                                font: { size: 9, weight: '700' },
+                                formatter: (value) => value.toFixed(1) + '%'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 6. Age & Gender Chart
+            const ageGenderCtx = document.getElementById('ageGenderChart');
+            if (ageGenderCtx) {
+                // Process age-gender data for grouped bar chart
+                const ageGroups = ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70+'];
+                const femaleData = ageGroups.map(group => data.age_gender_distribution[`Female ${group}`] || 0);
+                const maleData = ageGroups.map(group => data.age_gender_distribution[`Male ${group}`] || 0);
+
+                chartInstances.ageGender = new Chart(ageGenderCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ageGroups,
+                        datasets: [{
+                            label: 'Female',
+                            data: femaleData,
+                            backgroundColor: 'rgba(76, 175, 80, 0.8)',
+                            borderColor: 'rgba(46, 125, 50, 0.9)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }, {
+                            label: 'Male',
+                            data: maleData,
+                            backgroundColor: 'rgba(129, 199, 132, 0.8)',
+                            borderColor: 'rgba(46, 125, 50, 0.9)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: { size: 12, weight: '600' },
+                                    color: '#212121'
+                                }
+                            },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 9, weight: '700' },
+                                formatter: (value) => value > 0 ? value.toFixed(1) + '%' : '',
+                                color: '#0D4F0D',
+                                offset: 2
+                            }
+                        },
+                        scales: {
+                            x: { 
+                                ticks: { 
+                                    font: { size: 11, weight: '600' },
+                                    color: '#212121'
+                                },
+                                grid: { display: false }
+                            },
+                            y: { 
+                                beginAtZero: true,
+                                max: Math.ceil(Math.max(...femaleData.concat(maleData)) / 2) * 2,
+                                grid: { 
+                                    color: 'rgba(46, 125, 50, 0.1)',
+                                    lineWidth: 1
+                                },
+                                ticks: { 
+                                    callback: value => value + '%',
+                                    color: '#212121',
+                                    font: { size: 10, weight: '600' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize everything when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            updateStoreInfo();
+            generateContent();
+            initializeAllCharts();
+            updatePageIndicator();
+            
+            // Set initial store selector value
+            document.getElementById('storeSelector').value = currentStore;
+        });
+
+        // Handle window resize for responsive charts
+        window.addEventListener('resize', function() {
+            Object.values(chartInstances).forEach(chart => {
+                if (chart) chart.resize();
+            });
+        });
+
+    </script>
+</body>
+</html>
