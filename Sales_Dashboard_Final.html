@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Store Sales Performance Dashboard</title>
+    
+    <!-- Chart.js v4 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated gradient background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(46, 125, 50, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(102, 187, 106, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(76, 175, 80, 0.01) 0%, transparent 50%),
+                linear-gradient(180deg, #fafffe 0%, #f0f8f1 100%);
+            animation: backgroundShift 20s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(46, 125, 50, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.2;
+            }
+            90% {
+                opacity: 0.2;
+            }
+            to {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Glassmorphic header */
+        .header {
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.95) 0%, rgba(76, 175, 80, 0.85) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: white;
+            padding: 20px 24px;
+            box-shadow: 
+                0 8px 32px rgba(46, 125, 50, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2),
+                inset 0 -1px 0 rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 400;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Store Selector Dropdown */
+        .store-selector {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #ffffff;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 4px 15px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            outline: none;
+            min-width: 400px;
+        }
+
+        .store-selector:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(46, 125, 50, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .store-selector option {
+            background: #2E7D32;
+            color: white;
+            padding: 5px;
+        }
+
+        /* Store Info Banner */
+        .store-info {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 248, 241, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            padding: 20px 24px;
+            box-shadow: 
+                0 4px 20px rgba(46, 125, 50, 0.15),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+        }
+
+        .store-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .store-detail-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #757575;
+            font-weight: 600;
+        }
+
+        .store-detail-value {
+            font-size: 16px;
+            color: #1B5E20;
+            font-weight: 600;
+        }
+
+        /* Brand Selector for Brand Performance */
+        .brand-selector {
+            background: rgba(255,255,255,0.95);
+            border: 2px solid rgba(46, 125, 50, 0.3);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1B5E20;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            outline: none;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .brand-selector:hover {
+            border-color: rgba(76, 175, 80, 0.5);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+        }
+
+        .brand-selector option {
+            padding: 8px;
+            background: white;
+            color: #1B5E20;
+        }
+
+        /* Page Indicator */
+        .page-indicator {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            padding: 16px 24px;
+            box-shadow: 
+                0 4px 20px rgba(46, 125, 50, 0.15),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 15px;
+            font-weight: 500;
+            color: #1B5E20;
+            position: relative;
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+            overflow: hidden;
+        }
+
+        .page-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(46, 125, 50, 0.05), transparent);
+            animation: sweep 8s infinite;
+        }
+
+        @keyframes sweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .page-dots {
+            display: flex;
+            gap: 12px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(46, 125, 50, 0.3);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+        }
+
+        .dot::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .dot:hover::after {
+            background: radial-gradient(circle, transparent 40%, rgba(46, 125, 50, 0.2) 100%);
+        }
+
+        .dot:hover {
+            transform: scale(1.3);
+            background: rgba(76, 175, 80, 0.6);
+            border-color: rgba(46, 125, 50, 0.4);
+            box-shadow: 0 0 20px rgba(46, 125, 50, 0.4);
+        }
+
+        .dot.active {
+            background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+            width: 36px;
+            border-radius: 20px;
+            box-shadow: 
+                0 0 25px rgba(46, 125, 50, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.5);
+            border-color: rgba(102, 187, 106, 0.4);
+        }
+
+        /* Container */
+        .container {
+            padding: 30px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Glassmorphic Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(46, 125, 50, 0.2);
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 
+                0 8px 32px rgba(46, 125, 50, 0.12),
+                0 2px 8px rgba(0,0,0,0.06),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+            position: relative;
+            transform: translateZ(0);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4CAF50, transparent);
+            animation: cardSweep 3s infinite;
+        }
+
+        @keyframes cardSweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 50px rgba(46, 125, 50, 0.18),
+                0 10px 20px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,1);
+            border-color: rgba(76, 175, 80, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .card-title {
+            color: #0D4F0D;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            position: relative;
+            padding-bottom: 8px;
+        }
+
+        .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #2E7D32, transparent);
+            animation: expandLine 2s ease-in-out infinite;
+        }
+
+        @keyframes expandLine {
+            0%, 100% { width: 50px; }
+            50% { width: 100px; }
+        }
+
+        .card-subtitle {
+            color: #2E7D32;
+            font-size: 14px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* Neumorphic Metrics */
+        .metric-box {
+            background: linear-gradient(145deg, #ffffff, #f5faf6);
+            border: 1px solid rgba(46, 125, 50, 0.15);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 
+                8px 8px 20px rgba(46, 125, 50, 0.1),
+                -8px -8px 20px rgba(255, 255, 255, 0.9),
+                inset 1px 1px 2px rgba(46, 125, 50, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(46, 125, 50, 0.08) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .metric-box:hover::before {
+            opacity: 1;
+        }
+
+        .metric-box:hover {
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 
+                12px 12px 30px rgba(46, 125, 50, 0.15),
+                -8px -8px 25px rgba(255, 255, 255, 1),
+                inset 2px 2px 4px rgba(46, 125, 50, 0.1);
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .metric-info {
+            flex: 1;
+            z-index: 1;
+        }
+
+        .metric-label {
+            color: #424242;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            color: #1B5E20;
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1;
+            text-shadow: 
+                2px 2px 4px rgba(46, 125, 50, 0.15);
+            letter-spacing: -1px;
+        }
+
+        .metric-change {
+            color: #2E7D32;
+            font-size: 13px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .metric-change.positive {
+            color: #2E7D32;
+        }
+
+        .metric-change.negative {
+            color: #D32F2F;
+        }
+
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(145deg, #C8E6C9, #A5D6A7);
+            border: 1px solid rgba(46, 125, 50, 0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 
+                4px 4px 10px rgba(46, 125, 50, 0.15),
+                -4px -4px 10px rgba(255, 255, 255, 0.9),
+                inset 1px 1px 2px rgba(255,255,255,0.5);
+            transition: all 0.4s ease;
+            z-index: 1;
+        }
+
+        .metric-box:hover .metric-icon {
+            transform: rotate(10deg) scale(1.1);
+            box-shadow: 
+                6px 6px 15px rgba(46, 125, 50, 0.2),
+                -4px -4px 12px rgba(255, 255, 255, 1);
+        }
+
+        /* Stat Grid */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .stat-item {
+            background: linear-gradient(145deg, #fafffe, #ebf7ec);
+            border: 1px solid rgba(46, 125, 50, 0.18);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 
+                6px 6px 15px rgba(46, 125, 50, 0.1),
+                -6px -6px 15px rgba(255, 255, 255, 0.95),
+                inset 1px 1px 3px rgba(46, 125, 50, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle, rgba(102, 187, 106, 0.15) 0%, transparent 40%);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .stat-item:hover::before {
+            top: -150%;
+            left: -150%;
+            opacity: 1;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-6px) scale(1.05) rotate(1deg);
+            box-shadow: 
+                10px 10px 25px rgba(46, 125, 50, 0.15),
+                -6px -6px 20px rgba(255, 255, 255, 1),
+                0 0 30px rgba(46, 125, 50, 0.1);
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1B5E20;
+            margin-bottom: 6px;
+            text-shadow: 
+                2px 2px 4px rgba(46, 125, 50, 0.15);
+            letter-spacing: -0.5px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #424242;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 600;
+        }
+
+        /* Chart Container with glow */
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin: 24px 0;
+            padding: 20px;
+            background: linear-gradient(145deg, #ffffff, #fafffe);
+            border: 1px solid rgba(46, 125, 50, 0.15);
+            border-radius: 20px;
+            box-shadow: 
+                inset 4px 4px 10px rgba(46, 125, 50, 0.08),
+                inset -4px -4px 10px rgba(255, 255, 255, 0.9);
+            overflow: hidden;
+        }
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, transparent 30%, rgba(46, 125, 50, 0.03) 100%);
+            pointer-events: none;
+        }
+
+        .chart-container-small {
+            height: 280px;
+        }
+
+        /* Insight Box */
+        .insight-box {
+            background: linear-gradient(135deg, rgba(232, 245, 233, 0.95) 0%, rgba(200, 230, 201, 0.7) 100%);
+            border-left: 4px solid #2E7D32;
+            border-right: 1px solid rgba(46, 125, 50, 0.2);
+            border-top: 1px solid rgba(46, 125, 50, 0.2);
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+            padding: 18px;
+            border-radius: 16px;
+            margin: 20px 0;
+            box-shadow: 
+                6px 6px 20px rgba(46, 125, 50, 0.1),
+                -6px -6px 20px rgba(255, 255, 255, 0.9),
+                inset 1px 1px 3px rgba(76, 175, 80, 0.08);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .insight-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent, #4CAF50, transparent);
+            animation: insightPulse 2s ease infinite;
+        }
+
+        @keyframes insightPulse {
+            0%, 100% { opacity: 1; transform: scaleY(1); }
+            50% { opacity: 0.6; transform: scaleY(0.95); }
+        }
+
+        .insight-box:hover {
+            transform: translateX(4px);
+            box-shadow: 
+                8px 8px 25px rgba(46, 125, 50, 0.12),
+                -6px -6px 25px rgba(255, 255, 255, 1),
+                inset 2px 2px 5px rgba(76, 175, 80, 0.1);
+            border-left-width: 5px;
+        }
+
+        .insight-title {
+            color: #1B5E20;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+        }
+
+        .insight-text {
+            color: #212121;
+            font-size: 14px;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+            font-weight: 500;
+        }
+
+        /* Page sections */
+        .page-section {
+            display: none;
+            animation: pageSlide 0.6s ease;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes pageSlide {
+            from {
+                opacity: 0;
+                transform: translateX(40px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 40px 0 20px;
+            position: relative;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, rgba(46, 125, 50, 0.95) 0%, rgba(76, 175, 80, 0.8) 100%);
+            color: white;
+            border: 1px solid rgba(102, 187, 106, 0.4);
+            padding: 14px 32px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 6px 20px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2),
+                inset 0 -1px 0 rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .nav-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 
+                0 10px 30px rgba(46, 125, 50, 0.5),
+                0 5px 15px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            border-color: rgba(129, 199, 132, 0.6);
+            text-shadow: 0 0 10px rgba(255,255,255,0.6);
+        }
+
+        .nav-btn:active {
+            transform: translateY(-2px) scale(1.03);
+        }
+
+        .nav-btn:disabled {
+            background: linear-gradient(135deg, rgba(60, 60, 60, 0.5) 0%, rgba(80, 80, 80, 0.4) 100%);
+            cursor: not-allowed;
+            opacity: 0.5;
+            box-shadow: none;
+            border-color: rgba(100, 100, 100, 0.3);
+        }
+
+        /* Footer */
+        .footer-credits {
+            background: linear-gradient(180deg, rgba(250, 252, 251, 0.98) 0%, rgba(240, 248, 241, 1) 100%);
+            border-top: 1px solid rgba(46, 125, 50, 0.1);
+            padding: 12px 20px;
+            text-align: center;
+            position: relative;
+            margin-top: 40px;
+            overflow: hidden;
+        }
+
+        .footer-credits::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #66BB6A, transparent);
+            animation: footerGlow 3s ease infinite;
+        }
+
+        @keyframes footerGlow {
+            0%, 100% { opacity: 0.3; transform: scaleX(0.5); }
+            50% { opacity: 0.6; transform: scaleX(1); }
+        }
+
+        .footer-line {
+            color: #757575;
+            font-size: 10px;
+            letter-spacing: 0.8px;
+        }
+
+        .footer-line .brand {
+            color: #558B2F;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 18px;
+                letter-spacing: 1px;
+            }
+
+            .store-selector {
+                min-width: 200px;
+                font-size: 13px;
+                padding: 6px 12px;
+            }
+
+            .stat-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+
+        @media (max-width: 380px) {
+            .metric-value {
+                font-size: 26px;
+            }
+            
+            .stat-value {
+                font-size: 22px;
+            }
+
+            .chart-container {
+                height: 260px;
+            }
+
+            .header h1 {
+                font-size: 16px;
+                letter-spacing: 0.8px;
+            }
+
+            .nav-btn {
+                padding: 12px 24px;
+                font-size: 12px;
+            }
+
+            .store-selector {
+                min-width: 150px;
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+        }
+
+        /* Chart glow effect */
+        canvas {
+            filter: drop-shadow(0 4px 15px rgba(46, 125, 50, 0.15));
+            border-radius: 10px;
+        }
+
+        /* Loading animation for charts */
+        @keyframes chartLoad {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .chart-container canvas {
+            animation: chartLoad 1s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating particles effect -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>Store Sales Performance</h1>
+            <select class="store-selector" id="storeSelector" onchange="updateStoreView(this.value)">
+                <option value="53783">Taj Mahal (53783)</option>
+                <option value="51018">Smoke House Deli (51018)</option>
+                <option value="4379">World of Wines (4379)</option>
+                <option value="6065">Pankaj Wines (6065)</option>
+                <option value="1533">Central Lunch Home (1533)</option>
+                <option value="69334">Seven 11 (69334)</option>
+                <option value="70112">Bastian (70112)</option>
+                <option value="28509">Social (28509)</option>
+                <option value="10008">Warden Wines - Liquor Mart Round (10008)</option>
+                <option value="10010">Warden Wine Mart GJ (10010)</option>
+                <option value="26406">Mahabaleshwar Lunch Home (26406)</option>
+                <option value="5084">Modern Wines (5084)</option>
+                <option value="1270">Bombay Wines (1270)</option>
+                <option value="2185">Durga Lunch Home (2185)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Store Information Banner -->
+    <div class="store-info" id="storeInfo">
+        <div class="store-detail">
+            <span class="store-detail-label">Store ID</span>
+            <span class="store-detail-value" id="storeId">53783</span>
+        </div>
+        <div class="store-detail">
+            <span class="store-detail-label">Store Name</span>
+            <span class="store-detail-value" id="storeName">Taj Mahal</span>
+        </div>
+        <div class="store-detail">
+            <span class="store-detail-label">YTD Volume</span>
+            <span class="store-detail-value" id="storeVolume">11,911 L</span>
+        </div>
+        <div class="store-detail">
+            <span class="store-detail-label">YTD Growth</span>
+            <span class="store-detail-value" id="storeGrowth">+8.3%</span>
+        </div>
+        <div class="store-detail">
+            <span class="store-detail-label">Active Brands</span>
+            <span class="store-detail-value" id="storeBrands">7</span>
+        </div>
+    </div>
+
+    <!-- Page Indicator -->
+    <div class="page-indicator">
+        <span id="pageTitle">Performance Overview</span>
+        <div class="page-dots">
+            <span class="dot active" data-page="0" onclick="goToPage(0)"></span>
+            <span class="dot" data-page="1" onclick="goToPage(1)"></span>
+            <span class="dot" data-page="2" onclick="goToPage(2)"></span>
+            <span class="dot" data-page="3" onclick="goToPage(3)"></span>
+            <span class="dot" data-page="4" onclick="goToPage(4)"></span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container" id="mainContainer">
+        <!-- Content will be dynamically generated -->
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn" onclick="changePage(-1)">← Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-credits">
+        <div class="footer-line">
+            <span class="brand">KENTRIX</span> © 2024 • Sales Performance Analytics Platform
+        </div>
+    </footer>
+
+    <script>
+        // CORRECTED sales performance data from Excel
+        const salesData = {
+            volumeTrend: {
+                "53783": { name: "Taj Mahal", volumes: [1807, 2819, 2301, 2055, 1329, 1429, 1146, 1025], ytdGrowth: 8.3 },
+                "51018": { name: "Smoke House Deli", volumes: [126, 174, 174, 197, 95, 71, 214, 134], ytdGrowth: 29.4 },
+                "4379": { name: "World of Wines", volumes: [1261, 2137, 1581, 2071, 1629, 1485, 1673, 1650], ytdGrowth: 16.2 },
+                "6065": { name: "Pankaj Wines", volumes: [6022, 8013, 10515, 11137, 9545, 7417, 8452, 9387], ytdGrowth: 2.6 },
+                "1533": { name: "Central Lunch Home", volumes: [539, 286, 488, 857, 235, 629, 656, 548], ytdGrowth: 1.6 },
+                "69334": { name: "Seven 11", volumes: [320, 278, 662, 209, 328, 324, 395, 497], ytdGrowth: 53.9 },
+                "70112": { name: "Bastian", volumes: [594, 736, 689, 752, 760, 736, 950, 205], ytdGrowth: -21.7 },
+                "28509": { name: "Social", volumes: [984, 949, 2520, 1292, 2017, 2200, 332, 1720], ytdGrowth: 65.6 },
+                "10008": { name: "Warden Wines - Liquor Mart (Round)", volumes: [3875, 3324, 4215, 4848, 3489, 4663, 3980, 4178], ytdGrowth: 0.6 },
+                "10010": { name: "Warden Wine Mart (GJ)", volumes: [2207, 3383, 3580, 3442, 3299, 3384, 2786, 3172], ytdGrowth: 11.1 },
+                "26406": { name: "Mahabaleshwar Lunch Home", volumes: [101, 244, 93, 0, 0, 0, 0, 0], ytdGrowth: -68.9 },
+                "5084": { name: "Modern Wines", volumes: [2359, 2629, 3397, 3206, 3574, 3890, 3376, 3410], ytdGrowth: 23.1 },
+                "1270": { name: "Bombay Wines", volumes: [7140, 8715, 9138, 9776, 8337, 7922, 8141, 7156], ytdGrowth: 29.6 },
+                "2185": { name: "Durga Lunch Home", volumes: [679, 274, 417, 916, 515, 951, 435, 407], ytdGrowth: 87.2 }
+            },
+            volumeGrowth: {
+                "53783": [27.6, 33.1, 36.5, 28.1, 38.7, 41.6, 60.2, 44.9],
+                "51018": [50.0, 72.7, 63.6, 80.0, 75.0, 66.7, 85.2, 94.1],
+                "4379": [80.8, 70.2, 74.8, 75.4, 77.8, 78.9, 76.2, 76.6],
+                "6065": [2.6, 2.8, 4.9, 5.9, 5.3, 5.7, 4.1, 4.1],
+                "1533": [17.4, 24.5, 20.1, 10.5, 9.9, 8.7, 23.7, 7.1],
+                "69334": [33.3, 15.7, 33.1, 11.2, 18.1, 32.9, 16.1, 15.9],
+                "70112": [100.0, 87.1, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0],
+                "28509": [82.8, 76.1, 81.7, 78.2, 86.0, 72.7, 100.0, 77.2],
+                "10008": [19.9, 18.5, 17.0, 13.8, 17.5, 13.9, 17.7, 18.4],
+                "10010": [26.0, 33.9, 35.5, 23.5, 31.5, 28.0, 28.2, 24.5],
+                "26406": [23.1, 18.3, 0.0, 0, 0, 0, 0, 0],
+                "5084": [5.2, 7.5, 3.1, 5.5, 3.6, 2.2, 2.8, 3.5],
+                "1270": [27.1, 23.0, 23.3, 20.1, 19.1, 23.4, 16.8, 14.0],
+                "2185": [87.4, 65.8, 44.9, 56.4, 80.6, 73.7, 75.2, 59.4]
+            },
+            // CORRECTED Premium Mix data - calculated from brand volumes
+            premiumMix: {
+                "53783": { name: "Taj Mahal", mix: [27.6, 33.1, 36.5, 28.1, 38.7, 41.6, 60.2, 44.9] },
+                "51018": { name: "Smoke House Deli", mix: [50.0, 72.7, 63.6, 80.0, 75.0, 66.7, 77.8, 94.1] },
+                "4379": { name: "World of Wines", mix: [80.8, 70.2, 74.8, 75.4, 77.8, 78.9, 76.2, 76.6] },
+                "6065": { name: "Pankaj Wines", mix: [2.6, 2.8, 4.9, 5.9, 5.3, 5.7, 4.1, 4.1] },
+                "1533": { name: "Central Lunch Home", mix: [17.4, 24.5, 20.1, 10.5, 9.9, 8.7, 23.7, 7.1] },
+                "69334": { name: "Seven 11", mix: [33.3, 15.7, 33.1, 11.2, 18.1, 32.9, 16.1, 15.9] },
+                "70112": { name: "Bastian", mix: [100.0, 87.1, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0] },
+                "28509": { name: "Social", mix: [82.8, 76.1, 81.7, 78.2, 86.0, 72.7, 95.2, 76.3] },
+                "10008": { name: "Warden Wines - Liquor Mart (Round)", mix: [19.9, 18.5, 17.0, 13.8, 17.5, 13.9, 17.7, 18.4] },
+                "10010": { name: "Warden Wine Mart (GJ)", mix: [26.0, 33.9, 35.5, 23.5, 31.5, 28.0, 28.2, 24.5] },
+                "26406": { name: "Mahabaleshwar Lunch Home", mix: [23.1, 18.3, 0.0, 0, 0, 0, 0, 0] },
+                "5084": { name: "Modern Wines", mix: [5.2, 7.5, 3.1, 5.5, 3.6, 2.2, 2.8, 3.5] },
+                "1270": { name: "Bombay Wines", mix: [26.7, 23.0, 23.3, 20.1, 19.1, 23.4, 16.8, 14.0] },
+                "2185": { name: "Durga Lunch Home", mix: [87.4, 65.8, 44.9, 56.4, 71.4, 73.7, 75.2, 59.4] }
+            },
+            storeRange: {
+                "53783": { name: "Taj Mahal", range: [4, 4, 8, 4, 4, 5, 6, 7], q1: 5, q2: 4, delta: -1 },
+                "51018": { name: "Smoke House Deli", range: [3, 5, 5, 6, 3, 3, 7, 5], q1: 4, q2: 4, delta: 0 },
+                "4379": { name: "World of Wines", range: [13, 14, 14, 12, 12, 13, 13, 12], q1: 14, q2: 12, delta: -1 },
+                "6065": { name: "Pankaj Wines", range: [15, 19, 24, 17, 20, 17, 17, 20], q1: 19, q2: 18, delta: -1 },
+                "1533": { name: "Central Lunch Home", range: [7, 7, 9, 9, 5, 7, 9, 7], q1: 8, q2: 7, delta: 0 },
+                "69334": { name: "Seven 11", range: [13, 9, 15, 9, 12, 14, 12, 15], q1: 12, q2: 11, delta: 0 },
+                "70112": { name: "Bastian", range: [2, 5, 3, 4, 4, 3, 3, 4], q1: 3, q2: 3, delta: 0 },
+                "28509": { name: "Social", range: [9, 9, 10, 10, 9, 10, 4, 11], q1: 9, q2: 9, delta: 0 },
+                "10008": { name: "Warden Wines - Liquor Mart (Round)", range: [19, 22, 20, 19, 19, 17, 18, 18], q1: 20, q2: 18, delta: -2 },
+                "10010": { name: "Warden Wine Mart (GJ)", range: [14, 16, 16, 13, 16, 16, 15, 19], q1: 15, q2: 15, delta: 0 },
+                "26406": { name: "Mahabaleshwar Lunch Home", range: [3, 9, 2, 0, 0, 0, 0, 0], q1: 5, q2: 0, delta: -4 },
+                "5084": { name: "Modern Wines", range: [15, 17, 13, 14, 15, 16, 14, 15], q1: 15, q2: 15, delta: 0 },
+                "1270": { name: "Bombay Wines", range: [25, 23, 23, 23, 22, 23, 24, 22], q1: 24, q2: 22, delta: -1 },
+                "2185": { name: "Durga Lunch Home", range: [8, 7, 5, 8, 7, 4, 4, 5], q1: 7, q2: 6, delta: 0 }
+            },
+            brandVolumes: {
+                "KINGFISHER STRONG": {
+                    "1270": [1028, 1230, 1122, 1520, 1248, 1216, 1774, 1772],
+                    "1533": [219, 200, 195, 497, 165, 309, 310, 294],
+                    "4379": [31, 35, 79, 0, 31, 31, 23, 23],
+                    "5084": [688, 713, 1249, 987, 1153, 1578, 987, 1266],
+                    "6065": [2049, 2875, 3575, 3477, 3363, 2751, 3321, 2411],
+                    "10008": [1236, 1111, 1580, 1864, 1165, 1899, 1586, 1392],
+                    "10010": [1256, 1642, 1914, 2134, 1711, 1993, 1584, 1675],
+                    "26406": [39, 94, 55, 0, 0, 0, 0, 0],
+                    "69334": [115, 123, 151, 59, 95, 91, 123, 126]
+                },
+                "KINGFISHER LAGER": {
+                    "1270": [1247, 1429, 1897, 1667, 1561, 1413, 1412, 1230],
+                    "1533": [164, 16, 156, 114, 23, 180, 129, 114],
+                    "2185": [86, 94, 230, 400, 100, 250, 108, 166],
+                    "4379": [211, 602, 319, 510, 331, 283, 374, 363],
+                    "5084": [220, 253, 339, 393, 262, 339, 275, 221],
+                    "6065": [518, 1024, 1178, 1290, 1039, 549, 1000, 969],
+                    "10008": [810, 593, 804, 875, 548, 875, 425, 732],
+                    "10010": [377, 595, 396, 500, 548, 445, 417, 507],
+                    "26406": [39, 106, 39, 0, 0, 0, 0, 0],
+                    "28509": [169, 227, 292, 282, 282, 601, 0, 393],
+                    "51018": [63, 48, 63, 40, 24, 24, 32, 8],
+                    "53783": [1309, 1885, 1450, 1477, 815, 836, 456, 566],
+                    "69334": [40, 24, 79, 40, 28, 47, 55, 63],
+                    "70112": [0, 95, 0, 0, 0, 0, 0, 0]
+                },
+                "KINGFISHER ULTRA": {
+                    "1270": [914, 901, 1140, 1113, 810, 1169, 763, 491],
+                    "1533": [55, 23, 28, 47, 0, 31, 47, 16],
+                    "2185": [468, 16, 16, 211, 103, 468, 0, 2],
+                    "4379": [402, 624, 552, 692, 465, 497, 585, 653],
+                    "5084": [79, 119, 83, 118, 114, 48, 75, 71],
+                    "6065": [103, 88, 321, 364, 241, 269, 127, 229],
+                    "10008": [534, 396, 404, 318, 388, 419, 400, 468],
+                    "10010": [440, 855, 917, 570, 772, 732, 562, 492],
+                    "26406": [23, 28, 0, 0, 0, 0, 0, 0],
+                    "28509": [436, 357, 1006, 476, 1006, 694, 198, 574],
+                    "51018": [48, 48, 55, 24, 48, 24, 71, 24],
+                    "53783": [341, 554, 515, 420, 356, 356, 317, 246],
+                    "69334": [20, 24, 64, 8, 28, 59, 40, 32],
+                    "70112": [436, 356, 475, 396, 554, 554, 721, 127]
+                },
+                "KINGFISHER ULTRA MAX": {
+                    "1270": [248, 351, 313, 202, 340, 187, 122, 136],
+                    "1533": [39, 8, 51, 23, 23, 23, 62, 23],
+                    "2185": [94, 24, 70, 94, 156, 117, 164, 119],
+                    "4379": [180, 276, 140, 228, 264, 180, 180, 276],
+                    "5084": [12, 12, 8, 0, 8, 0, 0, 0],
+                    "6065": [0, 0, 12, 4, 39, 4, 0, 34],
+                    "10008": [32, 8, 8, 0, 0, 0, 0, 0],
+                    "10010": [16, 56, 68, 0, 86, 56, 8, 79],
+                    "28509": [158, 103, 436, 242, 356, 226, 119, 337],
+                    "51018": [16, 24, 16, 24, 24, 24, 24, 8],
+                    "53783": [0, 0, 40, 0, 0, 0, 16, 8],
+                    "69334": [75, 0, 60, 16, 0, 16, 12, 20],
+                    "70112": [0, 0, 0, 0, 0, 0, 0, 8]
+                },
+                "HEINEKEN": {
+                    "1270": [155, 98, 127, 60, 32, 20, 60, 72],
+                    "1533": [0, 0, 8, 8, 0, 0, 23, 0],
+                    "2185": [0, 0, 0, 0, 0, 0, 0, 2],
+                    "4379": [239, 366, 280, 386, 335, 278, 278, 196],
+                    "5084": [31, 55, 12, 55, 0, 24, 20, 47],
+                    "6065": [52, 104, 115, 286, 119, 147, 218, 103],
+                    "10008": [192, 144, 239, 307, 84, 231, 267, 199],
+                    "10010": [68, 143, 183, 119, 127, 123, 155, 103],
+                    "26406": [0, 8, 0, 0, 0, 0, 0, 0],
+                    "28509": [63, 79, 269, 135, 79, 222, 0, 174],
+                    "51018": [0, 0, 0, 24, 0, 0, 32, 40],
+                    "53783": [158, 380, 198, 158, 158, 198, 277, 119],
+                    "69334": [0, 20, 56, 0, 8, 20, 0, 8],
+                    "70112": [158, 182, 119, 238, 95, 79, 182, 48]
+                },
+                "HEINEKEN SILVER": {
+                    "1270": [440, 562, 438, 477, 329, 358, 385, 289],
+                    "1533": [0, 23, 0, 8, 0, 0, 23, 0],
+                    "2185": [24, 94, 47, 188, 62, 117, 164, 119],
+                    "4379": [136, 183, 64, 207, 120, 120, 148, 140],
+                    "5084": [0, 8, 0, 0, 8, 8, 0, 0],
+                    "6065": [0, 20, 36, 4, 99, 0, 0, 24],
+                    "10008": [16, 60, 64, 44, 139, 0, 36, 103],
+                    "10010": [52, 84, 104, 120, 56, 36, 60, 104],
+                    "26406": [0, 8, 0, 0, 0, 0, 0, 0],
+                    "28509": [139, 175, 246, 119, 198, 369, 0, 226],
+                    "51018": [0, 48, 24, 48, 0, 0, 40, 55],
+                    "53783": [0, 0, 40, 0, 0, 40, 80, 88],
+                    "69334": [12, 0, 40, 0, 0, 12, 12, 20],
+                    "70112": [0, 40, 95, 79, 32, 103, 48, 24]
+                },
+                "LONDON STRONG": {
+                    "1270": [508, 901, 665, 857, 689, 606, 724, 807],
+                    "1533": [62, 0, 39, 156, 23, 86, 62, 101],
+                    "5084": [315, 392, 393, 467, 495, 432, 642, 678],
+                    "6065": [1687, 1989, 2490, 2814, 2346, 1725, 1842, 2900],
+                    "10008": [448, 404, 432, 620, 457, 460, 405, 424],
+                    "10010": [0, 0, 0, 0, 0, 0, 0, 213],
+                    "69334": [40, 52, 122, 16, 87, 47, 67, 166]
+                },
+                "LONDON LAGER": {
+                    "1270": [2422, 3154, 3322, 3769, 3247, 2831, 2863, 2347],
+                    "5084": [1014, 1074, 1311, 1182, 1536, 1455, 1377, 1128],
+                    "6065": [1614, 1902, 2754, 2895, 2295, 1968, 1944, 2718],
+                    "10008": [608, 601, 685, 820, 708, 745, 861, 860],
+                    "69334": [20, 36, 91, 71, 59, 32, 87, 64]
+                },
+                "AMSTEL GRANDE": {
+                    "1270": [149, 90, 115, 111, 83, 122, 40, 13],
+                    "1533": [0, 16, 12, 4, 0, 0, 0, 0],
+                    "2185": [8, 47, 55, 24, 47, 0, 0, 0],
+                    "4379": [63, 51, 148, 48, 84, 96, 84, 0],
+                    "5084": [0, 4, 2, 4, 0, 8, 0, 0],
+                    "6065": [0, 12, 36, 4, 4, 4, 0, 0],
+                    "10008": [0, 8, 0, 0, 0, 0, 0, 0],
+                    "10010": [0, 8, 0, 0, 0, 0, 0, 0],
+                    "26406": [0, 2, 0, 0, 0, 0, 0, 0],
+                    "28509": [18, 8, 103, 40, 95, 88, 0, 0],
+                    "51018": [0, 8, 16, 40, 0, 0, 0, 0],
+                    "53783": [0, 0, 48, 0, 0, 0, 0, 0],
+                    "69334": [0, 0, 0, 0, 24, 0, 0, 0],
+                    "70112": [0, 63, 0, 40, 79, 0, 0, 0]
+                },
+                "AMSTEL STRONG": {
+                    "1270": [29, 0, 0, 0, 0, 0, 0, 0]
+                },
+                "QUEENFISHER LAGER": {
+                    "10008": [0, 0, 0, 0, 0, 36, 0, 0],
+                    "28509": [0, 0, 168, 0, 0, 0, 0, 0],
+                    "53783": [0, 0, 12, 0, 0, 0, 0, 0]
+                },
+                "KF FLAVOUR LEMON": {
+                    "2185": [0, 0, 0, 0, 16, 0, 0, 0],
+                    "28509": [0, 0, 0, 0, 0, 0, 8, 8],
+                    "51018": [0, 0, 0, 0, 0, 0, 8, 0]
+                },
+                "KF FLAVOUR MANGO": {
+                    "2185": [0, 0, 0, 0, 32, 0, 0, 0],
+                    "28509": [0, 0, 0, 0, 0, 0, 8, 8],
+                    "51018": [0, 0, 0, 0, 0, 0, 8, 0]
+                }
+            }
+        };
+
+        // Current store selection and page
+        let currentStore = '53783';
+        let currentPage = 0;
+        let selectedBrand = 'KINGFISHER STRONG';
+        const totalPages = 5;
+        const pageTitles = [
+            'Performance Overview',
+            'Volume Trends',
+            'Premium Mix Analysis',
+            'Brand Range Analysis',
+            'Brand-wise Performance'
+        ];
+
+        // Chart instances
+        let chartInstances = {};
+
+        // Month labels
+        const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'];
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            particlesContainer.innerHTML = '';
+            const particleCount = 15;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = particle.style.height = Math.random() * 15 + 5 + 'px';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 20 + 20) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Update store view
+        function updateStoreView(storeId) {
+            currentStore = storeId;
+            updateStoreInfo();
+            generateContent();
+            initializeAllCharts();
+            currentPage = 0;
+            updatePageIndicator();
+        }
+
+        // Update store information banner
+        function updateStoreInfo() {
+            const store = salesData.volumeTrend[currentStore];
+            const totalVol = store.volumes.reduce((a, b) => a + b, 0);
+            const currentBrands = salesData.storeRange[currentStore].range[7] || 0; // August brands
+            
+            document.getElementById('storeId').textContent = currentStore;
+            document.getElementById('storeName').textContent = store.name;
+            document.getElementById('storeVolume').textContent = totalVol.toLocaleString() + ' L';
+            document.getElementById('storeGrowth').textContent = (store.ytdGrowth >= 0 ? '+' : '') + store.ytdGrowth + '%';
+            document.getElementById('storeBrands').textContent = currentBrands;
+        }
+
+        // Generate dynamic insights
+        function generateInsight(type) {
+            const store = salesData.volumeTrend[currentStore];
+            const insights = {
+                overview: function() {
+                    const totalVol = store.volumes.reduce((a, b) => a + b, 0);
+                    return `${store.name} achieved ${totalVol.toLocaleString()} litres YTD with ${store.ytdGrowth}% growth. ${store.ytdGrowth > 20 ? 'Exceptional growth trajectory demonstrates strong market positioning.' : store.ytdGrowth > 0 ? 'Steady growth pattern indicates consistent market performance.' : 'Focus on strategic interventions to improve performance trajectory.'}`;
+                },
+                volumeTrend: function() {
+                    const maxVol = Math.max(...store.volumes);
+                    const maxMonth = monthLabels[store.volumes.indexOf(maxVol)];
+                    const avgVol = store.volumes.reduce((a, b) => a + b, 0) / 8;
+                    return `Peak volume of ${maxVol.toLocaleString()} litres achieved in ${maxMonth}. Average monthly volume of ${avgVol.toFixed(0)} litres. ${store.ytdGrowth > 20 ? 'Strong momentum with consistent growth above industry average.' : 'Monitor monthly variations to optimize inventory and promotions.'}`;
+                },
+                premiumMix: function() {
+                    const premMix = salesData.premiumMix[currentStore].mix.filter(m => m > 0);
+                    const avgMix = premMix.reduce((a, b) => a + b, 0) / premMix.length;
+                    const trend = premMix[premMix.length - 1] - premMix[0];
+                    return `Average premium mix: ${avgMix.toFixed(1)}%. ${trend > 0 ? `Positive trend (+${trend.toFixed(1)}%) indicates successful premiumization.` : trend < 0 ? `Declining trend (${trend.toFixed(1)}%) requires portfolio optimization.` : 'Stable premium mix maintains consistent margin profile.'}`;
+                },
+                brandRange: function() {
+                    const range = salesData.storeRange[currentStore];
+                    const avgRange = range.range.reduce((a, b) => a + b, 0) / range.range.length;
+                    return `Average ${avgRange.toFixed(0)} brands carried monthly. Q2 portfolio: ${range.q2} brands (${range.delta > 0 ? '+' : ''}${range.delta} vs Q1). ${range.q2 > 10 ? 'Extensive portfolio provides wide consumer choice.' : 'Consider strategic SKU expansion to capture more segments.'}`;
+                },
+                brandPerformance: function() {
+                    const brandVol = salesData.brandVolumes[selectedBrand][currentStore] || new Array(8).fill(0);
+                    const totalBrandVol = brandVol.reduce((a, b) => a + b, 0);
+                    const avgVol = totalBrandVol / 8;
+                    return `${selectedBrand} achieved ${totalBrandVol.toLocaleString()} litres YTD with average ${avgVol.toFixed(0)} litres/month. ${totalBrandVol > 1000 ? 'Key portfolio driver contributing significantly to overall performance.' : totalBrandVol > 100 ? 'Steady contributor with growth potential.' : 'Limited presence - evaluate market opportunity.'}`;
+                }
+            };
+            
+            return insights[type] ? insights[type]() : '';
+        }
+
+        // Generate content based on current page
+        function generateContent() {
+            const container = document.getElementById('mainContainer');
+            const store = salesData.volumeTrend[currentStore];
+            const totalVol = store.volumes.reduce((a, b) => a + b, 0);
+            
+            container.innerHTML = `
+                <!-- Page 1: Performance Overview -->
+                <div class="page-section active" id="page-0">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Store Performance Metrics</div>
+                                <div class="card-subtitle">YTD 2024-25 Key Indicators</div>
+                            </div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-info">
+                                <div class="metric-label">Total YTD Volume</div>
+                                <div class="metric-value">${totalVol.toLocaleString()}</div>
+                                <div class="metric-change ${store.ytdGrowth >= 0 ? 'positive' : 'negative'}">
+                                    ${store.ytdGrowth > 0 ? '↑' : '↓'} ${Math.abs(store.ytdGrowth)}% YoY Growth
+                                </div>
+                            </div>
+                            <div class="metric-icon">📊</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-info">
+                                <div class="metric-label">Average Monthly Volume</div>
+                                <div class="metric-value">${(totalVol / 8).toFixed(0)}</div>
+                                <div class="metric-change">Litres per month</div>
+                            </div>
+                            <div class="metric-icon">📈</div>
+                        </div>
+
+                        <div class="metric-box">
+                            <div class="metric-info">
+                                <div class="metric-label">Peak Month Volume</div>
+                                <div class="metric-value">${Math.max(...store.volumes).toLocaleString()}</div>
+                                <div class="metric-change">${monthLabels[store.volumes.indexOf(Math.max(...store.volumes))]} 2025</div>
+                            </div>
+                            <div class="metric-icon">🎯</div>
+                        </div>
+
+                        <div class="insight-box">
+                            <div class="insight-title">Performance Summary</div>
+                            <div class="insight-text">${generateInsight('overview')}</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Quarterly Performance</div>
+                        </div>
+                        <div class="stat-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">${(store.volumes[0] + store.volumes[1] + store.volumes[2]).toLocaleString()}</div>
+                                <div class="stat-label">Q1 Volume (L)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(store.volumes[3] + store.volumes[4]).toLocaleString()}</div>
+                                <div class="stat-label">Q2 (Apr-May)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${(store.volumes[5] + store.volumes[6] + store.volumes[7]).toLocaleString()}</div>
+                                <div class="stat-label">Q3 (Jun-Aug)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${salesData.storeRange[currentStore].q2}</div>
+                                <div class="stat-label">Active Brands</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 2: Volume Trends (Growth Chart Removed) -->
+                <div class="page-section" id="page-1">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Monthly Volume Trend</div>
+                                <div class="card-subtitle">Volume Performance (Litres)</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="volumeTrendChart"></canvas>
+                        </div>
+                        <div class="insight-box">
+                            <div class="insight-title">Volume Analysis</div>
+                            <div class="insight-text">${generateInsight('volumeTrend')}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 3: Premium Mix -->
+                <div class="page-section" id="page-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Premium Mix Trend</div>
+                                <div class="card-subtitle">Premium Portfolio Share (%)</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="premiumMixChart"></canvas>
+                        </div>
+                        <div class="insight-box">
+                            <div class="insight-title">Premium Strategy</div>
+                            <div class="insight-text">${generateInsight('premiumMix')}</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Premium vs Regular Split</div>
+                        </div>
+                        <div class="chart-container chart-container-small">
+                            <canvas id="premiumSplitChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 4: Brand Range -->
+                <div class="page-section" id="page-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Brand Range Trend</div>
+                                <div class="card-subtitle">Number of Active Brands</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="brandRangeChart"></canvas>
+                        </div>
+                        <div class="insight-box">
+                            <div class="insight-title">Portfolio Analysis</div>
+                            <div class="insight-text">${generateInsight('brandRange')}</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Q1 vs Q2 Comparison</div>
+                        </div>
+                        <div class="stat-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">${salesData.storeRange[currentStore].q1}</div>
+                                <div class="stat-label">Q1 Brands</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${salesData.storeRange[currentStore].q2}</div>
+                                <div class="stat-label">Q2 Brands</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${salesData.storeRange[currentStore].delta > 0 ? '+' : ''}${salesData.storeRange[currentStore].delta}</div>
+                                <div class="stat-label">Q2 vs Q1 Delta</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 5: Brand Performance -->
+                <div class="page-section" id="page-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Brand-wise Volume Analysis</div>
+                                <div class="card-subtitle">Select Brand for Performance Trends</div>
+                            </div>
+                        </div>
+                        
+                        <select class="brand-selector" id="brandSelector" onchange="updateBrandChart(this.value)">
+                            ${Object.keys(salesData.brandVolumes).map(brand => 
+                                `<option value="${brand}" ${brand === selectedBrand ? 'selected' : ''}>${brand}</option>`
+                            ).join('')}
+                        </select>
+
+                        <div class="chart-container">
+                            <canvas id="brandVolumeChart"></canvas>
+                        </div>
+                        <div class="insight-box">
+                            <div class="insight-title">Brand Performance</div>
+                            <div class="insight-text" id="brandInsightText">${generateInsight('brandPerformance')}</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Brand Metrics</div>
+                        </div>
+                        <div class="stat-grid" id="brandStats">
+                            <!-- Will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update brand chart
+        function updateBrandChart(brand) {
+            selectedBrand = brand;
+            
+            // Destroy existing chart if exists
+            if (chartInstances.brandVolume) {
+                chartInstances.brandVolume.destroy();
+            }
+            
+            // Get brand data for current store
+            const brandData = salesData.brandVolumes[selectedBrand][currentStore] || new Array(8).fill(0);
+            const totalBrandVol = brandData.reduce((a, b) => a + b, 0);
+            const avgVol = totalBrandVol / 8;
+            const maxVol = Math.max(...brandData);
+            
+            // Update brand stats
+            const brandStatsDiv = document.getElementById('brandStats');
+            if (brandStatsDiv) {
+                brandStatsDiv.innerHTML = `
+                    <div class="stat-item">
+                        <div class="stat-value">${totalBrandVol.toLocaleString()}</div>
+                        <div class="stat-label">Total Volume (L)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${avgVol.toFixed(0)}</div>
+                        <div class="stat-label">Avg Monthly (L)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${maxVol.toLocaleString()}</div>
+                        <div class="stat-label">Peak Volume (L)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${brandData.filter(v => v > 0).length}</div>
+                        <div class="stat-label">Active Months</div>
+                    </div>
+                `;
+            }
+            
+            // Create brand volume chart
+            const brandCtx = document.getElementById('brandVolumeChart');
+            if (brandCtx) {
+                chartInstances.brandVolume = new Chart(brandCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: monthLabels,
+                        datasets: [{
+                            label: 'Volume (Litres)',
+                            data: brandData,
+                            backgroundColor: getGreenShades(8),
+                            borderColor: 'rgba(46, 125, 50, 0.9)',
+                            borderWidth: 1,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 10, weight: '600' },
+                                formatter: (value) => value > 0 ? value : '',
+                                color: '#0D4F0D'
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                title: { display: true, text: 'Volume (Litres)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Update insight
+            const insightText = document.getElementById('brandInsightText');
+            if (insightText) {
+                insightText.textContent = generateInsight('brandPerformance');
+            }
+        }
+
+        function changePage(direction) {
+            document.getElementById(`page-${currentPage}`).classList.remove('active');
+            currentPage = Math.max(0, Math.min(totalPages - 1, currentPage + direction));
+            document.getElementById(`page-${currentPage}`).classList.add('active');
+            updatePageIndicator();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function goToPage(pageNum) {
+            document.getElementById(`page-${currentPage}`).classList.remove('active');
+            currentPage = pageNum;
+            document.getElementById(`page-${currentPage}`).classList.add('active');
+            updatePageIndicator();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updatePageIndicator() {
+            document.getElementById('pageTitle').textContent = pageTitles[currentPage];
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentPage);
+            });
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
+        }
+
+        // Generate gradient shades of green
+        function getGreenShades(count) {
+            const shades = [];
+            for (let i = 0; i < count; i++) {
+                const opacity = 0.9 - (i * 0.4 / count);
+                shades.push(`rgba(46, 125, 50, ${Math.max(0.5, opacity)})`);
+            }
+            return shades;
+        }
+
+        // Initialize all charts
+        function initializeAllCharts() {
+            // Destroy existing charts
+            Object.values(chartInstances).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            chartInstances = {};
+
+            // Register ChartDataLabels plugin if available
+            if (typeof ChartDataLabels !== 'undefined') {
+                Chart.register(ChartDataLabels);
+            }
+
+            // Set chart defaults
+            Chart.defaults.color = 'rgba(33, 33, 33, 0.9)';
+            Chart.defaults.borderColor = 'rgba(46, 125, 50, 0.15)';
+            if (typeof ChartDataLabels !== 'undefined') {
+                Chart.defaults.plugins.datalabels.display = false;
+            }
+
+            const store = salesData.volumeTrend[currentStore];
+            const premiumMix = salesData.premiumMix[currentStore];
+            const brandRange = salesData.storeRange[currentStore];
+
+            // 1. Volume Trend Chart
+            const volumeTrendCtx = document.getElementById('volumeTrendChart');
+            if (volumeTrendCtx) {
+                chartInstances.volumeTrend = new Chart(volumeTrendCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: monthLabels,
+                        datasets: [{
+                            label: 'Volume (Litres)',
+                            data: store.volumes,
+                            backgroundColor: getGreenShades(8),
+                            borderColor: 'rgba(46, 125, 50, 0.9)',
+                            borderWidth: 1,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 10, weight: '600' },
+                                formatter: (value) => value.toLocaleString(),
+                                color: '#0D4F0D',
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                title: { display: true, text: 'Volume (Litres)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 2. Premium Mix Chart
+            const premiumMixCtx = document.getElementById('premiumMixChart');
+            if (premiumMixCtx) {
+                chartInstances.premiumMix = new Chart(premiumMixCtx, {
+                    type: 'line',
+                    data: {
+                        labels: monthLabels,
+                        datasets: [{
+                            label: 'Premium Mix %',
+                            data: premiumMix.mix,
+                            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                            borderColor: 'rgba(46, 125, 50, 0.9)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                max: 100,
+                                title: { display: true, text: 'Premium Mix %' },
+                                ticks: { callback: value => value + '%' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 3. Premium Split Chart
+            const premiumSplitCtx = document.getElementById('premiumSplitChart');
+            if (premiumSplitCtx) {
+                const avgPremium = premiumMix.mix.filter(m => m > 0).reduce((a, b) => a + b, 0) / premiumMix.mix.filter(m => m > 0).length;
+                chartInstances.premiumSplit = new Chart(premiumSplitCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Premium', 'Regular'],
+                        datasets: [{
+                            data: [avgPremium, 100 - avgPremium],
+                            backgroundColor: ['rgba(46, 125, 50, 0.8)', 'rgba(129, 199, 132, 0.8)'],
+                            borderColor: 'rgba(46, 125, 50, 0.9)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: { size: 12 }
+                                }
+                            },
+                            datalabels: {
+                                color: '#ffffff',
+                                font: { size: 14, weight: '700' },
+                                formatter: (value) => value.toFixed(1) + '%',
+                                display: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 4. Brand Range Chart
+            const brandRangeCtx = document.getElementById('brandRangeChart');
+            if (brandRangeCtx) {
+                chartInstances.brandRange = new Chart(brandRangeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: monthLabels,
+                        datasets: [{
+                            label: 'Number of Brands',
+                            data: brandRange.range,
+                            backgroundColor: getGreenShades(8),
+                            borderColor: 'rgba(46, 125, 50, 0.9)',
+                            borderWidth: 1,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                font: { size: 11, weight: '700' },
+                                formatter: (value) => value,
+                                color: '#0D4F0D',
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true,
+                                title: { display: true, text: 'Number of Brands' },
+                                ticks: { stepSize: 1 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initialize brand chart
+            updateBrandChart(selectedBrand);
+        }
+
+        // Initialize everything when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            updateStoreInfo();
+            generateContent();
+            initializeAllCharts();
+            updatePageIndicator();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            Object.values(chartInstances).forEach(chart => {
+                if (chart) chart.resize();
+            });
+        });
+    </script>
+</body>
+</html>
