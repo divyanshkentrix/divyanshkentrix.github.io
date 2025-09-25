@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zepto vs Blinkit - Store Performance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #FAFAFA;
+            padding: 12px;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 6px;
+            padding: 16px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 2px solid #AA2EE6;
+        }
+        
+        .header h1 {
+            color: #1A1A1A;
+            font-size: 1.4em;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 2px;
+        }
+        
+        .powered-by {
+            text-align: right;
+            color: #999;
+            font-size: 0.75em;
+        }
+        
+        .powered-by span {
+            color: #AA2EE6;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        
+        .dashboard-container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+        
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        
+        .metric-card h3 {
+            font-size: 0.65em;
+            color: #999;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            font-weight: 500;
+        }
+        
+        .metric-card .value {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+        
+        .metric-card .sub-value {
+            font-size: 0.7em;
+            color: #999;
+            margin-top: 2px;
+        }
+        
+        .zepto-metric {
+            border-left: 2px solid #AA2EE6;
+        }
+        
+        .zepto-metric .value {
+            color: #AA2EE6;
+        }
+        
+        .blinkit-metric {
+            border-left: 2px solid #FCC72C;
+        }
+        
+        .blinkit-metric .value {
+            color: #F5A623;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .three-col-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 6px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card h2 {
+            color: #1A1A1A;
+            font-size: 0.95em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #F0F0F0;
+        }
+        
+        .full-width-card {
+            grid-column: 1 / -1;
+        }
+        
+        canvas {
+            max-height: 220px;
+        }
+        
+        .compact-canvas {
+            max-height: 180px;
+        }
+        
+        .insight-box {
+            background: #F8F8FB;
+            border-left: 2px solid #AA2EE6;
+            border-radius: 3px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.8em;
+        }
+        
+        .insight-box h4 {
+            color: #1A1A1A;
+            font-size: 0.9em;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        
+        .insight-box p {
+            color: #666;
+            line-height: 1.4;
+            margin: 0;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #E0E0E0;
+        }
+        
+        .tab {
+            padding: 6px 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            font-weight: 500;
+            font-size: 0.8em;
+            transition: all 0.2s ease;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+        }
+        
+        .tab.active {
+            color: #AA2EE6;
+            border-bottom-color: #AA2EE6;
+        }
+        
+        .tab:hover:not(.active) {
+            color: #666;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75em;
+        }
+        
+        .comparison-table th {
+            background: #F8F8FB;
+            color: #1A1A1A;
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85em;
+            border-bottom: 1px solid #E0E0E0;
+            white-space: nowrap;
+        }
+        
+        .comparison-table td {
+            padding: 6px;
+            border-bottom: 1px solid #F0F0F0;
+            color: #666;
+            white-space: nowrap;
+        }
+        
+        .comparison-table tr:hover {
+            background: #FAFAFA;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .store-badge {
+            display: inline-block;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .zepto-badge {
+            background: #F3E6FF;
+            color: #AA2EE6;
+        }
+        
+        .blinkit-badge {
+            background: #FFF4D6;
+            color: #F5A623;
+        }
+        
+        /* Laptop optimization */
+        @media (max-width: 1366px) {
+            .metric-grid {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 10px;
+            }
+            
+            .main-grid {
+                gap: 12px;
+            }
+            
+            .three-col-grid {
+                gap: 12px;
+            }
+            
+            canvas {
+                max-height: 200px;
+            }
+            
+            .compact-canvas {
+                max-height: 160px;
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .metric-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .three-col-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <div>
+                <h1>Store Performance Analysis</h1>
+                <div class="subtitle">Zepto vs Blinkit - Catchment Comparison</div>
+            </div>
+            <div class="powered-by">
+                <strong>Powered by</strong><br>
+                <span>KENTRIX</span>
+            </div>
+        </div>
+
+        <!-- Compact Metrics Row -->
+        <div class="metric-grid">
+            <div class="metric-card zepto-metric">
+                <h3>Zepto Avg OPD</h3>
+                <div class="value">485</div>
+                <div class="sub-value">3 stores</div>
+            </div>
+            <div class="metric-card blinkit-metric">
+                <h3>Blinkit Avg OPD</h3>
+                <div class="value">1,094</div>
+                <div class="sub-value">4 stores</div>
+            </div>
+            <div class="metric-card">
+                <h3>Total Population</h3>
+                <div class="value">1.5M</div>
+                <div class="sub-value">Combined</div>
+            </div>
+            <div class="metric-card zepto-metric">
+                <h3>Zepto Best</h3>
+                <div class="value">599</div>
+                <div class="sub-value">Hegganahalli</div>
+            </div>
+            <div class="metric-card blinkit-metric">
+                <h3>Blinkit Best</h3>
+                <div class="value">1,436</div>
+                <div class="sub-value">Kamakshipalya</div>
+            </div>
+            <div class="metric-card">
+                <h3>Best Efficiency</h3>
+                <div class="value">10.5</div>
+                <div class="sub-value">OPD/1K pop</div>
+            </div>
+        </div>
+
+        <!-- Main Performance Charts -->
+        <div class="main-grid">
+            <div class="card">
+                <h2>Store Performance (OPD)</h2>
+                <canvas id="opdChart" class="compact-canvas"></canvas>
+            </div>
+            <div class="card">
+                <h2>OPD Efficiency (per 1K Population)</h2>
+                <canvas id="efficiencyChart" class="compact-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Three Column Grid -->
+        <div class="three-col-grid">
+            <div class="card">
+                <h2>Population vs Orders</h2>
+                <canvas id="populationOpdChart" class="compact-canvas"></canvas>
+            </div>
+            <div class="card">
+                <h2>Income Distribution (₹160K+)</h2>
+                <canvas id="premiumIncomeChart" class="compact-canvas"></canvas>
+            </div>
+            <div class="card">
+                <h2>Health Consciousness %</h2>
+                <canvas id="healthChart" class="compact-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- LSI and Category Analysis -->
+        <div class="main-grid">
+            <div class="card">
+                <h2>LSI Segment Distribution</h2>
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('lsi', 0)">Premium Markets</button>
+                    <button class="tab" onclick="switchTab('lsi', 1)">Mass Markets</button>
+                    <button class="tab" onclick="switchTab('lsi', 2)">Mixed Markets</button>
+                </div>
+                <div class="tab-content active" id="lsi-0">
+                    <canvas id="lsiChart1" class="compact-canvas"></canvas>
+                </div>
+                <div class="tab-content" id="lsi-1">
+                    <canvas id="lsiChart2" class="compact-canvas"></canvas>
+                </div>
+                <div class="tab-content" id="lsi-2">
+                    <canvas id="lsiChart3" class="compact-canvas"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Category Preferences</h2>
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('product', 0)">Fabric</button>
+                    <button class="tab" onclick="switchTab('product', 1)">Personal</button>
+                    <button class="tab" onclick="switchTab('product', 2)">Foods</button>
+                    <button class="tab" onclick="switchTab('product', 3)">Cosmetics</button>
+                </div>
+                <div class="tab-content active" id="product-0">
+                    <canvas id="fabricChart" class="compact-canvas"></canvas>
+                </div>
+                <div class="tab-content" id="product-1">
+                    <canvas id="personalChart" class="compact-canvas"></canvas>
+                </div>
+                <div class="tab-content" id="product-2">
+                    <canvas id="foodChart" class="compact-canvas"></canvas>
+                </div>
+                <div class="tab-content" id="product-3">
+                    <canvas id="cosmeticsChart" class="compact-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Width Charts -->
+        <div class="main-grid">
+            <div class="card">
+                <h2>FMCG Monthly Spending</h2>
+                <canvas id="fmcgChart" class="compact-canvas"></canvas>
+            </div>
+            <div class="card">
+                <h2>Income Distribution</h2>
+                <canvas id="incomeChart" class="compact-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="card full-width-card">
+            <h2>Detailed Store Metrics</h2>
+            <div class="table-wrapper">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Store</th>
+                            <th>Brand</th>
+                            <th>OPD</th>
+                            <th>Population</th>
+                            <th>HH</th>
+                            <th>Avg Income</th>
+                            <th>₹160K+</th>
+                            <th>LSI-03</th>
+                            <th>LSI-02</th>
+                            <th>FMCG ₹30K+</th>
+                            <th>Health%</th>
+                            <th>Prem Fabric</th>
+                            <th>Prem Food</th>
+                            <th>Prem Cosm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>BLR-Anjanapura</td>
+                            <td><span class="store-badge zepto-badge">Z</span></td>
+                            <td>276</td>
+                            <td>78,584</td>
+                            <td>19,568</td>
+                            <td>142K</td>
+                            <td>22.9%</td>
+                            <td>64.6%</td>
+                            <td>8.5%</td>
+                            <td>38.0%</td>
+                            <td>94.3%</td>
+                            <td>88.4%</td>
+                            <td>66.4%</td>
+                            <td>33.1%</td>
+                        </tr>
+                        <tr>
+                            <td>Talghattapura</td>
+                            <td><span class="store-badge blinkit-badge">B</span></td>
+                            <td>699</td>
+                            <td>80,912</td>
+                            <td>20,155</td>
+                            <td>141K</td>
+                            <td>21.5%</td>
+                            <td>64.3%</td>
+                            <td>8.9%</td>
+                            <td>37.6%</td>
+                            <td>94.3%</td>
+                            <td>88.5%</td>
+                            <td>65.6%</td>
+                            <td>32.9%</td>
+                        </tr>
+                        <tr>
+                            <td>BLR-Abbigere</td>
+                            <td><span class="store-badge zepto-badge">Z</span></td>
+                            <td>581</td>
+                            <td>183,541</td>
+                            <td>45,716</td>
+                            <td>107K</td>
+                            <td>1.0%</td>
+                            <td>2.1%</td>
+                            <td>0.9%</td>
+                            <td>8.1%</td>
+                            <td>57.4%</td>
+                            <td>56.2%</td>
+                            <td>28.7%</td>
+                            <td>3.0%</td>
+                        </tr>
+                        <tr>
+                            <td>Abbigere ES175</td>
+                            <td><span class="store-badge blinkit-badge">B</span></td>
+                            <td>933</td>
+                            <td>163,044</td>
+                            <td>40,198</td>
+                            <td>106K</td>
+                            <td>1.0%</td>
+                            <td>1.2%</td>
+                            <td>0.9%</td>
+                            <td>6.2%</td>
+                            <td>57.9%</td>
+                            <td>56.7%</td>
+                            <td>25.6%</td>
+                            <td>1.9%</td>
+                        </tr>
+                        <tr>
+                            <td>BLR-Hegganahalli</td>
+                            <td><span class="store-badge zepto-badge">Z</span></td>
+                            <td>599</td>
+                            <td>340,834</td>
+                            <td>92,112</td>
+                            <td>103K</td>
+                            <td>0.0%</td>
+                            <td>0.4%</td>
+                            <td>0.0%</td>
+                            <td>0.9%</td>
+                            <td>87.7%</td>
+                            <td>77.4%</td>
+                            <td>6.2%</td>
+                            <td>0.1%</td>
+                        </tr>
+                        <tr>
+                            <td>Kamakshipalya</td>
+                            <td><span class="store-badge blinkit-badge">B</span></td>
+                            <td>1,436</td>
+                            <td>502,938</td>
+                            <td>129,330</td>
+                            <td>129K</td>
+                            <td>21.4%</td>
+                            <td>14.8%</td>
+                            <td>27.6%</td>
+                            <td>32.8%</td>
+                            <td>99.3%</td>
+                            <td>95.2%</td>
+                            <td>52.7%</td>
+                            <td>28.4%</td>
+                        </tr>
+                        <tr>
+                            <td>Mailasandra</td>
+                            <td><span class="store-badge blinkit-badge">B</span></td>
+                            <td>1,308</td>
+                            <td>124,899</td>
+                            <td>31,518</td>
+                            <td>112K</td>
+                            <td>2.1%</td>
+                            <td>49.6%</td>
+                            <td>14.0%</td>
+                            <td>9.6%</td>
+                            <td>97.2%</td>
+                            <td>84.0%</td>
+                            <td>33.7%</td>
+                            <td>6.7%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="insight-box">
+                <h4>Key Patterns</h4>
+                <p>• Performance Gap: Blinkit averages 2.25x higher OPD • Best Efficiency: Mailasandra at 10.5 OPD/1K despite smaller catchment • Segment Mix: Kamakshipalya's 27.6% LSI-02 creates unique appeal</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store data
+        const stores = {
+            'Anjanapura': { brand: 'Zepto', opd: 276, population: 78584 },
+            'Abbigere(Z)': { brand: 'Zepto', opd: 581, population: 183541 },
+            'Hegganahalli': { brand: 'Zepto', opd: 599, population: 340834 },
+            'Talghattapura': { brand: 'Blinkit', opd: 699, population: 80912 },
+            'Abbigere(B)': { brand: 'Blinkit', opd: 933, population: 163044 },
+            'Kamakshipalya': { brand: 'Blinkit', opd: 1436, population: 502938 },
+            'Mailasandra': { brand: 'Blinkit', opd: 1308, population: 124899 }
+        };
+
+        // Chart defaults
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto';
+        Chart.defaults.font.size = 10;
+        Chart.defaults.color = '#666';
+        
+        // OPD Chart
+        new Chart(document.getElementById('opdChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(stores),
+                datasets: [{
+                    data: Object.values(stores).map(s => s.opd),
+                    backgroundColor: Object.values(stores).map(s => 
+                        s.brand === 'Zepto' ? '#AA2EE6' : '#FCC72C'
+                    ),
+                    borderRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: '#F0F0F0', drawBorder: false },
+                        ticks: { font: { size: 9 } }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { font: { size: 8 }, maxRotation: 45, minRotation: 45 }
+                    }
+                }
+            }
+        });
+
+        // Efficiency Chart
+        const opdPer1k = [3.5, 3.2, 1.8, 8.6, 5.7, 2.9, 10.5];
+        new Chart(document.getElementById('efficiencyChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(stores),
+                datasets: [{
+                    data: opdPer1k,
+                    backgroundColor: Object.values(stores).map(s => 
+                        s.brand === 'Zepto' ? '#AA2EE6' : '#FCC72C'
+                    ),
+                    borderRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#F0F0F0', drawBorder: false },
+                        ticks: { font: { size: 9 } }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { font: { size: 8 }, maxRotation: 45, minRotation: 45 }
+                    }
+                }
+            }
+        });
+
+        // Population vs OPD
+        new Chart(document.getElementById('populationOpdChart'), {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: 'Zepto',
+                        data: [
+                            { x: 78584, y: 276 },
+                            { x: 183541, y: 581 },
+                            { x: 340834, y: 599 }
+                        ],
+                        backgroundColor: '#AA2EE6',
+                        pointRadius: 6
+                    },
+                    {
+                        label: 'Blinkit',
+                        data: [
+                            { x: 80912, y: 699 },
+                            { x: 163044, y: 933 },
+                            { x: 502938, y: 1436 },
+                            { x: 124899, y: 1308 }
+                        ],
+                        backgroundColor: '#FCC72C',
+                        pointRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { 
+                        position: 'bottom',
+                        labels: { boxWidth: 12, font: { size: 9 } }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Population', font: { size: 9 } },
+                        grid: { color: '#F0F0F0', drawBorder: false },
+                        ticks: { font: { size: 8 } }
+                    },
+                    y: {
+                        title: { display: true, text: 'OPD', font: { size: 9 } },
+                        grid: { color: '#F0F0F0', drawBorder: false },
+                        ticks: { font: { size: 8 } }
+                    }
+                }
+            }
+        });
+
+        // Premium Income Chart
+        new Chart(document.getElementById('premiumIncomeChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(stores),
+                datasets: [{
+                    data: [22.9, 1.0, 0, 21.5, 1.0, 21.4, 2.1],
+                    backgroundColor: Object.values(stores).map(s => 
+                        s.brand === 'Zepto' ? '#AA2EE6' : '#FCC72C'
+                    ),
+                    borderRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: '#F0F0F0', drawBorder: false },
+                        ticks: { font: { size: 9 }, callback: v => v + '%' }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { font: { size: 8 }, maxRotation: 45, minRotation: 45 }
+                    }
+                }
+            }
+        });
+
+        // Health Consciousness
+        new Chart(document.getElementById('healthChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(stores),
+                datasets: [{
+                    data: [94.3, 57.4, 87.7, 94.3, 57.9, 99.3, 97.2],
+                    backgroundColor: Object.values(stores).map(s => 
+                        s.brand === 'Zepto' ? '#AA2EE6' : '#FCC72C'
+                    ),
+                    borderRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: '#F0F0F0', drawBorder: false },
+                        ticks: { font: { size: 9 }, callback: v => v + '%' }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { font: { size: 8 }, maxRotation: 45, minRotation: 45 }
+                    }
+                }
+            }
+        });
+
+        // LSI Charts
+        const lsiOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { 
+                    position: 'bottom',
+                    labels: { boxWidth: 10, font: { size: 8 }, padding: 6 }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true,
+                    grid: { color: '#F0F0F0', drawBorder: false },
+                    ticks: { font: { size: 8 } }
+                },
+                x: { 
+                    grid: { display: false },
+                    ticks: { font: { size: 8 } }
+                }
+            }
+        };
+
+        new Chart(document.getElementById('lsiChart1'), {
+            type: 'bar',
+            data: {
+                labels: ['LSI-01', 'LSI-02', 'LSI-03', 'LSI-04', 'LSI-05'],
+                datasets: [
+                    { label: 'Anjanapura (Z)', data: [0, 8.5, 64.6, 21.9, 4.6], backgroundColor: '#AA2EE6' },
+                    { label: 'Talghattapura (B)', data: [0, 8.9, 64.3, 21.7, 4.7], backgroundColor: '#FCC72C' }
+                ]
+            },
+            options: lsiOptions
+        });
+
+        new Chart(document.getElementById('lsiChart2'), {
+            type: 'bar',
+            data: {
+                labels: ['LSI-01', 'LSI-02', 'LSI-03', 'LSI-04', 'LSI-05'],
+                datasets: [
+                    { label: 'Abbigere (Z)', data: [0, 0.9, 2.1, 54.1, 40.5], backgroundColor: '#AA2EE6' },
+                    { label: 'Abbigere (B)', data: [0, 0.9, 1.2, 56.3, 38.8], backgroundColor: '#FCC72C' },
+                    { label: 'Hegganahalli (Z)', data: [0, 0, 0.4, 88.5, 9.9], backgroundColor: '#9B1FCE' }
+                ]
+            },
+            options: lsiOptions
+        });
+
+        new Chart(document.getElementById('lsiChart3'), {
+            type: 'bar',
+            data: {
+                labels: ['LSI-01', 'LSI-02', 'LSI-03', 'LSI-04', 'LSI-05'],
+                datasets: [
+                    { label: 'Kamakshipalya (B)', data: [5.5, 27.6, 14.8, 51.5, 0.2], backgroundColor: '#FCC72C' },
+                    { label: 'Mailasandra (B)', data: [0, 14.0, 49.6, 34.1, 2.2], backgroundColor: '#F5A623' }
+                ]
+            },
+            options: lsiOptions
+        });
+
+        // Product Charts
+        const productOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { 
+                    position: 'bottom',
+                    labels: { boxWidth: 10, font: { size: 8 }, padding: 6 }
+                }
+            },
+            scales: {
+                y: { 
+                    stacked: true,
+                    beginAtZero: true,
+                    grid: { color: '#F0F0F0', drawBorder: false },
+                    ticks: { font: { size: 8 } }
+                },
+                x: { 
+                    stacked: true,
+                    grid: { display: false },
+                    ticks: { font: { size: 7 }, maxRotation: 45, minRotation: 45 }
+                }
+            }
+        };
+
+        new Chart(document.getElementById('fabricChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Anjan.', 'Talgh.', 'Abbi.(Z)', 'Abbi.(B)', 'Hegg.', 'Kamak.', 'Maila.'],
+                datasets: [
+                    { label: 'Premium', data: [88.4, 88.5, 56.2, 56.7, 77.4, 95.2, 84.0], backgroundColor: '#7B1FA2' },
+                    { label: 'Mass', data: [9.8, 9.7, 43.8, 43.1, 19.1, 2.2, 15.8], backgroundColor: '#E1BEE7' }
+                ]
+            },
+            options: productOptions
+        });
+
+        new Chart(document.getElementById('personalChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Anjan.', 'Talgh.', 'Abbi.(Z)', 'Abbi.(B)', 'Hegg.', 'Kamak.', 'Maila.'],
+                datasets: [
+                    { label: 'Premium', data: [45.6, 44.9, 15.2, 10.4, 4.0, 38.2, 13.2], backgroundColor: '#6A1B9A' },
+                    { label: 'Popular', data: [54.0, 54.7, 82.5, 86.9, 94.9, 61.4, 86.8], backgroundColor: '#BA68C8' },
+                    { label: 'Mass', data: [0.4, 0.4, 2.3, 2.7, 1.2, 0.4, 0.1], backgroundColor: '#F3E5F5' }
+                ]
+            },
+            options: productOptions
+        });
+
+        new Chart(document.getElementById('foodChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Anjan.', 'Talgh.', 'Abbi.(Z)', 'Abbi.(B)', 'Hegg.', 'Kamak.', 'Maila.'],
+                datasets: [
+                    { label: 'Premium', data: [66.4, 65.6, 28.7, 25.6, 6.2, 52.7, 33.7], backgroundColor: '#7B1FA2' },
+                    { label: 'Popular', data: [33.2, 34.1, 68.1, 70.6, 92.7, 46.9, 64.0], backgroundColor: '#CE93D8' },
+                    { label: 'Mass', data: [0.4, 0.4, 3.2, 3.8, 1.1, 0.4, 2.3], backgroundColor: '#F3E5F5' }
+                ]
+            },
+            options: productOptions
+        });
+
+        new Chart(document.getElementById('cosmeticsChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Anjan.', 'Talgh.', 'Abbi.(Z)', 'Abbi.(B)', 'Hegg.', 'Kamak.', 'Maila.'],
+                datasets: [
+                    { label: 'Premium', data: [33.1, 32.9, 3.0, 1.9, 0.1, 28.4, 6.7], backgroundColor: '#6A1B9A' },
+                    { label: 'Popular', data: [66.7, 66.9, 96.0, 96.7, 99.4, 71.4, 93.3], backgroundColor: '#CE93D8' },
+                    { label: 'Mass', data: [0.2, 0.2, 1.0, 1.2, 0.3, 0.1, 0.0], backgroundColor: '#F3E5F5' }
+                ]
+            },
+            options: productOptions
+        });
+
+        // Income Distribution
+        new Chart(document.getElementById('incomeChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Anjan.', 'Abbi.(Z)', 'Hegg.', 'Talgh.', 'Abbi.(B)', 'Kamak.', 'Maila.'],
+                datasets: [
+                    { label: '₹160K+', data: [22.9, 1.0, 0, 21.5, 1.0, 21.4, 2.1], backgroundColor: '#4A148C' },
+                    { label: '₹120-160K', data: [41.1, 28.4, 6.3, 41.0, 25.5, 33.6, 31.7], backgroundColor: '#7B1FA2' },
+                    { label: '₹80-120K', data: [31.6, 59.2, 91.9, 32.5, 60.0, 44.5, 63.6], backgroundColor: '#BA68C8' },
+                    { label: '<₹80K', data: [1.2, 11.3, 1.8, 1.2, 13.5, 0.5, 2.7], backgroundColor: '#E1BEE7' }
+                ]
+            },
+            options: productOptions
+        });
+
+        // FMCG Spending
+        new Chart(document.getElementById('fmcgChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Anjan.', 'Abbi.(Z)', 'Hegg.', 'Talgh.', 'Abbi.(B)', 'Kamak.', 'Maila.'],
+                datasets: [
+                    { label: '₹30K+', data: [38.0, 8.1, 0.9, 37.6, 6.2, 32.8, 9.6], backgroundColor: '#6A1B9A' },
+                    { label: '₹25-30K', data: [41.7, 39.3, 18.9, 42.3, 41.4, 37.7, 43.9], backgroundColor: '#9C27B0' },
+                    { label: '₹20-25K', data: [15.6, 32.0, 70.7, 15.4, 29.9, 27.9, 36.8], backgroundColor: '#CE93D8' },
+                    { label: '<₹20K', data: [4.7, 20.6, 9.5, 4.7, 22.5, 1.6, 9.7], backgroundColor: '#F3E5F5' }
+                ]
+            },
+            options: productOptions
+        });
+
+        // Tab switching
+        function switchTab(group, index) {
+            const contents = document.querySelectorAll(`[id^="${group}-"]`);
+            contents.forEach(content => {
+                if(content) content.classList.remove('active');
+            });
+            
+            const selectedContent = document.getElementById(`${group}-${index}`);
+            if(selectedContent) {
+                selectedContent.classList.add('active');
+            }
+            
+            const tabs = event.target.parentElement.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
