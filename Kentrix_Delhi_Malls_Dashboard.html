@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kentrix Consumer Intelligence - Store Analytics Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2332 0%, #2c3e50 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c5a 0%, #2d5f7f 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .logo-container {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #ffffff10 0%, #ffffff05 100%);
+            border: 2px solid #4a9eca;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            position: relative;
+        }
+
+        .logo-k {
+            font-size: 48px;
+            font-weight: 300;
+            color: #4a9eca;
+            position: relative;
+        }
+
+        .logo-k::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: -8px;
+            width: 8px;
+            height: 8px;
+            background: #4a9eca;
+            border-radius: 50%;
+        }
+
+        .header-content h1 {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .header-content .brand {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: #4a9eca;
+            margin-bottom: 5px;
+        }
+
+        .header-content p {
+            font-size: 1em;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 300;
+        }
+
+        /* Tab Navigation */
+        .tab-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            flex: 1;
+            min-width: 140px;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05em;
+            font-weight: 500;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #2d5f7f 0%, #4a9eca 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 158, 202, 0.3);
+        }
+
+        .tab-button:hover:not(.active) {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            transform: translateY(-1px);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Key Metrics Section */
+        .key-metrics-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .metrics-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .store-metrics {
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .store-metrics.pacific {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 5px solid #2d5f7f;
+        }
+
+        .store-metrics.vegas {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-left: 5px solid #ff8f00;
+        }
+
+        .store-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1a2332;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #546e7a;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #1a2332;
+        }
+
+        /* Conversion Funnel */
+        .conversion-funnel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .funnel-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .funnel-stage {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .funnel-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #2d5f7f;
+            margin-bottom: 5px;
+        }
+
+        .funnel-value.vegas {
+            color: #ff8f00;
+        }
+
+        .funnel-label {
+            font-size: 0.9em;
+            color: #546e7a;
+            margin-bottom: 10px;
+        }
+
+        .conversion-rate {
+            display: inline-block;
+            padding: 5px 15px;
+            background: linear-gradient(135deg, #2d5f7f 0%, #4a9eca 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .conversion-rate.vegas {
+            background: linear-gradient(135deg, #ff8f00 0%, #ffb74d 100%);
+        }
+
+        /* Overlap Analysis */
+        .overlap-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .overlap-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .overlap-card {
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .overlap-percentage {
+            font-size: 3em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2d5f7f 0%, #4a9eca 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .overlap-description {
+            color: #546e7a;
+            font-size: 0.9em;
+        }
+
+        /* Charts */
+        .chart-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .chart-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #1a2332;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container-small {
+            height: 300px;
+        }
+
+        /* Insights */
+        .insights-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            margin-bottom: 25px;
+        }
+
+        .insights-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2d5f7f;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .insight-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+            border-left: 4px solid #2d5f7f;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .insight-highlight {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 4px solid #4a9eca;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            color: #1a2332;
+            margin-bottom: 8px;
+        }
+
+        .insight-text {
+            color: #546e7a;
+            line-height: 1.6;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(135deg, #2d5f7f 0%, #4a9eca 100%);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .percentage-bar {
+            background: #e0e0e0;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .percentage-fill {
+            background: linear-gradient(90deg, #2d5f7f 0%, #4a9eca 100%);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            color: white;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .percentage-fill.vegas {
+            background: linear-gradient(90deg, #ff8f00 0%, #ffb74d 100%);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: linear-gradient(135deg, #2d5f7f 0%, #4a9eca 100%);
+            color: white;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .badge.vegas {
+            background: linear-gradient(135deg, #ff8f00 0%, #ffb74d 100%);
+        }
+
+        /* Section Headers */
+        .section-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 30px 0 20px 0;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #1a2332;
+        }
+
+        /* Comparison Grid */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .metrics-comparison,
+            .funnel-container,
+            .overlap-grid,
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+
+            .tab-navigation {
+                flex-direction: column;
+            }
+            
+            .tab-button {
+                font-size: 0.95em;
+                padding: 12px 20px;
+            }
+        }
+
+        /* Kentrix Branding */
+        .kentrix-watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.3;
+            font-size: 12px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-container">
+            <div class="logo-k">K</div>
+        </div>
+        <div class="header-content">
+            <div class="brand">KENTRIX</div>
+            <h1>Store Analytics Dashboard</h1>
+            <p>Consumer Intelligence Delivered</p>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+        <button class="tab-button active" onclick="showTab('overview')">📊 Overview & Conversion</button>
+        <button class="tab-button" onclick="showTab('income')">💰 Income Analysis</button>
+        <button class="tab-button" onclick="showTab('lifestyle')">👥 Lifestyle Segments</button>
+        <button class="tab-button" onclick="showTab('fashion')">👗 Fashion & Apparel</button>
+        <button class="tab-button" onclick="showTab('distance')">📍 Distance & Reach</button>
+        <button class="tab-button" onclick="showTab('online')">🛒 Online Behavior</button>
+        <button class="tab-button" onclick="showTab('insights')">💡 Strategic Insights</button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="overview" class="tab-content active">
+        <!-- Key Metrics Comparison -->
+        <div class="key-metrics-section">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #1a2332;">Store Performance Comparison</h2>
+            <div class="metrics-comparison">
+                <div class="store-metrics pacific">
+                    <div class="store-title">🏬 Pacific Mall, Tagore Garden</div>
+                    <div class="metric-row">
+                        <span class="metric-label">Total Footfall</span>
+                        <span class="metric-value">24,976</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Catchment Population</span>
+                        <span class="metric-value">1,252,833</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Catchment Households</span>
+                        <span class="metric-value">275,961</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Conversion Rate</span>
+                        <span class="metric-value">1.99%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg HH Income</span>
+                        <span class="metric-value">₹108,000</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Outside Catchment</span>
+                        <span class="metric-value">~54% (>5km)</span>
+                    </div>
+                </div>
+
+                <div class="store-metrics vegas">
+                    <div class="store-title">🏬 Vegas Mall, Dwarka</div>
+                    <div class="metric-row">
+                        <span class="metric-label">Total Footfall</span>
+                        <span class="metric-value">13,633</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Catchment Population</span>
+                        <span class="metric-value">1,121,229</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Catchment Households</span>
+                        <span class="metric-value">237,698</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Conversion Rate</span>
+                        <span class="metric-value">1.22%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg HH Income</span>
+                        <span class="metric-value">₹79,000</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Outside Catchment</span>
+                        <span class="metric-value">~47% (>5km)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversion Funnel -->
+        <div class="conversion-funnel">
+            <h2 style="text-align: center; margin-bottom: 10px; color: #1a2332;">Catchment to Footfall Conversion Funnel</h2>
+            <div class="funnel-container">
+                <div>
+                    <h3 style="text-align: center; color: #2d5f7f; margin-bottom: 20px;">Pacific Mall</h3>
+                    <div class="funnel-stage">
+                        <div class="funnel-value">1,252,833</div>
+                        <div class="funnel-label">Catchment Population</div>
+                    </div>
+                    <div style="text-align: center; margin: 10px 0;">⬇️</div>
+                    <div class="funnel-stage">
+                        <div class="funnel-value">24,976</div>
+                        <div class="funnel-label">Total Footfall</div>
+                        <div class="conversion-rate">1.99% Conversion</div>
+                    </div>
+                    <div style="text-align: center; margin: 10px 0;">⬇️</div>
+                    <div class="funnel-stage">
+                        <div class="funnel-value">11,487</div>
+                        <div class="funnel-label">From Catchment (46%)</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="text-align: center; color: #ff8f00; margin-bottom: 20px;">Vegas Mall</h3>
+                    <div class="funnel-stage">
+                        <div class="funnel-value vegas">1,121,229</div>
+                        <div class="funnel-label">Catchment Population</div>
+                    </div>
+                    <div style="text-align: center; margin: 10px 0;">⬇️</div>
+                    <div class="funnel-stage">
+                        <div class="funnel-value vegas">13,633</div>
+                        <div class="funnel-label">Total Footfall</div>
+                        <div class="conversion-rate vegas">1.22% Conversion</div>
+                    </div>
+                    <div style="text-align: center; margin: 10px 0;">⬇️</div>
+                    <div class="funnel-stage">
+                        <div class="funnel-value vegas">7,224</div>
+                        <div class="funnel-label">From Catchment (53%)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footfall Source Analysis -->
+        <div class="overlap-section">
+            <h2 style="text-align: center; margin-bottom: 10px; color: #1a2332;">Footfall Source Analysis</h2>
+            <div class="overlap-grid">
+                <div>
+                    <h3 style="text-align: center; color: #2d5f7f; margin-bottom: 15px;">Pacific Mall</h3>
+                    <div class="overlap-card">
+                        <div class="overlap-percentage">46%</div>
+                        <div class="overlap-description">Footfall from Catchment Area (≤5km)</div>
+                    </div>
+                    <div class="overlap-card" style="margin-top: 15px;">
+                        <div class="overlap-percentage">54%</div>
+                        <div class="overlap-description">Footfall from Outside Catchment (>5km)</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="text-align: center; color: #ff8f00; margin-bottom: 15px;">Vegas Mall</h3>
+                    <div class="overlap-card">
+                        <div class="overlap-percentage" style="background: linear-gradient(135deg, #ff8f00 0%, #ffb74d 100%); -webkit-background-clip: text;">53%</div>
+                        <div class="overlap-description">Footfall from Catchment Area (≤5km)</div>
+                    </div>
+                    <div class="overlap-card" style="margin-top: 15px;">
+                        <div class="overlap-percentage" style="background: linear-gradient(135deg, #ff8f00 0%, #ffb74d 100%); -webkit-background-clip: text;">47%</div>
+                        <div class="overlap-description">Footfall from Outside Catchment (>5km)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparative Performance Chart -->
+        <div class="chart-section">
+            <div class="chart-title">Store Performance Index</div>
+            <div class="chart-container">
+                <canvas id="performanceRadar"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Income Analysis Tab -->
+    <div id="income" class="tab-content">
+        <div class="chart-section">
+            <div class="chart-title">Footfall vs Catchment Income Distribution</div>
+            <div class="chart-container">
+                <canvas id="incomeComparisonChart"></canvas>
+            </div>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="chart-section">
+                <div class="chart-title">Pacific Mall - Income Profile Alignment</div>
+                <div class="chart-container chart-container-small">
+                    <canvas id="pacificIncomeAlignment"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">Vegas Mall - Income Profile Alignment</div>
+                <div class="chart-container chart-container-small">
+                    <canvas id="vegasIncomeAlignment"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="insights-section">
+            <div class="insights-title">💰 Income Profile Insights</div>
+            <div class="insight-card insight-highlight">
+                <div class="insight-title">Pacific Mall - Premium Market Penetration</div>
+                <div class="insight-text">
+                    Pacific Mall successfully attracts 49.9% of footfall from ₹80K+ income segments, closely matching its catchment profile (45% at ₹80K+). The store shows strong appeal to Medium Good (39.67%) and Good (10.22%) income segments, indicating effective premium positioning.
+                </div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-title">Vegas Mall - Value Market Alignment</div>
+                <div class="insight-text">
+                    Vegas Mall's footfall is dominated by Medium income segment (52.39%), significantly higher than Pacific Mall (38.60%). This aligns with its catchment area where 60.2% of households earn ₹40-80K. The store serves its local market effectively with value-oriented offerings.
+                </div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-title">Conversion Rate Correlation</div>
+                <div class="insight-text">
+                    Higher average household income in Pacific Mall's catchment (₹108K vs ₹79K) correlates with 63% better conversion rate (1.99% vs 1.22%), suggesting income level is a key driver of store visitation frequency.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lifestyle Segments Tab -->
+    <div id="lifestyle" class="tab-content">
+        <div class="chart-section">
+            <div class="chart-title">Lifestyle Segment Distribution - Footfall vs Catchment</div>
+            <div class="chart-container">
+                <canvas id="lsiComparisonChart"></canvas>
+            </div>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="chart-section">
+                <div class="chart-title">Pacific Mall - LSI Penetration Rate</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Lifestyle Segment</th>
+                                <th>Footfall %</th>
+                                <th>Catchment %</th>
+                                <th>Index</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Upcoming Urban Climbers</td>
+                                <td><span class="badge">31.50%</span></td>
+                                <td>8.57%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">3.67x</td>
+                            </tr>
+                            <tr>
+                                <td>Conservative Urban Middle Class</td>
+                                <td><span class="badge">21.55%</span></td>
+                                <td>27.82%</td>
+                                <td style="color: #dc2626; font-weight: 600;">0.77x</td>
+                            </tr>
+                            <tr>
+                                <td>Urban Established Elite</td>
+                                <td><span class="badge">15.93%</span></td>
+                                <td>19.60%</td>
+                                <td style="color: #dc2626; font-weight: 600;">0.81x</td>
+                            </tr>
+                            <tr>
+                                <td>Aspiring Urban Middle Class</td>
+                                <td><span class="badge">15.77%</span></td>
+                                <td>19.61%</td>
+                                <td style="color: #dc2626; font-weight: 600;">0.80x</td>
+                            </tr>
+                            <tr>
+                                <td>Successful Urban Fast Climbers</td>
+                                <td><span class="badge">9.40%</span></td>
+                                <td>8.48%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">1.11x</td>
+                            </tr>
+                            <tr>
+                                <td>Urban New Wealth</td>
+                                <td><span class="badge">4.45%</span></td>
+                                <td>11.21%</td>
+                                <td style="color: #dc2626; font-weight: 600;">0.40x</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">Vegas Mall - LSI Penetration Rate</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Lifestyle Segment</th>
+                                <th>Footfall %</th>
+                                <th>Catchment %</th>
+                                <th>Index</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Upcoming Urban Climbers</td>
+                                <td><span class="badge vegas">45.54%</span></td>
+                                <td>39.94%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">1.14x</td>
+                            </tr>
+                            <tr>
+                                <td>Aspiring Urban Middle Class</td>
+                                <td><span class="badge vegas">16.21%</span></td>
+                                <td>4.48%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">3.62x</td>
+                            </tr>
+                            <tr>
+                                <td>Successful Urban Fast Climbers</td>
+                                <td><span class="badge vegas">11.13%</span></td>
+                                <td>5.85%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">1.90x</td>
+                            </tr>
+                            <tr>
+                                <td>Urban Established Elite</td>
+                                <td><span class="badge vegas">10.90%</span></td>
+                                <td>8.16%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">1.34x</td>
+                            </tr>
+                            <tr>
+                                <td>Conservative Urban Middle Class</td>
+                                <td><span class="badge vegas">8.10%</span></td>
+                                <td>0.41%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">19.76x</td>
+                            </tr>
+                            <tr>
+                                <td>Urban New Wealth</td>
+                                <td><span class="badge vegas">7.50%</span></td>
+                                <td>8.23%</td>
+                                <td style="color: #dc2626; font-weight: 600;">0.91x</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fashion & Apparel Tab -->
+    <div id="fashion" class="tab-content">
+        <div class="chart-section">
+            <div class="chart-title">Fashion Segments: Footfall vs Catchment Comparison</div>
+            <div class="chart-container">
+                <canvas id="fashionComparisonChart"></canvas>
+            </div>
+        </div>
+
+        <div class="key-metrics-section">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #1a2332;">Fashion & Apparel Spending Metrics</h2>
+            <div class="metrics-comparison">
+                <div class="store-metrics pacific">
+                    <div class="store-title">🏬 Pacific Mall</div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Monthly Apparel Spend (Catchment)</span>
+                        <span class="metric-value">₹7,000</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Premium+ Footfall Share</span>
+                        <span class="metric-value">36.86%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Premium+ Catchment Share</span>
+                        <span class="metric-value">41.84%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Economy Segment Index</span>
+                        <span class="metric-value">1.82x (Over-indexed)</span>
+                    </div>
+                </div>
+                <div class="store-metrics vegas">
+                    <div class="store-title">🏬 Vegas Mall</div>
+                    <div class="metric-row">
+                        <span class="metric-label">Avg Monthly Apparel Spend (Catchment)</span>
+                        <span class="metric-value">₹5,500</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Premium+ Footfall Share</span>
+                        <span class="metric-value">28.58%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Premium+ Catchment Share</span>
+                        <span class="metric-value">17.83%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Economy Segment Index</span>
+                        <span class="metric-value">0.61x (Under-indexed)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="chart-section">
+                <div class="chart-title">Pacific Mall - Fashion Footfall vs Catchment</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fashion Segment</th>
+                                <th>Footfall %</th>
+                                <th>Catchment %</th>
+                                <th>Index</th>
+                                <th>Gap</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Economy (< ₹800)</td>
+                                <td><span class="badge">32.13%</span></td>
+                                <td>17.66%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">1.82x</td>
+                                <td>+14.47pp</td>
+                            </tr>
+                            <tr>
+                                <td>Medium (₹800-2K)</td>
+                                <td><span class="badge">30.12%</span></td>
+                                <td>40.50%</td>
+                                <td style="color: #dc2626; font-weight: 600;">0.74x</td>
+                                <td>-10.38pp</td>
+                            </tr>
+                            <tr>
+                                <td>Premium (₹2K-3.5K)</td>
+                                <td><span class="badge">26.53%</span></td>
+                                <td>28.72%</td>
+                                <td style="color: #dc2626; font-weight: 600;">0.92x</td>
+                                <td>-2.19pp</td>
+                            </tr>
+                            <tr>
+                                <td>Super Premium (₹3.5K-7K)</td>
+                                <td><span class="badge">7.44%</span></td>
+                                <td>11.95%</td>
+                                <td style="color: #dc2626; font-weight: 600;">0.62x</td>
+                                <td>-4.51pp</td>
+                            </tr>
+                            <tr>
+                                <td>Luxury (> ₹7K)</td>
+                                <td><span class="badge">2.89%</span></td>
+                                <td>1.17%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">2.47x</td>
+                                <td>+1.72pp</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">Vegas Mall - Fashion Footfall vs Catchment</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fashion Segment</th>
+                                <th>Footfall %</th>
+                                <th>Catchment %</th>
+                                <th>Index</th>
+                                <th>Gap</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Economy (< ₹800)</td>
+                                <td><span class="badge vegas">38.60%</span></td>
+                                <td>63.42%</td>
+                                <td style="color: #dc2626; font-weight: 600;">0.61x</td>
+                                <td>-24.82pp</td>
+                            </tr>
+                            <tr>
+                                <td>Medium (₹800-2K)</td>
+                                <td><span class="badge vegas">32.29%</span></td>
+                                <td>18.76%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">1.72x</td>
+                                <td>+13.53pp</td>
+                            </tr>
+                            <tr>
+                                <td>Premium (₹2K-3.5K)</td>
+                                <td><span class="badge vegas">18.48%</span></td>
+                                <td>7.05%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">2.62x</td>
+                                <td>+11.43pp</td>
+                            </tr>
+                            <tr>
+                                <td>Super Premium (₹3.5K-7K)</td>
+                                <td><span class="badge vegas">7.84%</span></td>
+                                <td>10.78%</td>
+                                <td style="color: #dc2626; font-weight: 600;">0.73x</td>
+                                <td>-2.94pp</td>
+                            </tr>
+                            <tr>
+                                <td>Luxury (> ₹7K)</td>
+                                <td><span class="badge vegas">2.26%</span></td>
+                                <td>0.00%</td>
+                                <td style="color: #2d5f7f; font-weight: 600;">∞</td>
+                                <td>+2.26pp</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-title">Product Classification Distribution</div>
+            <div class="comparison-grid">
+                <div class="chart-container chart-container-small">
+                    <canvas id="pacificProductClass"></canvas>
+                </div>
+                <div class="chart-container chart-container-small">
+                    <canvas id="vegasProductClass"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="insights-section">
+            <div class="insights-title">👗 Fashion & Apparel Insights</div>
+            <div class="insight-card insight-highlight">
+                <div class="insight-title">Pacific Mall - Trading Up Phenomenon</div>
+                <div class="insight-text">
+                    <strong>Key Finding:</strong> Pacific Mall footfall shows significant trading up behavior.<br>
+                    • Economy segment over-indexed at 1.82x (32.13% footfall vs 17.66% catchment)<br>
+                    • Medium segment under-indexed at 0.74x (30.12% footfall vs 40.50% catchment)<br>
+                    • Luxury segment massively over-indexed at 2.47x (2.89% vs 1.17%)<br><br>
+                    <strong>Interpretation:</strong> Pacific Mall attracts aspirational shoppers from economy segments who visit for special purchases, while also drawing luxury shoppers from beyond its immediate catchment. The mall's ₹7,000 average monthly apparel spend in catchment supports premium positioning.
+                </div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-title">Vegas Mall - Upward Mobility Pattern</div>
+                <div class="insight-text">
+                    <strong>Key Finding:</strong> Vegas Mall shows clear upgrade behavior from catchment profile.<br>
+                    • Economy segment under-indexed at 0.61x (38.60% footfall vs 63.42% catchment)<br>
+                    • Medium segment over-indexed at 1.72x (32.29% vs 18.76%)<br>
+                    • Premium segment highly over-indexed at 2.62x (18.48% vs 7.05%)<br><br>
+                    <strong>Interpretation:</strong> Despite catchment being 63% economy segment, Vegas Mall successfully attracts customers seeking to upgrade their fashion choices. The ₹5,500 monthly apparel spend suggests value-conscious but aspirational shopping behavior.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distance & Reach Tab -->
+    <div id="distance" class="tab-content">
+        <div class="chart-section">
+            <div class="chart-title">Customer Distance Distribution</div>
+            <div class="chart-container">
+                <canvas id="distanceComparisonChart"></canvas>
+            </div>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="chart-section">
+                <div class="chart-title">Pacific Mall - Distance Profile</div>
+                <div class="chart-container chart-container-small">
+                    <canvas id="pacificDistancePie"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">Vegas Mall - Distance Profile</div>
+                <div class="chart-container chart-container-small">
+                    <canvas id="vegasDistancePie"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="insights-section">
+            <div class="insights-title">📍 Distance & Reach Analysis</div>
+            <div class="insight-card">
+                <div class="insight-title">Pacific Mall - Destination Shopping Center</div>
+                <div class="insight-text">
+                    54.09% of Pacific Mall's footfall travels >5km, indicating strong destination appeal. Only 25.44% come from immediate vicinity (≤2km), suggesting the mall attracts customers for specific shopping experiences rather than convenience visits.
+                </div>
+            </div>
+            <div class="insight-card insight-highlight">
+                <div class="insight-title">Vegas Mall - Mixed Local & Destination</div>
+                <div class="insight-text">
+                    Vegas Mall shows more balanced distribution with 47.04% from >5km and 17.70% from ≤2km. The higher proportion from 3-5km range (22.09% vs Pacific Mall's 13.55%) indicates stronger regional appeal within medium distance.
+                </div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-title">Expected Usage Patterns</div>
+                <div class="insight-text">
+                    Pacific Mall: 57.14% expect rare/irregular use, 29.96% moderate use, 11.29% frequent use<br>
+                    Vegas Mall: 64.66% expect rare/irregular use, 23.74% moderate use, 10.80% frequent use<br>
+                    Both malls primarily serve occasional shopping needs rather than daily convenience.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Online Behavior Tab -->
+    <div id="online" class="tab-content">
+        <div class="chart-section">
+            <div class="chart-title">Online Shopping Propensity: Footfall vs Catchment Analysis</div>
+            <div class="chart-container">
+                <canvas id="onlineFrequencyChart"></canvas>
+            </div>
+        </div>
+
+        <div class="key-metrics-section">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #1a2332;">Online vs Offline Shopping Indicators</h2>
+            <div class="metrics-comparison">
+                <div class="store-metrics pacific">
+                    <div class="store-title">🏬 Pacific Mall Analysis</div>
+                    <div class="metric-row">
+                        <span class="metric-label">High Income Catchment (>₹130K)</span>
+                        <span class="metric-value">31.9%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Expected Heavy Store Use</span>
+                        <span class="metric-value">11.29%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Digital-Savvy Segments</span>
+                        <span class="metric-value">~35% (Elite + New Wealth)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Likely Online Shoppers</span>
+                        <span class="metric-value">~60-65%</span>
+                    </div>
+                </div>
+                <div class="store-metrics vegas">
+                    <div class="store-title">🏬 Vegas Mall Analysis</div>
+                    <div class="metric-row">
+                        <span class="metric-label">High Income Catchment (>₹130K)</span>
+                        <span class="metric-value">14.6%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Expected Heavy Store Use</span>
+                        <span class="metric-value">10.80%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Digital-Savvy Segments</span>
+                        <span class="metric-value">~16% (Elite + New Wealth)</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Likely Online Shoppers</span>
+                        <span class="metric-value">~40-45%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="chart-section">
+                <div class="chart-title">Pacific Mall - Online Behavior Profile</div>
+                <div class="chart-container chart-container-small">
+                    <canvas id="pacificOnlineBehavior"></canvas>
+                </div>
+                <div class="table-container" style="margin-top: 20px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Indicator</th>
+                                <th>Footfall</th>
+                                <th>Catchment Est.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Rare/Irregular Store Use</td>
+                                <td><span class="badge">57.14%</span></td>
+                                <td>~65-70%</td>
+                            </tr>
+                            <tr>
+                                <td>Moderate Store Use</td>
+                                <td><span class="badge">29.96%</span></td>
+                                <td>~20-25%</td>
+                            </tr>
+                            <tr>
+                                <td>Frequent Store Use</td>
+                                <td><span class="badge">11.29%</span></td>
+                                <td>~8-10%</td>
+                            </tr>
+                            <tr style="background: #f8f9fa;">
+                                <td><strong>Online Purchase Likelihood</strong></td>
+                                <td><strong>High (60%+)</strong></td>
+                                <td><strong>Very High (70%+)</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">Vegas Mall - Online Behavior Profile</div>
+                <div class="chart-container chart-container-small">
+                    <canvas id="vegasOnlineBehavior"></canvas>
+                </div>
+                <div class="table-container" style="margin-top: 20px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Indicator</th>
+                                <th>Footfall</th>
+                                <th>Catchment Est.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Rare/Irregular Store Use</td>
+                                <td><span class="badge vegas">64.66%</span></td>
+                                <td>~70-75%</td>
+                            </tr>
+                            <tr>
+                                <td>Moderate Store Use</td>
+                                <td><span class="badge vegas">23.74%</span></td>
+                                <td>~18-22%</td>
+                            </tr>
+                            <tr>
+                                <td>Frequent Store Use</td>
+                                <td><span class="badge vegas">10.80%</span></td>
+                                <td>~5-8%</td>
+                            </tr>
+                            <tr style="background: #f8f9fa;">
+                                <td><strong>Online Purchase Likelihood</strong></td>
+                                <td><strong>Moderate (45%+)</strong></td>
+                                <td><strong>High (55%+)</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="insights-section">
+            <div class="insights-title">🛒 Online Purchase Behavior: Footfall vs Catchment Analysis</div>
+            <div class="insight-card insight-highlight">
+                <div class="insight-title">Pacific Mall - High Digital Competition from Catchment</div>
+                <div class="insight-text">
+                    <strong>Footfall vs Catchment Pattern:</strong><br>
+                    • Footfall shows 57.14% rare/irregular use, but catchment likely 65-70% rare use<br>
+                    • High-income catchment (31.9% >₹130K) correlates with higher online shopping<br>
+                    • Urban Elite (19.6% catchment) and New Wealth (11.2%) are digital-first segments<br><br>
+                    
+                    <strong>Key Insight:</strong> Pacific Mall successfully converts some online shoppers to physical visits (11.29% frequent use vs 8-10% expected), likely through premium experiences and exclusive offerings that can't be replicated online.
+                </div>
+            </div>
+            <div class="insight-card">
+                <div class="insight-title">Vegas Mall - Value Shoppers Split Between Channels</div>
+                <div class="insight-text">
+                    <strong>Footfall vs Catchment Pattern:</strong><br>
+                    • Footfall shows 64.66% rare use, catchment estimated at 70-75% rare use<br>
+                    • Economy segment (63.4% catchment) shows mixed online adoption<br>
+                    • Striving Urban Climbers (32.8% catchment) are price-sensitive online comparers<br><br>
+                    
+                    <strong>Key Insight:</strong> Vegas Mall attracts customers despite heavy online price comparison behavior. The 10.80% frequent users slightly exceed catchment expectations (5-8%), suggesting successful value proposition.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategic Insights Tab -->
+    <div id="insights" class="tab-content">
+        <div class="insights-section">
+            <div class="insights-title">🎯 Strategic Recommendations</div>
+            
+            <div class="insight-card insight-highlight">
+                <div class="insight-title">🏆 Pacific Mall - Leverage Premium Positioning</div>
+                <div class="insight-text">
+                    <strong>Strengths:</strong><br>
+                    • 63% higher conversion rate driven by affluent catchment (₹108K avg income)<br>
+                    • Strong destination appeal with 54% traveling >5km<br>
+                    • Balanced income distribution across Medium to Premium segments<br><br>
+                    <strong>Opportunities:</strong><br>
+                    • Underserving Conservative Urban Middle Class (21.55% footfall vs 27.82% catchment)<br>
+                    • Potential to increase penetration in Urban New Wealth segment (0.40x index)<br>
+                    • Expand luxury offerings given 19.60% Urban Established Elite in catchment<br><br>
+                    <strong>Actions:</strong><br>
+                    • Develop targeted campaigns for Conservative Middle Class families<br>
+                    • Introduce premium experiential retail to maintain destination status<br>
+                    • Create loyalty programs for high-frequency Medium Good income segment (39.67%)
+                </div>
+            </div>
+
+            <div class="insight-card insight-highlight">
+                <div class="insight-title">📈 Vegas Mall - Optimize Local Market Penetration</div>
+                <div class="insight-text">
+                    <strong>Strengths:</strong><br>
+                    • Well-aligned with local market (52.39% footfall in ₹40-80K bracket)<br>
+                    • Strong pull from Aspiring Urban Middle Class (3.62x index)<br>
+                    • Better regional coverage with 22.09% from 3-5km range<br><br>
+                    <strong>Challenges:</strong><br>
+                    • Lower conversion rate (1.22%) despite similar catchment size<br>
+                    • 45.54% footfall from Urban Climbers vs 39.94% in catchment (slight oversaturation)<br>
+                    • Limited appeal to higher income segments<br><br>
+                    <strong>Actions:</strong><br>
+                    • Focus on value-oriented merchandising for Economy segment (38.60% footfall)<br>
+                    • Improve local marketing within 3km radius to boost conversion<br>
+                    • Develop weekday promotions targeting 64.66% expecting rare/irregular use<br>
+                    • Partner with local communities to increase frequency from nearby areas
+                </div>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-title">📊 Key Performance Drivers Analysis</div>
+                <div class="insight-text">
+                    <strong>Conversion Rate Factors:</strong><br>
+                    • Income Level: Pacific Mall's higher income catchment (₹108K vs ₹79K) = 63% better conversion<br>
+                    • Distance Profile: Pacific Mall's destination appeal (54% >5km) indicates purposeful visits<br>
+                    • LSI Alignment: Vegas Mall shows better segment alignment but lower overall conversion<br><br>
+                    <strong>Footfall Composition Insights:</strong><br>
+                    • Pacific Mall: 46% from catchment, 54% from outside = Strong destination pull<br>
+                    • Vegas Mall: 53% from catchment, 47% from outside = More local dependence<br><br>
+                    <strong>Untapped Opportunities:</strong><br>
+                    • Pacific Mall: Conservative Urban Middle Class (6.27% gap between catchment and footfall)<br>
+                    • Vegas Mall: Striving Urban Climbers (32.82% in catchment, minimal in footfall)<br>
+                    • Both: Improve penetration in immediate vicinity (≤2km) for convenience shopping
+                </div>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-title">🚀 Growth Strategy Recommendations</div>
+                <div class="insight-text">
+                    <strong>For Pacific Mall:</strong><br>
+                    1. Premium Experience Enhancement: Invest in luxury brands and experiential retail<br>
+                    2. Family-Focused Initiatives: Target Conservative Middle Class with family events<br>
+                    3. Destination Marketing: Emphasize unique offerings worth traveling for<br>
+                    4. Digital Integration: Offer click-and-collect for distant customers<br>
+                    5. Fashion Focus: Expand premium/super-premium portfolio (36.86% current share)<br><br>
+                    
+                    <strong>For Vegas Mall:</strong><br>
+                    1. Value Proposition Strengthening: Focus on affordability and deals<br>
+                    2. Local Community Engagement: Build partnerships with nearby societies<br>
+                    3. Frequency Programs: Convert rare visitors into regular customers<br>
+                    4. Regional Hub Development: Become the go-to mall for 3-5km radius<br>
+                    5. Fashion Strategy: Strengthen economy segment (38.60% share) with value brands<br><br>
+                    
+                    <strong>Common Opportunities:</strong><br>
+                    • Implement dynamic pricing based on distance and frequency patterns<br>
+                    • Develop omnichannel strategies to capture online-to-offline conversions<br>
+                    • Create segment-specific loyalty programs based on LSI profiles<br>
+                    • Use data-driven inventory optimization matching footfall preferences<br>
+                    • Bridge online-offline gap: 87-88% expect rare visits, indicating high online competition
+                </div>
+            </div>
+
+            <div class="insight-card insight-highlight">
+                <div class="insight-title">💎 Fashion & Online Integration Strategy</div>
+                <div class="insight-text">
+                    <strong>Fashion Positioning Insights:</strong><br>
+                    • Pacific Mall: Premium+ segments (Premium, Super Premium, Luxury) = 36.86% of footfall<br>
+                    • Vegas Mall: Economy-Medium segments = 70.89% of footfall<br>
+                    • Product mix confirms positioning: Pacific Mall 18.01% premium products vs Vegas Mall 12.82%<br><br>
+                    
+                    <strong>Online Behavior Patterns:</strong><br>
+                    • Both malls face 57-65% "rare use" expectation = high online shopping substitution<br>
+                    • Only 11% expect frequent visits = need to create compelling offline-only experiences<br>
+                    • Distance correlation: >50% travel >5km yet expect rare use = purposeful destination shopping<br><br>
+                    
+                    <strong>Integrated Action Plan:</strong><br>
+                    1. <strong>Virtual-to-Physical:</strong> AR try-ons online, complete purchase in-store with styling advice<br>
+                    2. <strong>Exclusive Collections:</strong> In-store only premium launches (Pacific Mall) and flash sales (Vegas Mall)<br>
+                    3. <strong>Experience Centers:</strong> Fashion shows, personal styling that online cannot replicate<br>
+                    4. <strong>Smart Inventory:</strong> Use online browsing data to stock trending items<br>
+                    5. <strong>Loyalty Bridge:</strong> Online points redeemable only in-store to drive footfall<br>
+                    6. <strong>Social Commerce:</strong> Instagram/TikTok exclusive store events and previews
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="kentrix-watermark">Powered by Kentrix Consumer Intelligence</div>
+
+    <script>
+        // Tab switching function
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Chart configurations with Kentrix theme colors
+        const chartColors = {
+            pacific: 'rgba(45, 95, 127, 0.7)',
+            pacificBorder: 'rgba(45, 95, 127, 1)',
+            vegas: 'rgba(255, 143, 0, 0.7)',
+            vegasBorder: 'rgba(255, 143, 0, 1)',
+            catchmentPacific: 'rgba(74, 158, 202, 0.3)',
+            catchmentVegas: 'rgba(255, 183, 77, 0.3)'
+        };
+
+        // Performance Radar Chart
+        const performanceRadarCtx = document.getElementById('performanceRadar').getContext('2d');
+        new Chart(performanceRadarCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Footfall Volume', 'Catchment Size', 'Conversion Rate', 'Avg Income', 'Outside Reach', 'Premium Segments'],
+                datasets: [{
+                    label: 'Pacific Mall',
+                    data: [100, 100, 100, 100, 100, 100],
+                    backgroundColor: 'rgba(45, 95, 127, 0.2)',
+                    borderColor: 'rgba(45, 95, 127, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(45, 95, 127, 1)'
+                }, {
+                    label: 'Vegas Mall',
+                    data: [54.6, 89.5, 61.3, 73.1, 87.0, 60.2],
+                    backgroundColor: 'rgba(255, 143, 0, 0.2)',
+                    borderColor: 'rgba(255, 143, 0, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(255, 143, 0, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.r.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Income Comparison Chart
+        const incomeComparisonCtx = document.getElementById('incomeComparisonChart').getContext('2d');
+        new Chart(incomeComparisonCtx, {
+            type: 'bar',
+            data: {
+                labels: ['< ₹20K', '₹20-40K', '₹40-80K', '₹80-130K', '₹130-170K', '₹170-230K', '₹230-300K', '> ₹300K'],
+                datasets: [{
+                    label: 'Pacific Mall Footfall',
+                    data: [1.28, 1.51, 38.60, 39.67, 10.22, 5.50, 2.01, 1.22],
+                    backgroundColor: chartColors.pacific,
+                    borderColor: chartColors.pacificBorder,
+                    borderWidth: 2
+                }, {
+                    label: 'Pacific Mall Catchment',
+                    data: [0, 1.9, 21.7, 44.7, 14.4, 9.8, 6.3, 1.2],
+                    backgroundColor: chartColors.catchmentPacific,
+                    borderColor: chartColors.pacificBorder,
+                    borderWidth: 1
+                }, {
+                    label: 'Vegas Mall Footfall',
+                    data: [0.53, 1.69, 52.39, 28.57, 7.56, 6.55, 1.80, 0.91],
+                    backgroundColor: chartColors.vegas,
+                    borderColor: chartColors.vegasBorder,
+                    borderWidth: 2
+                }, {
+                    label: 'Vegas Mall Catchment',
+                    data: [0, 14.4, 60.2, 10.7, 1.7, 2.4, 10.5, 0],
+                    backgroundColor: chartColors.catchmentVegas,
+                    borderColor: chartColors.vegasBorder,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 65,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Pacific Mall Income Alignment
+        const pacificIncomeAlignmentCtx = document.getElementById('pacificIncomeAlignment').getContext('2d');
+        new Chart(pacificIncomeAlignmentCtx, {
+            type: 'line',
+            data: {
+                labels: ['< ₹20K', '₹20-40K', '₹40-80K', '₹80-130K', '₹130-170K', '₹170-230K', '₹230-300K', '> ₹300K'],
+                datasets: [{
+                    label: 'Footfall',
+                    data: [1.28, 1.51, 38.60, 39.67, 10.22, 5.50, 2.01, 1.22],
+                    borderColor: chartColors.pacificBorder,
+                    backgroundColor: chartColors.pacific,
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Catchment',
+                    data: [0, 1.9, 21.7, 44.7, 14.4, 9.8, 6.3, 1.2],
+                    borderColor: 'rgba(107, 114, 128, 1)',
+                    backgroundColor: 'rgba(107, 114, 128, 0.1)',
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Vegas Mall Income Alignment
+        const vegasIncomeAlignmentCtx = document.getElementById('vegasIncomeAlignment').getContext('2d');
+        new Chart(vegasIncomeAlignmentCtx, {
+            type: 'line',
+            data: {
+                labels: ['< ₹20K', '₹20-40K', '₹40-80K', '₹80-130K', '₹130-170K', '₹170-230K', '₹230-300K', '> ₹300K'],
+                datasets: [{
+                    label: 'Footfall',
+                    data: [0.53, 1.69, 52.39, 28.57, 7.56, 6.55, 1.80, 0.91],
+                    borderColor: chartColors.vegasBorder,
+                    backgroundColor: chartColors.vegas,
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Catchment',
+                    data: [0, 14.4, 60.2, 10.7, 1.7, 2.4, 10.5, 0],
+                    borderColor: 'rgba(107, 114, 128, 1)',
+                    backgroundColor: 'rgba(107, 114, 128, 0.1)',
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // LSI Comparison Chart
+        const lsiComparisonCtx = document.getElementById('lsiComparisonChart').getContext('2d');
+        new Chart(lsiComparisonCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Urban Established Elite', 'Urban New Wealth', 'Aspiring Urban Middle', 'Conservative Urban Middle', 'Successful Urban Fast', 'Upcoming Urban Climbers'],
+                datasets: [{
+                    label: 'Pacific Mall Footfall',
+                    data: [15.93, 4.45, 15.77, 21.55, 9.40, 31.50],
+                    backgroundColor: chartColors.pacific,
+                    borderColor: chartColors.pacificBorder,
+                    borderWidth: 2
+                }, {
+                    label: 'Pacific Mall Catchment',
+                    data: [19.60, 11.21, 19.61, 27.82, 8.48, 8.57],
+                    backgroundColor: chartColors.catchmentPacific,
+                    borderColor: chartColors.pacificBorder,
+                    borderWidth: 1
+                }, {
+                    label: 'Vegas Mall Footfall',
+                    data: [10.90, 7.50, 16.21, 8.10, 11.13, 45.54],
+                    backgroundColor: chartColors.vegas,
+                    borderColor: chartColors.vegasBorder,
+                    borderWidth: 2
+                }, {
+                    label: 'Vegas Mall Catchment',
+                    data: [8.16, 8.23, 4.48, 0.41, 5.85, 39.94],
+                    backgroundColor: chartColors.catchmentVegas,
+                    borderColor: chartColors.vegasBorder,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 50,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Distance Comparison Chart
+        const distanceComparisonCtx = document.getElementById('distanceComparisonChart').getContext('2d');
+        new Chart(distanceComparisonCtx, {
+            type: 'bar',
+            data: {
+                labels: ['< 1km', '1-2km', '2-3km', '3-5km', '> 5km'],
+                datasets: [{
+                    label: 'Pacific Mall',
+                    data: [8.33, 17.11, 6.93, 13.55, 54.09],
+                    backgroundColor: chartColors.pacific,
+                    borderColor: chartColors.pacificBorder,
+                    borderWidth: 2
+                }, {
+                    label: 'Vegas Mall',
+                    data: [10.23, 7.47, 13.16, 22.09, 47.04],
+                    backgroundColor: chartColors.vegas,
+                    borderColor: chartColors.vegasBorder,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 60,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Pacific Mall Distance Pie
+        const pacificDistancePieCtx = document.getElementById('pacificDistancePie').getContext('2d');
+        new Chart(pacificDistancePieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['> 5km', '3-5km', '2-3km', '1-2km', '< 1km'],
+                datasets: [{
+                    data: [54.09, 13.55, 6.93, 17.11, 8.33],
+                    backgroundColor: [
+                        'rgba(45, 95, 127, 0.9)',
+                        'rgba(74, 158, 202, 0.8)',
+                        'rgba(100, 181, 216, 0.7)',
+                        'rgba(144, 202, 235, 0.6)',
+                        'rgba(187, 222, 244, 0.5)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Vegas Mall Distance Pie
+        const vegasDistancePieCtx = document.getElementById('vegasDistancePie').getContext('2d');
+        new Chart(vegasDistancePieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['> 5km', '3-5km', '2-3km', '1-2km', '< 1km'],
+                datasets: [{
+                    data: [47.04, 22.09, 13.16, 7.47, 10.23],
+                    backgroundColor: [
+                        'rgba(255, 143, 0, 0.9)',
+                        'rgba(255, 167, 38, 0.8)',
+                        'rgba(255, 183, 77, 0.7)',
+                        'rgba(255, 204, 128, 0.6)',
+                        'rgba(255, 224, 178, 0.5)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Fashion Comparison Chart - Updated with Catchment data
+        const fashionComparisonCtx = document.getElementById('fashionComparisonChart').getContext('2d');
+        new Chart(fashionComparisonCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Economy\n(< ₹800)', 'Medium\n(₹800-2K)', 'Premium\n(₹2K-3.5K)', 'Super Premium\n(₹3.5K-7K)', 'Luxury\n(> ₹7K)'],
+                datasets: [{
+                    label: 'Pacific Mall Footfall',
+                    data: [32.13, 30.12, 26.53, 7.44, 2.89],
+                    backgroundColor: chartColors.pacific,
+                    borderColor: chartColors.pacificBorder,
+                    borderWidth: 2
+                }, {
+                    label: 'Pacific Mall Catchment',
+                    data: [17.66, 40.50, 28.72, 11.95, 1.17],
+                    backgroundColor: chartColors.catchmentPacific,
+                    borderColor: chartColors.pacificBorder,
+                    borderWidth: 1
+                }, {
+                    label: 'Vegas Mall Footfall',
+                    data: [38.60, 32.29, 18.48, 7.84, 2.26],
+                    backgroundColor: chartColors.vegas,
+                    borderColor: chartColors.vegasBorder,
+                    borderWidth: 2
+                }, {
+                    label: 'Vegas Mall Catchment',
+                    data: [63.42, 18.76, 7.05, 10.78, 0],
+                    backgroundColor: chartColors.catchmentVegas,
+                    borderColor: chartColors.vegasBorder,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 70,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Pacific Mall Product Classification
+        const pacificProductClassCtx = document.getElementById('pacificProductClass').getContext('2d');
+        new Chart(pacificProductClassCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Mass Products', 'Popular Products', 'Premium Products'],
+                datasets: [{
+                    data: [45.18, 36.81, 18.01],
+                    backgroundColor: [
+                        'rgba(187, 222, 244, 0.9)',
+                        'rgba(100, 181, 216, 0.9)',
+                        'rgba(45, 95, 127, 0.9)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Pacific Mall Product Mix'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Vegas Mall Product Classification
+        const vegasProductClassCtx = document.getElementById('vegasProductClass').getContext('2d');
+        new Chart(vegasProductClassCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Mass Products', 'Popular Products', 'Premium Products'],
+                datasets: [{
+                    data: [51.70, 35.48, 12.82],
+                    backgroundColor: [
+                        'rgba(255, 224, 178, 0.9)',
+                        'rgba(255, 183, 77, 0.9)',
+                        'rgba(255, 143, 0, 0.9)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Vegas Mall Product Mix'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Online Frequency Chart - Updated with Catchment estimates
+        const onlineFrequencyCtx = document.getElementById('onlineFrequencyChart').getContext('2d');
+        new Chart(onlineFrequencyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Rare/Irregular Use', 'Moderate/Average Use', 'Heavy/Frequent Use'],
+                datasets: [{
+                    label: 'Pacific Mall Footfall',
+                    data: [57.14, 29.96, 11.29],
+                    backgroundColor: chartColors.pacific,
+                    borderColor: chartColors.pacificBorder,
+                    borderWidth: 2
+                }, {
+                    label: 'Pacific Mall Catchment (Est.)',
+                    data: [67.5, 22.5, 9],
+                    backgroundColor: chartColors.catchmentPacific,
+                    borderColor: chartColors.pacificBorder,
+                    borderWidth: 1
+                }, {
+                    label: 'Vegas Mall Footfall',
+                    data: [64.66, 23.74, 10.80],
+                    backgroundColor: chartColors.vegas,
+                    borderColor: chartColors.vegasBorder,
+                    borderWidth: 2
+                }, {
+                    label: 'Vegas Mall Catchment (Est.)',
+                    data: [72.5, 20, 6.5],
+                    backgroundColor: chartColors.catchmentVegas,
+                    borderColor: chartColors.vegasBorder,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 80,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Pacific Mall Online Behavior Chart
+        const pacificOnlineBehaviorCtx = document.getElementById('pacificOnlineBehavior').getContext('2d');
+        new Chart(pacificOnlineBehaviorCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Digital Adoption', 'Store Loyalty', 'Online Shopping', 'Premium Focus', 'Convenience Seeking'],
+                datasets: [{
+                    label: 'Footfall Behavior',
+                    data: [60, 40, 55, 70, 65],
+                    backgroundColor: 'rgba(45, 95, 127, 0.2)',
+                    borderColor: chartColors.pacificBorder,
+                    borderWidth: 2,
+                    pointBackgroundColor: chartColors.pacificBorder
+                }, {
+                    label: 'Catchment Profile',
+                    data: [75, 25, 70, 60, 80],
+                    backgroundColor: 'rgba(107, 114, 128, 0.1)',
+                    borderColor: 'rgba(107, 114, 128, 1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointBackgroundColor: 'rgba(107, 114, 128, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        // Vegas Mall Online Behavior Chart
+        const vegasOnlineBehaviorCtx = document.getElementById('vegasOnlineBehavior').getContext('2d');
+        new Chart(vegasOnlineBehaviorCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Digital Adoption', 'Store Loyalty', 'Online Shopping', 'Value Seeking', 'Price Comparison'],
+                datasets: [{
+                    label: 'Footfall Behavior',
+                    data: [45, 35, 40, 85, 75],
+                    backgroundColor: 'rgba(255, 143, 0, 0.2)',
+                    borderColor: chartColors.vegasBorder,
+                    borderWidth: 2,
+                    pointBackgroundColor: chartColors.vegasBorder
+                }, {
+                    label: 'Catchment Profile',
+                    data: [35, 20, 55, 90, 85],
+                    backgroundColor: 'rgba(107, 114, 128, 0.1)',
+                    borderColor: 'rgba(107, 114, 128, 1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointBackgroundColor: 'rgba(107, 114, 128, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
