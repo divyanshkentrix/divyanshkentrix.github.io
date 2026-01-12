@@ -1,0 +1,1873 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consolidated SHAP Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            color: #0f172a;
+        }
+        .header {
+            background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 20px rgba(62, 193, 189, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 3px solid #3ec1bd;
+        }
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .header-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        .controls {
+            background: white;
+            padding: 1.25rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 90px;
+            z-index: 90;
+        }
+        .control-group {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .control-group label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9375rem;
+            white-space: nowrap;
+        }
+        .control-group select {
+            flex: 1;
+            padding: 0.625rem 1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            max-width: 700px;
+            font-weight: 500;
+        }
+        .control-group select:hover {
+            border-color: #3ec1bd;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #3ec1bd;
+            box-shadow: 0 0 0 4px rgba(62, 193, 189, 0.15);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem 2rem;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 2px solid #e0f2fe;
+            margin-bottom: 1.5rem;
+        }
+        .card-title {
+            color: #1e4a6b;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #3ec1bd;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .metric-box {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .metric-label {
+            font-size: 0.8125rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #2a5b7f;
+        }
+        .feature-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+        .feature-row:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateX(4px);
+        }
+        .feature-rank {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #64748b;
+            min-width: 28px;
+        }
+        .feature-name {
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.9375rem;
+            flex: 1;
+            min-width: 150px;
+            max-width: 280px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .feature-direction {
+            padding: 0.3rem 0.875rem;
+            border-radius: 14px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            flex-shrink: 0;
+        }
+        .positive {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+        .negative {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+        .feature-value {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            min-width: 80px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .value-positive { color: #10b981; }
+        .value-negative { color: #ef4444; }
+        .bar-container {
+            width: 200px;
+            height: 10px;
+            background: #e0f2fe;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bar-positive {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        }
+        .bar-negative {
+            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+        }
+        .interpretation {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            border-left: 4px solid #3ec1bd;
+        }
+        .interpretation h3 {
+            color: #2a5b7f;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+        .interpretation ul {
+            list-style-position: inside;
+            color: #334155;
+            line-height: 1.8;
+        }
+        .interpretation li {
+            margin-bottom: 0.5rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #64748b;
+        }
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+        .transformation-note {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+        .transformation-note p {
+            color: #92400e;
+            margin: 0;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem 1rem;
+            }
+            .card {
+                padding: 1.25rem;
+            }
+            .feature-row {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            .bar-container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Consolidated SHAP Analysis Dashboard</h1>
+        <div class="header-subtitle">Feature Importance Explanations for Predictions</div>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="place-select">🏪 Select Location:</label>
+            <select id="place-select" onchange="loadShapData(this.value)">
+                <option value="">-- Choose a location to view SHAP explanation --</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="content-area">
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <h2>Select a location to view SHAP analysis</h2>
+                <p>Choose a place from the dropdown above to see feature importance explanations</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const shapData = {
+    "15": {
+        placeId: "15",
+        placeName: "12.92729856_77.59972032",
+        predictedValue: 1608.38,
+        baseValue: 1381.69,
+        totalPositiveImpact: 0.19,
+        totalNegativeImpact: -0.04,
+        features: [
+        {
+            feature: "num_hh_spend_education_20k_to_25k",
+            shapValue: 0.0512,
+            absShap: 0.0512,
+            direction: "positive",
+            barWidth: 100.00,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k",
+            shapValue: 0.0480,
+            absShap: 0.0480,
+            direction: "positive",
+            barWidth: 93.75,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_300k_to_400k_log",
+            shapValue: 0.0228,
+            absShap: 0.0228,
+            direction: "positive",
+            barWidth: 44.59,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_ac_popular",
+            shapValue: 0.0143,
+            absShap: 0.0143,
+            direction: "positive",
+            barWidth: 28.02,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0130,
+            absShap: 0.0130,
+            direction: "positive",
+            barWidth: 25.49,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_education_16k_to_20k",
+            shapValue: 0.0129,
+            absShap: 0.0129,
+            direction: "positive",
+            barWidth: 25.17,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified",
+            shapValue: -0.0122,
+            absShap: 0.0122,
+            direction: "negative",
+            barWidth: 23.91,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1",
+            shapValue: -0.0102,
+            absShap: 0.0102,
+            direction: "negative",
+            barWidth: 20.01,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_sec_d1_x_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0090,
+            absShap: 0.0090,
+            direction: "negative",
+            barWidth: 17.49,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k_x_sec_d1",
+            shapValue: 0.0087,
+            absShap: 0.0087,
+            direction: "positive",
+            barWidth: 17.04,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_food_fmcg_14k_to_17k",
+            shapValue: 0.0080,
+            absShap: 0.0080,
+            direction: "positive",
+            barWidth: 15.55,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_near_zero_feature_count",
+            shapValue: 0.0069,
+            absShap: 0.0069,
+            direction: "positive",
+            barWidth: 13.56,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_div_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0062,
+            absShap: 0.0062,
+            direction: "positive",
+            barWidth: 12.08,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_x_sec_d1",
+            shapValue: -0.0055,
+            absShap: 0.0055,
+            direction: "negative",
+            barWidth: 10.78,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_2000",
+            shapValue: -0.0020,
+            absShap: 0.0020,
+            direction: "negative",
+            barWidth: 3.91,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        }]
+    },
+    "11": {
+        placeId: "11",
+        placeName: "12.97557062_77.51795245",
+        predictedValue: 1593.08,
+        baseValue: 1381.69,
+        totalPositiveImpact: 0.20,
+        totalNegativeImpact: -0.08,
+        features: [
+        {
+            feature: "num_fmcg_cosmetics_popular_classified",
+            shapValue: 0.0493,
+            absShap: 0.0493,
+            direction: "positive",
+            barWidth: 100.00,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_education_20k_to_25k",
+            shapValue: -0.0324,
+            absShap: 0.0324,
+            direction: "negative",
+            barWidth: 65.74,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1",
+            shapValue: 0.0322,
+            absShap: 0.0322,
+            direction: "positive",
+            barWidth: 65.29,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_ac_popular",
+            shapValue: 0.0314,
+            absShap: 0.0314,
+            direction: "positive",
+            barWidth: 63.79,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_2000",
+            shapValue: 0.0258,
+            absShap: 0.0258,
+            direction: "positive",
+            barWidth: 52.37,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0203,
+            absShap: 0.0203,
+            direction: "positive",
+            barWidth: 41.22,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k",
+            shapValue: -0.0189,
+            absShap: 0.0189,
+            direction: "negative",
+            barWidth: 38.36,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_300k_to_400k_log",
+            shapValue: -0.0152,
+            absShap: 0.0152,
+            direction: "negative",
+            barWidth: 30.91,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_education_16k_to_20k",
+            shapValue: 0.0152,
+            absShap: 0.0152,
+            direction: "positive",
+            barWidth: 30.74,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_x_sec_d1",
+            shapValue: 0.0149,
+            absShap: 0.0149,
+            direction: "positive",
+            barWidth: 30.25,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_sec_d1_x_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0112,
+            absShap: 0.0112,
+            direction: "positive",
+            barWidth: 22.65,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_near_zero_feature_count",
+            shapValue: -0.0052,
+            absShap: 0.0052,
+            direction: "negative",
+            barWidth: 10.56,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_food_fmcg_14k_to_17k",
+            shapValue: -0.0042,
+            absShap: 0.0042,
+            direction: "negative",
+            barWidth: 8.43,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k_x_sec_d1",
+            shapValue: -0.0021,
+            absShap: 0.0021,
+            direction: "negative",
+            barWidth: 4.28,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_div_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0017,
+            absShap: 0.0017,
+            direction: "positive",
+            barWidth: 3.47,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        }]
+    },
+    "16": {
+        placeId: "16",
+        placeName: "12.90569105_77.52741055",
+        predictedValue: 1488.75,
+        baseValue: 1381.69,
+        totalPositiveImpact: 0.15,
+        totalNegativeImpact: -0.07,
+        features: [
+        {
+            feature: "num_fmcg_cosmetics_popular_classified",
+            shapValue: -0.0303,
+            absShap: 0.0303,
+            direction: "negative",
+            barWidth: 100.00,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_ac_popular",
+            shapValue: 0.0298,
+            absShap: 0.0298,
+            direction: "positive",
+            barWidth: 98.17,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1",
+            shapValue: 0.0294,
+            absShap: 0.0294,
+            direction: "positive",
+            barWidth: 97.12,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_education_20k_to_25k",
+            shapValue: -0.0290,
+            absShap: 0.0290,
+            direction: "negative",
+            barWidth: 95.71,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_2000",
+            shapValue: 0.0222,
+            absShap: 0.0222,
+            direction: "positive",
+            barWidth: 73.26,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_education_16k_to_20k",
+            shapValue: 0.0159,
+            absShap: 0.0159,
+            direction: "positive",
+            barWidth: 52.57,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_x_sec_d1",
+            shapValue: 0.0135,
+            absShap: 0.0135,
+            direction: "positive",
+            barWidth: 44.45,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_food_fmcg_14k_to_17k",
+            shapValue: 0.0121,
+            absShap: 0.0121,
+            direction: "positive",
+            barWidth: 39.89,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0104,
+            absShap: 0.0104,
+            direction: "positive",
+            barWidth: 34.20,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1_x_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0096,
+            absShap: 0.0096,
+            direction: "positive",
+            barWidth: 31.76,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_div_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0050,
+            absShap: 0.0050,
+            direction: "negative",
+            barWidth: 16.36,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k",
+            shapValue: 0.0040,
+            absShap: 0.0040,
+            direction: "positive",
+            barWidth: 13.22,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k_x_sec_d1",
+            shapValue: 0.0030,
+            absShap: 0.0030,
+            direction: "positive",
+            barWidth: 9.78,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_300k_to_400k_log",
+            shapValue: -0.0021,
+            absShap: 0.0021,
+            direction: "negative",
+            barWidth: 7.06,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_numeric_min",
+            shapValue: -0.0010,
+            absShap: 0.0010,
+            direction: "negative",
+            barWidth: 3.38,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        }]
+    },
+    "12": {
+        placeId: "12",
+        placeName: "12.91232292_77.48442681",
+        predictedValue: 1349.90,
+        baseValue: 1381.69,
+        totalPositiveImpact: 0.10,
+        totalNegativeImpact: -0.25,
+        features: [
+        {
+            feature: "num_fmcg_cosmetics_popular_classified",
+            shapValue: -0.0454,
+            absShap: 0.0454,
+            direction: "negative",
+            barWidth: 100.00,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1",
+            shapValue: 0.0428,
+            absShap: 0.0428,
+            direction: "positive",
+            barWidth: 94.27,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0428,
+            absShap: 0.0428,
+            direction: "negative",
+            barWidth: 94.25,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_ac_popular",
+            shapValue: -0.0348,
+            absShap: 0.0348,
+            direction: "negative",
+            barWidth: 76.73,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_food_fmcg_14k_to_17k",
+            shapValue: -0.0276,
+            absShap: 0.0276,
+            direction: "negative",
+            barWidth: 60.75,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_x_sec_d1",
+            shapValue: 0.0260,
+            absShap: 0.0260,
+            direction: "positive",
+            barWidth: 57.31,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_education_20k_to_25k",
+            shapValue: -0.0247,
+            absShap: 0.0247,
+            direction: "negative",
+            barWidth: 54.37,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1_x_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0228,
+            absShap: 0.0228,
+            direction: "positive",
+            barWidth: 50.29,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k",
+            shapValue: -0.0221,
+            absShap: 0.0221,
+            direction: "negative",
+            barWidth: 48.61,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_education_16k_to_20k",
+            shapValue: -0.0211,
+            absShap: 0.0211,
+            direction: "negative",
+            barWidth: 46.44,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_300k_to_400k_log",
+            shapValue: -0.0141,
+            absShap: 0.0141,
+            direction: "negative",
+            barWidth: 31.15,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_near_zero_feature_count",
+            shapValue: -0.0064,
+            absShap: 0.0064,
+            direction: "negative",
+            barWidth: 14.17,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_div_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0051,
+            absShap: 0.0051,
+            direction: "negative",
+            barWidth: 11.33,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_2000",
+            shapValue: 0.0045,
+            absShap: 0.0045,
+            direction: "positive",
+            barWidth: 9.92,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k_x_sec_d1",
+            shapValue: -0.0041,
+            absShap: 0.0041,
+            direction: "negative",
+            barWidth: 8.94,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        }]
+    },
+    "17": {
+        placeId: "17",
+        placeName: "12.95010884_77.61234421",
+        predictedValue: 1121.11,
+        baseValue: 1381.69,
+        totalPositiveImpact: 0.17,
+        totalNegativeImpact: -0.28,
+        features: [
+        {
+            feature: "num_hh_spend_education_20k_to_25k",
+            shapValue: 0.0611,
+            absShap: 0.0611,
+            direction: "positive",
+            barWidth: 100.00,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_div_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0491,
+            absShap: 0.0491,
+            direction: "negative",
+            barWidth: 80.37,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified",
+            shapValue: -0.0439,
+            absShap: 0.0439,
+            direction: "negative",
+            barWidth: 71.94,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k",
+            shapValue: 0.0424,
+            absShap: 0.0424,
+            direction: "positive",
+            barWidth: 69.45,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0419,
+            absShap: 0.0419,
+            direction: "negative",
+            barWidth: 68.58,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_ac_popular",
+            shapValue: -0.0363,
+            absShap: 0.0363,
+            direction: "negative",
+            barWidth: 59.44,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1",
+            shapValue: -0.0358,
+            absShap: 0.0358,
+            direction: "negative",
+            barWidth: 58.66,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_food_fmcg_14k_to_17k",
+            shapValue: -0.0287,
+            absShap: 0.0287,
+            direction: "negative",
+            barWidth: 47.08,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_300k_to_400k_log",
+            shapValue: 0.0222,
+            absShap: 0.0222,
+            direction: "positive",
+            barWidth: 36.33,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1_x_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0221,
+            absShap: 0.0221,
+            direction: "positive",
+            barWidth: 36.21,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_2000",
+            shapValue: -0.0206,
+            absShap: 0.0206,
+            direction: "negative",
+            barWidth: 33.71,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k_x_sec_d1",
+            shapValue: 0.0169,
+            absShap: 0.0169,
+            direction: "positive",
+            barWidth: 27.68,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_education_16k_to_20k",
+            shapValue: -0.0130,
+            absShap: 0.0130,
+            direction: "negative",
+            barWidth: 21.23,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_near_zero_feature_count",
+            shapValue: 0.0101,
+            absShap: 0.0101,
+            direction: "positive",
+            barWidth: 16.58,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_x_sec_d1",
+            shapValue: -0.0078,
+            absShap: 0.0078,
+            direction: "negative",
+            barWidth: 12.85,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        }]
+    },
+    "18": {
+        placeId: "18",
+        placeName: "12.96408437_77.59618839",
+        predictedValue: 1020.46,
+        baseValue: 1381.69,
+        totalPositiveImpact: 0.04,
+        totalNegativeImpact: -0.34,
+        features: [
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_div_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0687,
+            absShap: 0.0687,
+            direction: "negative",
+            barWidth: 100.00,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0456,
+            absShap: 0.0456,
+            direction: "negative",
+            barWidth: 66.40,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified",
+            shapValue: -0.0422,
+            absShap: 0.0422,
+            direction: "negative",
+            barWidth: 61.38,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_ac_popular",
+            shapValue: -0.0391,
+            absShap: 0.0391,
+            direction: "negative",
+            barWidth: 56.93,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1",
+            shapValue: -0.0325,
+            absShap: 0.0325,
+            direction: "negative",
+            barWidth: 47.38,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_sec_d1_x_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0272,
+            absShap: 0.0272,
+            direction: "positive",
+            barWidth: 39.59,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_education_20k_to_25k",
+            shapValue: -0.0226,
+            absShap: 0.0226,
+            direction: "negative",
+            barWidth: 32.97,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k",
+            shapValue: -0.0213,
+            absShap: 0.0213,
+            direction: "negative",
+            barWidth: 31.02,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_education_16k_to_20k",
+            shapValue: -0.0199,
+            absShap: 0.0199,
+            direction: "negative",
+            barWidth: 29.04,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_x_sec_d1",
+            shapValue: 0.0158,
+            absShap: 0.0158,
+            direction: "positive",
+            barWidth: 22.99,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_300k_to_400k_log",
+            shapValue: -0.0149,
+            absShap: 0.0149,
+            direction: "negative",
+            barWidth: 21.66,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_2000",
+            shapValue: -0.0147,
+            absShap: 0.0147,
+            direction: "negative",
+            barWidth: 21.42,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_near_zero_feature_count",
+            shapValue: -0.0083,
+            absShap: 0.0083,
+            direction: "negative",
+            barWidth: 12.09,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k_x_sec_d1",
+            shapValue: -0.0042,
+            absShap: 0.0042,
+            direction: "negative",
+            barWidth: 6.07,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_food_fmcg_14k_to_17k",
+            shapValue: -0.0029,
+            absShap: 0.0029,
+            direction: "negative",
+            barWidth: 4.27,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        }]
+    },
+    "19": {
+        placeId: "19",
+        placeName: "12.94048647_77.57778772",
+        predictedValue: 1017.86,
+        baseValue: 1381.69,
+        totalPositiveImpact: 0.06,
+        totalNegativeImpact: -0.23,
+        features: [
+        {
+            feature: "num_hh_monthly_spend_on_dineout_2000",
+            shapValue: -0.0366,
+            absShap: 0.0366,
+            direction: "negative",
+            barWidth: 100.00,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_x_sec_d1",
+            shapValue: -0.0364,
+            absShap: 0.0364,
+            direction: "negative",
+            barWidth: 99.55,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_food_fmcg_14k_to_17k",
+            shapValue: -0.0317,
+            absShap: 0.0317,
+            direction: "negative",
+            barWidth: 86.71,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_sec_d1",
+            shapValue: -0.0309,
+            absShap: 0.0309,
+            direction: "negative",
+            barWidth: 84.62,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified",
+            shapValue: -0.0227,
+            absShap: 0.0227,
+            direction: "negative",
+            barWidth: 62.18,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_div_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0211,
+            absShap: 0.0211,
+            direction: "positive",
+            barWidth: 57.60,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k",
+            shapValue: -0.0183,
+            absShap: 0.0183,
+            direction: "negative",
+            barWidth: 49.96,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_education_16k_to_20k",
+            shapValue: -0.0166,
+            absShap: 0.0166,
+            direction: "negative",
+            barWidth: 45.50,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0145,
+            absShap: 0.0145,
+            direction: "negative",
+            barWidth: 39.75,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_near_zero_feature_count",
+            shapValue: 0.0141,
+            absShap: 0.0141,
+            direction: "positive",
+            barWidth: 38.57,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k_x_sec_d1",
+            shapValue: 0.0123,
+            absShap: 0.0123,
+            direction: "positive",
+            barWidth: 33.69,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_ac_popular",
+            shapValue: -0.0096,
+            absShap: 0.0096,
+            direction: "negative",
+            barWidth: 26.23,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_300k_to_400k_log",
+            shapValue: 0.0096,
+            absShap: 0.0096,
+            direction: "positive",
+            barWidth: 26.21,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_education_20k_to_25k",
+            shapValue: -0.0087,
+            absShap: 0.0087,
+            direction: "negative",
+            barWidth: 23.80,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1_x_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0072,
+            absShap: 0.0072,
+            direction: "negative",
+            barWidth: 19.55,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        }]
+    },
+    "14": {
+        placeId: "14",
+        placeName: "12.97278039_77.49127823",
+        predictedValue: 1010.08,
+        baseValue: 1381.69,
+        totalPositiveImpact: 0.06,
+        totalNegativeImpact: -0.27,
+        features: [
+        {
+            feature: "num_hh_monthly_spend_on_dineout_2000",
+            shapValue: -0.0413,
+            absShap: 0.0413,
+            direction: "negative",
+            barWidth: 100.00,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_x_sec_d1",
+            shapValue: -0.0411,
+            absShap: 0.0411,
+            direction: "negative",
+            barWidth: 99.47,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_ac_popular",
+            shapValue: -0.0352,
+            absShap: 0.0352,
+            direction: "negative",
+            barWidth: 85.30,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1",
+            shapValue: -0.0339,
+            absShap: 0.0339,
+            direction: "negative",
+            barWidth: 82.20,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_food_fmcg_14k_to_17k",
+            shapValue: -0.0328,
+            absShap: 0.0328,
+            direction: "negative",
+            barWidth: 79.50,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0283,
+            absShap: 0.0283,
+            direction: "positive",
+            barWidth: 68.60,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_div_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0252,
+            absShap: 0.0252,
+            direction: "positive",
+            barWidth: 61.13,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_education_20k_to_25k",
+            shapValue: -0.0201,
+            absShap: 0.0201,
+            direction: "negative",
+            barWidth: 48.75,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k",
+            shapValue: -0.0164,
+            absShap: 0.0164,
+            direction: "negative",
+            barWidth: 39.63,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_education_16k_to_20k",
+            shapValue: -0.0149,
+            absShap: 0.0149,
+            direction: "negative",
+            barWidth: 36.06,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_300k_to_400k_log",
+            shapValue: -0.0113,
+            absShap: 0.0113,
+            direction: "negative",
+            barWidth: 27.44,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_near_zero_feature_count",
+            shapValue: -0.0070,
+            absShap: 0.0070,
+            direction: "negative",
+            barWidth: 17.04,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_sec_d1_x_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0060,
+            absShap: 0.0060,
+            direction: "negative",
+            barWidth: 14.49,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k_x_sec_d1",
+            shapValue: -0.0045,
+            absShap: 0.0045,
+            direction: "negative",
+            barWidth: 10.86,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified",
+            shapValue: 0.0035,
+            absShap: 0.0035,
+            direction: "positive",
+            barWidth: 8.55,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        }]
+    },
+    "13": {
+        placeId: "13",
+        placeName: "12.94943606_77.47843226",
+        predictedValue: 985.93,
+        baseValue: 1381.69,
+        totalPositiveImpact: 0.06,
+        totalNegativeImpact: -0.27,
+        features: [
+        {
+            feature: "num_hh_monthly_spend_on_dineout_2000",
+            shapValue: -0.0418,
+            absShap: 0.0418,
+            direction: "negative",
+            barWidth: 100.00,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_x_sec_d1",
+            shapValue: -0.0411,
+            absShap: 0.0411,
+            direction: "negative",
+            barWidth: 98.25,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_ac_popular",
+            shapValue: -0.0352,
+            absShap: 0.0352,
+            direction: "negative",
+            barWidth: 84.25,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1",
+            shapValue: -0.0336,
+            absShap: 0.0336,
+            direction: "negative",
+            barWidth: 80.52,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_food_fmcg_14k_to_17k",
+            shapValue: -0.0328,
+            absShap: 0.0328,
+            direction: "negative",
+            barWidth: 78.52,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0282,
+            absShap: 0.0282,
+            direction: "positive",
+            barWidth: 67.55,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_div_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0261,
+            absShap: 0.0261,
+            direction: "positive",
+            barWidth: 62.47,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_education_16k_to_20k",
+            shapValue: -0.0204,
+            absShap: 0.0204,
+            direction: "negative",
+            barWidth: 48.75,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_education_20k_to_25k",
+            shapValue: -0.0201,
+            absShap: 0.0201,
+            direction: "negative",
+            barWidth: 48.15,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k",
+            shapValue: -0.0164,
+            absShap: 0.0164,
+            direction: "negative",
+            barWidth: 39.15,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_300k_to_400k_log",
+            shapValue: -0.0116,
+            absShap: 0.0116,
+            direction: "negative",
+            barWidth: 27.84,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_near_zero_feature_count",
+            shapValue: -0.0071,
+            absShap: 0.0071,
+            direction: "negative",
+            barWidth: 16.96,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_sec_d1_x_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0060,
+            absShap: 0.0060,
+            direction: "negative",
+            barWidth: 14.31,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k_x_sec_d1",
+            shapValue: -0.0046,
+            absShap: 0.0046,
+            direction: "negative",
+            barWidth: 11.03,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified",
+            shapValue: 0.0039,
+            absShap: 0.0039,
+            direction: "positive",
+            barWidth: 9.30,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        }]
+    },
+    "20": {
+        placeId: "20",
+        placeName: "12.9554606801759_77.5457467298993",
+        predictedValue: 912.18,
+        baseValue: 1381.69,
+        totalPositiveImpact: 0.15,
+        totalNegativeImpact: -0.25,
+        features: [
+        {
+            feature: "num_fmcg_cosmetics_popular_classified",
+            shapValue: 0.0705,
+            absShap: 0.0705,
+            direction: "positive",
+            barWidth: 100.00,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_x_sec_d1",
+            shapValue: -0.0442,
+            absShap: 0.0442,
+            direction: "negative",
+            barWidth: 62.69,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_2000",
+            shapValue: -0.0427,
+            absShap: 0.0427,
+            direction: "negative",
+            barWidth: 60.63,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_ac_popular",
+            shapValue: 0.0388,
+            absShap: 0.0388,
+            direction: "positive",
+            barWidth: 55.10,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1",
+            shapValue: -0.0383,
+            absShap: 0.0383,
+            direction: "negative",
+            barWidth: 54.39,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: 0.0374,
+            absShap: 0.0374,
+            direction: "positive",
+            barWidth: 53.11,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_food_fmcg_14k_to_17k",
+            shapValue: -0.0302,
+            absShap: 0.0302,
+            direction: "negative",
+            barWidth: 42.79,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_education_20k_to_25k",
+            shapValue: -0.0235,
+            absShap: 0.0235,
+            direction: "negative",
+            barWidth: 33.32,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k",
+            shapValue: -0.0214,
+            absShap: 0.0214,
+            direction: "negative",
+            barWidth: 30.34,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_300k_to_400k_log",
+            shapValue: -0.0141,
+            absShap: 0.0141,
+            direction: "negative",
+            barWidth: 19.98,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_education_16k_to_20k",
+            shapValue: -0.0131,
+            absShap: 0.0131,
+            direction: "negative",
+            barWidth: 18.60,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_sec_d1_x_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0089,
+            absShap: 0.0089,
+            direction: "negative",
+            barWidth: 12.65,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_near_zero_feature_count",
+            shapValue: -0.0080,
+            absShap: 0.0080,
+            direction: "negative",
+            barWidth: 11.31,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fmcg_cosmetics_popular_classified_div_hh_spend_healthcare_medical_6k_to_10k",
+            shapValue: -0.0057,
+            absShap: 0.0057,
+            direction: "negative",
+            barWidth: 8.03,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_monthly_spend_on_dineout_20k_to_25k_x_sec_d1",
+            shapValue: -0.0028,
+            absShap: 0.0028,
+            direction: "negative",
+            barWidth: 3.99,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        }]
+    },
+};
+
+
+        // Populate dropdown on load
+        window.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('place-select');
+
+            // Debug: log shapData to console
+            console.log('shapData keys:', Object.keys(shapData));
+            console.log('shapData length:', Object.keys(shapData).length);
+
+            // Sort by predicted value descending
+            const sortedPlaces = Object.keys(shapData).sort((a, b) =>
+                shapData[b].predictedValue - shapData[a].predictedValue
+            );
+
+            if (sortedPlaces.length === 0) {
+                console.error('No data in shapData object!');
+                document.getElementById('content-area').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h2>No SHAP Data Available</h2>
+                        <p>The shapData object is empty. Check if predictions were run with SHAP enabled.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            sortedPlaces.forEach(placeId => {
+                const data = shapData[placeId];
+                const option = document.createElement('option');
+                option.value = placeId;
+                // Show place_name if available, otherwise just place_id
+                const displayName = data.placeName ? `${data.placeName} (${placeId})` : placeId;
+                option.textContent = `${displayName} - Predicted: ${data.predictedValue.toLocaleString()}`;
+                select.appendChild(option);
+            });
+
+            // Auto-load first location
+            if (sortedPlaces.length > 0) {
+                select.value = sortedPlaces[0];
+                loadShapData(sortedPlaces[0]);
+            }
+        });
+
+        function loadShapData(placeId) {
+            if (!placeId || !shapData[placeId]) {
+                document.getElementById('content-area').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <h2>Select a location to view SHAP analysis</h2>
+                        <p>Choose a place from the dropdown above to see feature importance explanations</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const data = shapData[placeId];
+
+            // Use pre-computed total impact from ALL features (not just top 15)
+            const totalPositive = data.totalPositiveImpact;
+            const totalNegative = data.totalNegativeImpact;
+
+            const transformNote = true ? `
+                <div class="transformation-note">
+                    <p><strong>⚠️ Note:</strong> This model uses log transformation. SHAP values shown below are in log-space.</p>
+                </div>
+            ` : '';
+
+            // Build display title with place_name if available
+            const displayTitle = data.placeName ?
+                `🏪 ${data.placeName} (${data.placeId}) - Prediction Explanation` :
+                `🏪 ${data.placeId} - Prediction Explanation`;
+
+            const html = `
+                <div class="card">
+                    <div class="card-title">${displayTitle}</div>
+
+                    ${transformNote}
+
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="metric-label">Predicted Value</div>
+                            <div class="metric-value">${data.predictedValue.toLocaleString()}</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Base Value</div>
+                            <div class="metric-value">${data.baseValue.toLocaleString()}</div>
+                        </div>
+                        <div class="metric-box" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+                            <div class="metric-label">Positive Impact</div>
+                            <div class="metric-value" style="color: #065f46;">+${totalPositive.toFixed(2)}</div>
+                        </div>
+                        <div class="metric-box" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
+                            <div class="metric-label">Negative Impact</div>
+                            <div class="metric-value" style="color: #991b1b;">${totalNegative.toFixed(2)}</div>
+                        </div>
+                    </div>
+
+                    <h3 style="color: #2a5b7f; margin-bottom: 1rem; font-size: 1.25rem;">📈 Feature Importance (Top 15)</h3>
+
+                    ${data.features.map((feature, idx) => `
+                        <div class="feature-row">
+                            <div class="feature-rank">#${idx + 1}</div>
+                            <div class="feature-name" title="${feature.feature}">${feature.feature}</div>
+                            <div class="feature-direction ${feature.direction}">${feature.direction}</div>
+                            <div class="feature-value value-${feature.direction}">
+                                ${feature.shapValue > 0 ? '+' : ''}${feature.shapValue.toFixed(4)}
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill bar-${feature.direction}" style="width: ${feature.barWidth}%"></div>
+                            </div>
+                            <div style="font-size: 0.7rem; color: ${feature.effectColor || '#6b7280'}; margin-top: 0.25rem; font-weight: 500;">
+                                General: ${feature.valueEffect || '○ No Clear Pattern'}
+                            </div>
+                        </div>
+                    `).join('')}
+
+                    <div class="interpretation">
+                        <h3>📖 How to Read This Analysis</h3>
+                        <ul>
+                            <li>The <strong>Base Value (${data.baseValue.toLocaleString()})</strong> is the average prediction across all training locations</li>
+                            <li><strong>Positive/Negative Impact</strong> totals include contributions from <em>all</em> features, not just the top 15 shown below</li>
+                            <li><span class="positive" style="display: inline-block; padding: 0.25rem 0.625rem; border-radius: 8px;">Positive features</span> push the prediction higher than the base value</li>
+                            <li><span class="negative" style="display: inline-block; padding: 0.25rem 0.625rem; border-radius: 8px;">Negative features</span> pull the prediction lower than the base value</li>
+                            <li>The <strong>bar length</strong> and <strong>SHAP value</strong> show the strength of each feature's impact</li>
+                            <li>Each feature's contribution combines with the base value to produce the final prediction</li>
+                            <li>Features are sorted by absolute impact (strongest influence first)</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('content-area').innerHTML = html;
+
+            // Scroll to top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
