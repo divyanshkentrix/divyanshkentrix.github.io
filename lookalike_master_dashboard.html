@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lookalike Analysis Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            color: #0f172a;
+        }
+        .header {
+            background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 20px rgba(62, 193, 189, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 2px solid #3ec1bd;
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+        }
+        .header-badges {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .info-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+        .controls {
+            background: white;
+            padding: 0.875rem 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .control-group {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .control-group label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+        .control-group select {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            max-width: 800px;
+        }
+        .control-group select:hover {
+            border-color: #3ec1bd;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #3ec1bd;
+            box-shadow: 0 0 0 3px rgba(62, 193, 189, 0.1);
+        }
+        .iframe-container {
+            width: 100%;
+            height: calc(100vh - 140px);
+            background: white;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>🎯 Lookalike Store Analysis Dashboard</h1>
+            <div class="header-badges">
+                <span class="info-badge">8 Sites</span>
+                <span class="info-badge">Avg Match: 98.1%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="site-select">Select Site:</label>
+            <select id="site-select" onchange="loadReport(this.value)">
+                <option value="">-- Choose a site to view lookalike analysis --</option>
+                <option value="individual_reports/lookalike_report_DPI66012.html">DPI66012 - Predicted: 2,180,772.58, High Confidence</option>
+<option value="individual_reports/lookalike_report_DPI66075.html">DPI66075 - Predicted: 2,214,881.68, High Confidence</option>
+<option value="individual_reports/lookalike_report_DPI66166.html">DPI66166 - Predicted: 2,520,625.99, High Confidence</option>
+<option value="individual_reports/lookalike_report_DPI66171.html">DPI66171 - Predicted: 2,294,310.85, High Confidence</option>
+<option value="individual_reports/lookalike_report_DPI66376.html">DPI66376 - Predicted: 2,705,319.77, High Confidence</option>
+<option value="individual_reports/lookalike_report_DPI66537.html">DPI66537 - Predicted: 2,528,450.17, High Confidence</option>
+<option value="individual_reports/lookalike_report_DPI66605.html">DPI66605 - Predicted: 2,144,155.55, High Confidence</option>
+<option value="individual_reports/lookalike_report_DPI67063.html">DPI67063 - Predicted: 2,064,658.49, High Confidence</option>
+
+            </select>
+        </div>
+    </div>
+
+    <div class="iframe-container">
+        <iframe id="report-frame" src=""></iframe>
+    </div>
+
+    <script>
+        function loadReport(reportPath) {
+            const iframe = document.getElementById('report-frame');
+            if (reportPath) {
+                iframe.src = reportPath;
+            } else {
+                iframe.src = '';
+            }
+        }
+
+        // Auto-load first report on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('site-select');
+            if (select.options.length > 1) {
+                select.selectedIndex = 1;
+                loadReport(select.value);
+            }
+        });
+    </script>
+</body>
+</html>

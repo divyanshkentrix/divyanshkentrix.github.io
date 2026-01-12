@@ -1,0 +1,563 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction Report - jfl_pred</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            color: #0f172a;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border: 2px solid #e0f2fe;
+        }
+        
+        h1 {
+            color: #1e4a6b;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        h2 {
+            color: #1e4a6b;
+            border-bottom: 3px solid #3ec1bd;
+            padding-bottom: 10px;
+            margin: 30px 0 20px 0;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #2a5b7f 0%, #3ec1bd 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(62, 193, 189, 0.3);
+        }
+        
+        .metric-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .section {
+            background: white;
+            margin: 2rem 0;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid #3ec1bd;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 12px;
+        }
+        
+        .info-box strong {
+            color: #1e4a6b;
+            display: block;
+            margin-bottom: 0.75rem;
+        }
+        
+        .info-box ul {
+            margin-left: 1.5rem;
+            color: #475569;
+        }
+        
+        .info-box li {
+            margin: 0.5rem 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 1.5rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%);
+        }
+        
+        th {
+            color: white;
+            padding: 1rem 1.25rem;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+        
+        td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #e0f2fe;
+        }
+        
+        tbody tr {
+            background: white;
+            transition: all 0.2s ease;
+        }
+        
+        tbody tr:hover {
+            background: #f0f9ff;
+        }
+        
+        tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        
+        .positive { color: #10b981; font-weight: bold; }
+        .negative { color: #ef4444; font-weight: bold; }
+        
+        .progress-bar-container {
+            width: 100%;
+            background: #e0f2fe;
+            border-radius: 8px;
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bar-positive {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            height: 100%;
+            border-radius: 8px;
+        }
+        
+        .bar-negative {
+            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+            height: 100%;
+            border-radius: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            margin-top: 3rem;
+            border-top: 2px solid #e0f2fe;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Prediction Report: jfl_pred</h1>
+        
+        <h2>Summary Statistics</h2>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Total Predictions</div>
+                <div class="metric-value">8</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Mean Prediction</div>
+                <div class="metric-value">2331646.89</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Max Prediction</div>
+                <div class="metric-value">2705319.77</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Min Prediction</div>
+                <div class="metric-value">2064658.49</div>
+            </div>
+        </div>
+
+        <h2>Validation Metrics</h2>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">RMSE</div>
+                <div class="metric-value">669774.81</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">WMAPE</div>
+                <div class="metric-value">19.88%</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">MAPE</div>
+                <div class="metric-value">19.50%</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">R²</div>
+                <div class="metric-value">0.1302</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Feature Importance Analysis (SHAP Values)</h2>
+            
+            <div class="info-box">
+                <strong>Understanding SHAP Values:</strong>
+                <ul>
+                    <li><span class="positive">● Positive values</span> show features that INCREASE sales predictions</li>
+                    <li><span class="negative">● Red indicators</span> show features that DECREASE sales predictions</li>
+                    <li>The bar length shows the strength of impact on predictions</li>
+                </ul>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Feature</th>
+                        <th>Avg Impact</th>
+                        <th>Direction</th>
+                        <th>Visual Impact</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td><strong>#1</strong></td>
+                        <td><strong>num_furniture_stores_0_200m</strong></td>
+                        <td class="negative">-67545.0957</td>
+                        <td class="negative">Decreases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-negative" style="width: 100.0%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#2</strong></td>
+                        <td><strong>num_qsr_200_500m</strong></td>
+                        <td class="positive">+11319.7768</td>
+                        <td class="positive">Increases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-positive" style="width: 49.28427810737909%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#3</strong></td>
+                        <td><strong>num_restaurants_and_cafe_200_500m</strong></td>
+                        <td class="negative">-22940.5856</td>
+                        <td class="negative">Decreases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-negative" style="width: 46.05308413999927%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#4</strong></td>
+                        <td><strong>num_cinema_halls_and_theatres_0_200m</strong></td>
+                        <td class="positive">+48998.0143</td>
+                        <td class="positive">Increases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-positive" style="width: 36.392226654004446%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#5</strong></td>
+                        <td><strong>num_cinema_halls_and_theatres_seat_count_0_200m</strong></td>
+                        <td class="positive">+33900.0868</td>
+                        <td class="positive">Increases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-positive" style="width: 25.178564020390414%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#6</strong></td>
+                        <td><strong>num_hotels_0_200m</strong></td>
+                        <td class="positive">+31861.0017</td>
+                        <td class="positive">Increases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-positive" style="width: 23.664077233579768%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#7</strong></td>
+                        <td><strong>num_cinema_halls_and_theatres_200_500m</strong></td>
+                        <td class="positive">+31248.0442</td>
+                        <td class="positive">Increases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-positive" style="width: 23.208816181202497%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#8</strong></td>
+                        <td><strong>num_fashion_and_apparel_200_500m</strong></td>
+                        <td class="positive">+17808.1942</td>
+                        <td class="positive">Increases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-positive" style="width: 22.877480443060648%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#9</strong></td>
+                        <td><strong>num_fmcg_cosmetics_mass_classified</strong></td>
+                        <td class="negative">-1344.6833</td>
+                        <td class="negative">Decreases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-negative" style="width: 15.955815956461086%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#10</strong></td>
+                        <td><strong>num_supermarkets_200_500m</strong></td>
+                        <td class="negative">-5230.3387</td>
+                        <td class="negative">Decreases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-negative" style="width: 13.256227812059157%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#11</strong></td>
+                        <td><strong>num_fashion_and_apparel_0_200m</strong></td>
+                        <td class="positive">+7477.3696</td>
+                        <td class="positive">Increases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-positive" style="width: 12.364068972910026%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#12</strong></td>
+                        <td><strong>num_gym_and_fitness_centres_200_500m</strong></td>
+                        <td class="positive">+10360.9225</td>
+                        <td class="positive">Increases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-positive" style="width: 12.169953605247%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#13</strong></td>
+                        <td><strong>num_age_group_70_plus_female</strong></td>
+                        <td class="positive">+8206.5372</td>
+                        <td class="positive">Increases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-positive" style="width: 12.100333419175001%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#14</strong></td>
+                        <td><strong>num_office_locations_0_200m</strong></td>
+                        <td class="positive">+14586.6498</td>
+                        <td class="positive">Increases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-positive" style="width: 10.833921966955252%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#15</strong></td>
+                        <td><strong>num_subway_count</strong></td>
+                        <td class="negative">-10741.1060</td>
+                        <td class="negative">Decreases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-negative" style="width: 9.835089957473462%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#16</strong></td>
+                        <td><strong>num_automobile_entry_price_segment</strong></td>
+                        <td class="positive">+8276.5963</td>
+                        <td class="positive">Increases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-positive" style="width: 9.22860211814838%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#17</strong></td>
+                        <td><strong>num_bank_0_200m</strong></td>
+                        <td class="negative">-4490.4289</td>
+                        <td class="negative">Decreases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-negative" style="width: 8.516994389415931%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#18</strong></td>
+                        <td><strong>num_u_education_illiterate</strong></td>
+                        <td class="negative">-1895.5571</td>
+                        <td class="negative">Decreases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-negative" style="width: 6.956758527430011%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#19</strong></td>
+                        <td><strong>num_religious_places_0_200m</strong></td>
+                        <td class="negative">-40.1487</td>
+                        <td class="negative">Decreases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-negative" style="width: 6.858585526758246%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#20</strong></td>
+                        <td><strong>num_gym_and_fitness_centres_0_200m</strong></td>
+                        <td class="negative">-386.2837</td>
+                        <td class="negative">Decreases</td>
+                        <td>
+                            <div class="progress-bar-container">
+                                <div class="bar-negative" style="width: 6.750989646374252%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <h2>📋 All Predictions</h2>
+        <table>
+            <tr>
+                <th>Place ID</th>
+                <th>Predicted Value</th>
+<th>Actual Value</th><th>Error</th><th>Error %</th></tr>
+            <tr>
+                <td>DPI66376</td>
+                <td><strong>2705319.77</strong></td>
+
+                <td>3122389.00</td>
+                <td class="negative">-417069.23</td>
+                <td>13.4%</td>
+</tr>
+            <tr>
+                <td>DPI66171</td>
+                <td><strong>2294310.85</strong></td>
+
+                <td>1631228.00</td>
+                <td class="positive">663082.85</td>
+                <td>40.6%</td>
+</tr>
+            <tr>
+                <td>DPI66166</td>
+                <td><strong>2520625.99</strong></td>
+
+                <td>2516328.00</td>
+                <td class="positive">4297.99</td>
+                <td>0.2%</td>
+</tr>
+            <tr>
+                <td>DPI66012</td>
+                <td><strong>2180772.58</strong></td>
+
+                <td>2905361.00</td>
+                <td class="negative">-724588.42</td>
+                <td>24.9%</td>
+</tr>
+            <tr>
+                <td>DPI66605</td>
+                <td><strong>2144155.55</strong></td>
+
+                <td>2618902.00</td>
+                <td class="negative">-474746.45</td>
+                <td>18.1%</td>
+</tr>
+            <tr>
+                <td>DPI67063</td>
+                <td><strong>2064658.49</strong></td>
+
+                <td>1707805.00</td>
+                <td class="positive">356853.49</td>
+                <td>20.9%</td>
+</tr>
+            <tr>
+                <td>DPI66075</td>
+                <td><strong>2214881.68</strong></td>
+
+                <td>2247278.00</td>
+                <td class="negative">-32396.32</td>
+                <td>1.4%</td>
+</tr>
+            <tr>
+                <td>DPI66537</td>
+                <td><strong>2528450.17</strong></td>
+
+                <td>3976323.00</td>
+                <td class="negative">-1447872.83</td>
+                <td>36.4%</td>
+</tr>
+        </table>
+        
+        <div class="footer">
+            <p style="margin-bottom: 0.5rem;">Generated on 2025-12-16 09:45:02</p>
+            <p>Advanced Regression Pipeline | Powered by Kentrix Analytics</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1565 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consolidated SHAP Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            color: #0f172a;
+        }
+        .header {
+            background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 20px rgba(62, 193, 189, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 3px solid #3ec1bd;
+        }
+        .header h1 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .header-subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        .controls {
+            background: white;
+            padding: 1.25rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 90px;
+            z-index: 90;
+        }
+        .control-group {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .control-group label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9375rem;
+            white-space: nowrap;
+        }
+        .control-group select {
+            flex: 1;
+            padding: 0.625rem 1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            max-width: 700px;
+            font-weight: 500;
+        }
+        .control-group select:hover {
+            border-color: #3ec1bd;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #3ec1bd;
+            box-shadow: 0 0 0 4px rgba(62, 193, 189, 0.15);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem 2rem;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 2px solid #e0f2fe;
+            margin-bottom: 1.5rem;
+        }
+        .card-title {
+            color: #1e4a6b;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #3ec1bd;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .metric-box {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .metric-label {
+            font-size: 0.8125rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #2a5b7f;
+        }
+        .feature-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+        .feature-row:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateX(4px);
+        }
+        .feature-rank {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #64748b;
+            min-width: 28px;
+        }
+        .feature-name {
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.9375rem;
+            flex: 1;
+            min-width: 180px;
+        }
+        .feature-direction {
+            padding: 0.3rem 0.875rem;
+            border-radius: 14px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        .positive {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+        .negative {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+        .feature-value {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            min-width: 80px;
+            text-align: right;
+        }
+        .value-positive { color: #10b981; }
+        .value-negative { color: #ef4444; }
+        .bar-container {
+            width: 200px;
+            height: 10px;
+            background: #e0f2fe;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bar-positive {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        }
+        .bar-negative {
+            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+        }
+        .interpretation {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            border-left: 4px solid #3ec1bd;
+        }
+        .interpretation h3 {
+            color: #2a5b7f;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+        .interpretation ul {
+            list-style-position: inside;
+            color: #334155;
+            line-height: 1.8;
+        }
+        .interpretation li {
+            margin-bottom: 0.5rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #64748b;
+        }
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+        .transformation-note {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+        .transformation-note p {
+            color: #92400e;
+            margin: 0;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem 1rem;
+            }
+            .card {
+                padding: 1.25rem;
+            }
+            .feature-row {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            .bar-container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Consolidated SHAP Analysis Dashboard</h1>
+        <div class="header-subtitle">Feature Importance Explanations for Predictions</div>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="place-select">🏪 Select Location:</label>
+            <select id="place-select" onchange="loadShapData(this.value)">
+                <option value="">-- Choose a location to view SHAP explanation --</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="content-area">
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <h2>Select a location to view SHAP analysis</h2>
+                <p>Choose a place from the dropdown above to see feature importance explanations</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const shapData = {
+    "DPI66376": {
+        placeId: "DPI66376",
+        placeName: "Domino\'s Pizza R.B.I LAYOUT, J.P.NAGA, Bangalore",
+        predictedValue: 2705319.77,
+        baseValue: 2153583.02,
+        features: [
+        {
+            feature: "num_qsr_200_500m",
+            shapValue: 92127.2288,
+            absShap: 92127.2288,
+            direction: "positive",
+            barWidth: 100.00,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fashion_and_apparel_200_500m",
+            shapValue: 62714.8899,
+            absShap: 62714.8899,
+            direction: "positive",
+            barWidth: 68.07,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_0_200m",
+            shapValue: 48352.8478,
+            absShap: 48352.8478,
+            direction: "positive",
+            barWidth: 52.48,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_furniture_stores_0_200m",
+            shapValue: 43731.8511,
+            absShap: 43731.8511,
+            direction: "positive",
+            barWidth: 47.47,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_restaurants_and_cafe_200_500m",
+            shapValue: -42903.2612,
+            absShap: 42903.2612,
+            direction: "negative",
+            barWidth: 46.57,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fashion_and_apparel_0_200m",
+            shapValue: 40573.8586,
+            absShap: 40573.8586,
+            direction: "positive",
+            barWidth: 44.04,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hotels_0_200m",
+            shapValue: 38079.4023,
+            absShap: 38079.4023,
+            direction: "positive",
+            barWidth: 41.33,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_seat_count_0_200m",
+            shapValue: 33253.6667,
+            absShap: 33253.6667,
+            direction: "positive",
+            barWidth: 36.10,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_200_500m",
+            shapValue: 33169.1743,
+            absShap: 33169.1743,
+            direction: "positive",
+            barWidth: 36.00,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_supermarkets_200_500m",
+            shapValue: 32822.5735,
+            absShap: 32822.5735,
+            direction: "positive",
+            barWidth: 35.63,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_gym_and_fitness_centres_200_500m",
+            shapValue: 23746.5914,
+            absShap: 23746.5914,
+            direction: "positive",
+            barWidth: 25.78,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_subway_count",
+            shapValue: -21339.1660,
+            absShap: 21339.1660,
+            direction: "negative",
+            barWidth: 23.16,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_office_locations_0_200m",
+            shapValue: 18506.1460,
+            absShap: 18506.1460,
+            direction: "positive",
+            barWidth: 20.09,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_age_group_60_to_69_female",
+            shapValue: -17784.4926,
+            absShap: 17784.4926,
+            direction: "negative",
+            barWidth: 19.30,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_supermarkets_0_200m",
+            shapValue: 15867.7491,
+            absShap: 15867.7491,
+            direction: "positive",
+            barWidth: 17.22,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        }]
+    },
+    "DPI66537": {
+        placeId: "DPI66537",
+        placeName: "Domino\'s Pizza NEELADRI NAGAR, (ELECTRONIC CITY), Bangalore",
+        predictedValue: 2528450.17,
+        baseValue: 2153583.02,
+        features: [
+        {
+            feature: "num_restaurants_and_cafe_200_500m",
+            shapValue: 156258.7198,
+            absShap: 156258.7198,
+            direction: "positive",
+            barWidth: 100.00,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_qsr_200_500m",
+            shapValue: -71742.2395,
+            absShap: 71742.2395,
+            direction: "negative",
+            barWidth: 45.91,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_0_200m",
+            shapValue: 57000.0047,
+            absShap: 57000.0047,
+            direction: "positive",
+            barWidth: 36.48,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fashion_and_apparel_0_200m",
+            shapValue: 53547.2680,
+            absShap: 53547.2680,
+            direction: "positive",
+            barWidth: 34.27,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fashion_and_apparel_200_500m",
+            shapValue: 53502.0830,
+            absShap: 53502.0830,
+            direction: "positive",
+            barWidth: 34.24,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_furniture_stores_0_200m",
+            shapValue: 50751.5286,
+            absShap: 50751.5286,
+            direction: "positive",
+            barWidth: 32.48,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_seat_count_0_200m",
+            shapValue: 38863.0656,
+            absShap: 38863.0656,
+            direction: "positive",
+            barWidth: 24.87,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_supermarkets_200_500m",
+            shapValue: -30852.1708,
+            absShap: 30852.1708,
+            direction: "negative",
+            barWidth: 19.74,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_200_500m",
+            shapValue: 30042.3070,
+            absShap: 30042.3070,
+            direction: "positive",
+            barWidth: 19.23,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hotels_0_200m",
+            shapValue: 29040.5827,
+            absShap: 29040.5827,
+            direction: "positive",
+            barWidth: 18.58,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_age_group_70_plus_female",
+            shapValue: 22129.0489,
+            absShap: 22129.0489,
+            direction: "positive",
+            barWidth: 14.16,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_gym_and_fitness_centres_200_500m",
+            shapValue: 21565.0600,
+            absShap: 21565.0600,
+            direction: "positive",
+            barWidth: 13.80,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_ FF_LSI_04 ",
+            shapValue: -18163.1100,
+            absShap: 18163.1100,
+            direction: "negative",
+            barWidth: 11.62,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_automobile_entry_price_segment",
+            shapValue: -16594.6878,
+            absShap: 16594.6878,
+            direction: "negative",
+            barWidth: 10.62,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hotels_200_500m",
+            shapValue: 15239.3408,
+            absShap: 15239.3408,
+            direction: "positive",
+            barWidth: 9.75,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        }]
+    },
+    "DPI66166": {
+        placeId: "DPI66166",
+        placeName: "Domino\'s Pizza J.P. NAGAR-BANGALORE, Bangalore",
+        predictedValue: 2520625.99,
+        baseValue: 2153583.02,
+        features: [
+        {
+            feature: "num_qsr_200_500m",
+            shapValue: 70077.0108,
+            absShap: 70077.0108,
+            direction: "positive",
+            barWidth: 100.00,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_0_200m",
+            shapValue: 48200.8758,
+            absShap: 48200.8758,
+            direction: "positive",
+            barWidth: 68.78,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_restaurants_and_cafe_200_500m",
+            shapValue: -39662.1997,
+            absShap: 39662.1997,
+            direction: "negative",
+            barWidth: 56.60,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_furniture_stores_0_200m",
+            shapValue: 38484.0997,
+            absShap: 38484.0997,
+            direction: "positive",
+            barWidth: 54.92,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hotels_0_200m",
+            shapValue: 33107.7102,
+            absShap: 33107.7102,
+            direction: "positive",
+            barWidth: 47.24,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_200_500m",
+            shapValue: 32031.1688,
+            absShap: 32031.1688,
+            direction: "positive",
+            barWidth: 45.71,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_seat_count_0_200m",
+            shapValue: 30706.8501,
+            absShap: 30706.8501,
+            direction: "positive",
+            barWidth: 43.82,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_age_group_70_plus_female",
+            shapValue: -24424.7391,
+            absShap: 24424.7391,
+            direction: "negative",
+            barWidth: 34.85,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_gym_and_fitness_centres_200_500m",
+            shapValue: 21623.8316,
+            absShap: 21623.8316,
+            direction: "positive",
+            barWidth: 30.86,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_supermarkets_200_500m",
+            shapValue: -19313.3388,
+            absShap: 19313.3388,
+            direction: "negative",
+            barWidth: 27.56,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_u_education_illiterate",
+            shapValue: -17758.7959,
+            absShap: 17758.7959,
+            direction: "negative",
+            barWidth: 25.34,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_subway_count",
+            shapValue: -16833.8046,
+            absShap: 16833.8046,
+            direction: "negative",
+            barWidth: 24.02,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_age_group_60_to_69_female",
+            shapValue: -16191.3769,
+            absShap: 16191.3769,
+            direction: "negative",
+            barWidth: 23.11,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fashion_and_apparel_200_500m",
+            shapValue: 14965.3732,
+            absShap: 14965.3732,
+            direction: "positive",
+            barWidth: 21.36,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_bank_0_200m",
+            shapValue: -14088.8601,
+            absShap: 14088.8601,
+            direction: "negative",
+            barWidth: 20.10,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        }]
+    },
+    "DPI66171": {
+        placeId: "DPI66171",
+        placeName: "Domino\'s Pizza HENNUR VILLAGE-BANGALORE, Bangalore",
+        predictedValue: 2294310.85,
+        baseValue: 2153583.02,
+        features: [
+        {
+            feature: "num_restaurants_and_cafe_200_500m",
+            shapValue: -60812.8785,
+            absShap: 60812.8785,
+            direction: "negative",
+            barWidth: 100.00,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_0_200m",
+            shapValue: 50993.9946,
+            absShap: 50993.9946,
+            direction: "positive",
+            barWidth: 83.85,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_qsr_200_500m",
+            shapValue: 45080.0703,
+            absShap: 45080.0703,
+            direction: "positive",
+            barWidth: 74.13,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hotels_0_200m",
+            shapValue: 41397.2223,
+            absShap: 41397.2223,
+            direction: "positive",
+            barWidth: 68.07,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_furniture_stores_0_200m",
+            shapValue: 40048.3902,
+            absShap: 40048.3902,
+            direction: "positive",
+            barWidth: 65.86,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_200_500m",
+            shapValue: 37529.0725,
+            absShap: 37529.0725,
+            direction: "positive",
+            barWidth: 61.71,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fashion_and_apparel_200_500m",
+            shapValue: 32727.5315,
+            absShap: 32727.5315,
+            direction: "positive",
+            barWidth: 53.82,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_seat_count_0_200m",
+            shapValue: 32706.5665,
+            absShap: 32706.5665,
+            direction: "positive",
+            barWidth: 53.78,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_total_number_of_population_div_catchment_households",
+            shapValue: -19080.1752,
+            absShap: 19080.1752,
+            direction: "negative",
+            barWidth: 31.38,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_bank_0_200m",
+            shapValue: -18832.1490,
+            absShap: 18832.1490,
+            direction: "negative",
+            barWidth: 30.97,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_supermarkets_200_500m",
+            shapValue: 17648.1134,
+            absShap: 17648.1134,
+            direction: "positive",
+            barWidth: 29.02,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_lsi_05",
+            shapValue: 17385.9660,
+            absShap: 17385.9660,
+            direction: "positive",
+            barWidth: 28.59,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_gym_and_fitness_centres_200_500m",
+            shapValue: 17099.1330,
+            absShap: 17099.1330,
+            direction: "positive",
+            barWidth: 28.12,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_smartphone_mass",
+            shapValue: 16082.8057,
+            absShap: 16082.8057,
+            direction: "positive",
+            barWidth: 26.45,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_office_locations_0_200m",
+            shapValue: 15570.9726,
+            absShap: 15570.9726,
+            direction: "positive",
+            barWidth: 25.60,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        }]
+    },
+    "DPI66075": {
+        placeId: "DPI66075",
+        placeName: "Domino\'s Pizza CHIKKALASANDRA, UTTRAHALLI, Bangalore",
+        predictedValue: 2214881.68,
+        baseValue: 2153583.02,
+        features: [
+        {
+            feature: "num_restaurants_and_cafe_200_500m",
+            shapValue: -52345.0574,
+            absShap: 52345.0574,
+            direction: "negative",
+            barWidth: 100.00,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_0_200m",
+            shapValue: 51455.3440,
+            absShap: 51455.3440,
+            direction: "positive",
+            barWidth: 98.30,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_furniture_stores_0_200m",
+            shapValue: 48746.7081,
+            absShap: 48746.7081,
+            direction: "positive",
+            barWidth: 93.13,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hotels_0_200m",
+            shapValue: 42712.1515,
+            absShap: 42712.1515,
+            direction: "positive",
+            barWidth: 81.60,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_200_500m",
+            shapValue: 37321.5364,
+            absShap: 37321.5364,
+            direction: "positive",
+            barWidth: 71.30,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_seat_count_0_200m",
+            shapValue: 35889.9064,
+            absShap: 35889.9064,
+            direction: "positive",
+            barWidth: 68.56,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_qsr_200_500m",
+            shapValue: 34086.5962,
+            absShap: 34086.5962,
+            direction: "positive",
+            barWidth: 65.12,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fashion_and_apparel_200_500m",
+            shapValue: 30530.6519,
+            absShap: 30530.6519,
+            direction: "positive",
+            barWidth: 58.33,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_others_6k_to_8k",
+            shapValue: 23676.5002,
+            absShap: 23676.5002,
+            direction: "positive",
+            barWidth: 45.23,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_office_locations_0_200m",
+            shapValue: 16455.3253,
+            absShap: 16455.3253,
+            direction: "positive",
+            barWidth: 31.44,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fashion_and_apparel_0_200m",
+            shapValue: -15657.8246,
+            absShap: 15657.8246,
+            direction: "negative",
+            barWidth: 29.91,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_gym_and_fitness_centres_200_500m",
+            shapValue: -15053.1683,
+            absShap: 15053.1683,
+            direction: "negative",
+            barWidth: 28.76,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_subway_count",
+            shapValue: -14227.1203,
+            absShap: 14227.1203,
+            direction: "negative",
+            barWidth: 27.18,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_bank_0_200m",
+            shapValue: -13110.1954,
+            absShap: 13110.1954,
+            direction: "negative",
+            barWidth: 25.05,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_religious_places_200_500m",
+            shapValue: 13052.3486,
+            absShap: 13052.3486,
+            direction: "positive",
+            barWidth: 24.94,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        }]
+    },
+    "DPI66012": {
+        placeId: "DPI66012",
+        placeName: "Domino\'s Pizza BEGUR-HOBLI HOSUR ROAD, Bangalore",
+        predictedValue: 2180772.58,
+        baseValue: 2153583.02,
+        features: [
+        {
+            feature: "num_fmcg_cosmetics_mass_classified",
+            shapValue: -91309.5344,
+            absShap: 91309.5344,
+            direction: "negative",
+            barWidth: 100.00,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_qsr_200_500m",
+            shapValue: -81803.7067,
+            absShap: 81803.7067,
+            direction: "negative",
+            barWidth: 89.59,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_0_200m",
+            shapValue: 50995.5263,
+            absShap: 50995.5263,
+            direction: "positive",
+            barWidth: 55.85,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_furniture_stores_0_200m",
+            shapValue: 46611.7677,
+            absShap: 46611.7677,
+            direction: "positive",
+            barWidth: 51.05,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_restaurants_and_cafe_200_500m",
+            shapValue: -46086.0194,
+            absShap: 46086.0194,
+            direction: "negative",
+            barWidth: 50.47,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_age_group_70_plus_female",
+            shapValue: 32377.7658,
+            absShap: 32377.7658,
+            direction: "positive",
+            barWidth: 35.46,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_seat_count_0_200m",
+            shapValue: 31682.9294,
+            absShap: 31682.9294,
+            direction: "positive",
+            barWidth: 34.70,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hotels_0_200m",
+            shapValue: 26931.2835,
+            absShap: 26931.2835,
+            direction: "positive",
+            barWidth: 29.49,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_200_500m",
+            shapValue: 26440.3056,
+            absShap: 26440.3056,
+            direction: "positive",
+            barWidth: 28.96,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_400k_to_inf",
+            shapValue: 24351.1237,
+            absShap: 24351.1237,
+            direction: "positive",
+            barWidth: 26.67,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fashion_and_apparel_200_500m",
+            shapValue: -17362.2462,
+            absShap: 17362.2462,
+            direction: "negative",
+            barWidth: 19.01,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_gym_and_fitness_centres_200_500m",
+            shapValue: 15788.9737,
+            absShap: 15788.9737,
+            direction: "positive",
+            barWidth: 17.29,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_hh_spend_apparel_22k_to_26k",
+            shapValue: 15476.1618,
+            absShap: 15476.1618,
+            direction: "positive",
+            barWidth: 16.95,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_office_locations_0_200m",
+            shapValue: 15265.2252,
+            absShap: 15265.2252,
+            direction: "positive",
+            barWidth: 16.72,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_educational_institutions_0_200m",
+            shapValue: -12339.6533,
+            absShap: 12339.6533,
+            direction: "negative",
+            barWidth: 13.51,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        }]
+    },
+    "DPI66605": {
+        placeId: "DPI66605",
+        placeName: "Domino\'s Pizza KADUBESANAHALLI, Bangalore",
+        predictedValue: 2144155.55,
+        baseValue: 2153583.02,
+        features: [
+        {
+            feature: "num_furniture_stores_0_200m",
+            shapValue: -412485.2570,
+            absShap: 412485.2570,
+            direction: "negative",
+            barWidth: 100.00,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_qsr_200_500m",
+            shapValue: 69331.0113,
+            absShap: 69331.0113,
+            direction: "positive",
+            barWidth: 16.81,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_restaurants_and_cafe_200_500m",
+            shapValue: -43939.0957,
+            absShap: 43939.0957,
+            direction: "negative",
+            barWidth: 10.65,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_0_200m",
+            shapValue: 43053.8294,
+            absShap: 43053.8294,
+            direction: "positive",
+            barWidth: 10.44,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_religious_places_0_200m",
+            shapValue: 36776.6419,
+            absShap: 36776.6419,
+            direction: "positive",
+            barWidth: 8.92,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_seat_count_0_200m",
+            shapValue: 36722.8452,
+            absShap: 36722.8452,
+            direction: "positive",
+            barWidth: 8.90,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_u_education_illiterate",
+            shapValue: -27289.3845,
+            absShap: 27289.3845,
+            direction: "negative",
+            barWidth: 6.62,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_200_500m",
+            shapValue: 23952.5724,
+            absShap: 23952.5724,
+            direction: "positive",
+            barWidth: 5.81,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hotels_0_200m",
+            shapValue: 22038.7415,
+            absShap: 22038.7415,
+            direction: "positive",
+            barWidth: 5.34,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_automobile_entry_price_segment",
+            shapValue: 18762.9690,
+            absShap: 18762.9690,
+            direction: "positive",
+            barWidth: 4.55,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_age_group_30_to_39_male",
+            shapValue: 16721.6506,
+            absShap: 16721.6506,
+            direction: "positive",
+            barWidth: 4.05,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_supermarkets_200_500m",
+            shapValue: -15989.6878,
+            absShap: 15989.6878,
+            direction: "negative",
+            barWidth: 3.88,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_tv_mass",
+            shapValue: 15791.4247,
+            absShap: 15791.4247,
+            direction: "positive",
+            barWidth: 3.83,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_fashion_and_apparel_200_500m",
+            shapValue: -15144.7028,
+            absShap: 15144.7028,
+            direction: "negative",
+            barWidth: 3.67,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_age_group_70_plus_female",
+            shapValue: 14387.4580,
+            absShap: 14387.4580,
+            direction: "positive",
+            barWidth: 3.49,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        }]
+    },
+    "DPI67063": {
+        placeId: "DPI67063",
+        placeName: "Domino\'s Pizza CHANNASANDRA VILLAGE BANGALORE, Bangalore",
+        predictedValue: 2064658.49,
+        baseValue: 2153583.02,
+        features: [
+        {
+            feature: "num_furniture_stores_0_200m",
+            shapValue: -396249.8541,
+            absShap: 396249.8541,
+            direction: "negative",
+            barWidth: 100.00,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_qsr_200_500m",
+            shapValue: -66597.7565,
+            absShap: 66597.7565,
+            direction: "negative",
+            barWidth: 16.81,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_restaurants_and_cafe_200_500m",
+            shapValue: -54034.8926,
+            absShap: 54034.8926,
+            direction: "negative",
+            barWidth: 13.64,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_0_200m",
+            shapValue: 41931.6921,
+            absShap: 41931.6921,
+            direction: "positive",
+            barWidth: 10.58,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_seat_count_0_200m",
+            shapValue: 31374.8643,
+            absShap: 31374.8643,
+            direction: "positive",
+            barWidth: 7.92,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_cinema_halls_and_theatres_200_500m",
+            shapValue: 29498.2170,
+            absShap: 29498.2170,
+            direction: "positive",
+            barWidth: 7.44,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hh_spend_housing_0_to_20k",
+            shapValue: 24241.6419,
+            absShap: 24241.6419,
+            direction: "positive",
+            barWidth: 6.12,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_hotels_0_200m",
+            shapValue: 21580.9198,
+            absShap: 21580.9198,
+            direction: "positive",
+            barWidth: 5.45,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_fashion_and_apparel_200_500m",
+            shapValue: -19468.0269,
+            absShap: 19468.0269,
+            direction: "negative",
+            barWidth: 4.91,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_bank_0_200m",
+            shapValue: -17799.1870,
+            absShap: 17799.1870,
+            direction: "negative",
+            barWidth: 4.49,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_educational_institutions_0_200m",
+            shapValue: 15610.9630,
+            absShap: 15610.9630,
+            direction: "positive",
+            barWidth: 3.94,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_lsi_06",
+            shapValue: 13639.9025,
+            absShap: 13639.9025,
+            direction: "positive",
+            barWidth: 3.44,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_two_wheeler_entry_level_cruiser_bike_segment",
+            shapValue: -12587.3216,
+            absShap: 12587.3216,
+            direction: "negative",
+            barWidth: 3.18,
+            valueEffect: "↑ Higher → Higher Sales",
+            effectColor: "#10b981"
+        },
+        {
+            feature: "num_automobile_entry_price_segment",
+            shapValue: 12441.9765,
+            absShap: 12441.9765,
+            direction: "positive",
+            barWidth: 3.14,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        },
+        {
+            feature: "num_office_locations_0_200m",
+            shapValue: 12038.0794,
+            absShap: 12038.0794,
+            direction: "positive",
+            barWidth: 3.04,
+            valueEffect: "↓ Higher → Lower Sales",
+            effectColor: "#ef4444"
+        }]
+    },
+};
+
+
+        // Populate dropdown on load
+        window.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('place-select');
+
+            // Debug: log shapData to console
+            console.log('shapData keys:', Object.keys(shapData));
+            console.log('shapData length:', Object.keys(shapData).length);
+
+            // Sort by predicted value descending
+            const sortedPlaces = Object.keys(shapData).sort((a, b) =>
+                shapData[b].predictedValue - shapData[a].predictedValue
+            );
+
+            if (sortedPlaces.length === 0) {
+                console.error('No data in shapData object!');
+                document.getElementById('content-area').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h2>No SHAP Data Available</h2>
+                        <p>The shapData object is empty. Check if predictions were run with SHAP enabled.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            sortedPlaces.forEach(placeId => {
+                const data = shapData[placeId];
+                const option = document.createElement('option');
+                option.value = placeId;
+                // Show place_name if available, otherwise just place_id
+                const displayName = data.placeName ? `${data.placeName} (${placeId})` : placeId;
+                option.textContent = `${displayName} - Predicted: ₹${data.predictedValue.toLocaleString()}`;
+                select.appendChild(option);
+            });
+
+            // Auto-load first location
+            if (sortedPlaces.length > 0) {
+                select.value = sortedPlaces[0];
+                loadShapData(sortedPlaces[0]);
+            }
+        });
+
+        function loadShapData(placeId) {
+            if (!placeId || !shapData[placeId]) {
+                document.getElementById('content-area').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <h2>Select a location to view SHAP analysis</h2>
+                        <p>Choose a place from the dropdown above to see feature importance explanations</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const data = shapData[placeId];
+
+            // Calculate total impact
+            const totalPositive = data.features
+                .filter(f => f.direction === 'positive')
+                .reduce((sum, f) => sum + f.shapValue, 0);
+            const totalNegative = data.features
+                .filter(f => f.direction === 'negative')
+                .reduce((sum, f) => sum + f.shapValue, 0);
+
+            const transformNote = false ? `
+                <div class="transformation-note">
+                    <p><strong>⚠️ Note:</strong> This model uses log transformation. SHAP values shown below are in log-space.</p>
+                </div>
+            ` : '';
+
+            // Build display title with place_name if available
+            const displayTitle = data.placeName ?
+                `🏪 ${data.placeName} (${data.placeId}) - Prediction Explanation` :
+                `🏪 ${data.placeId} - Prediction Explanation`;
+
+            const html = `
+                <div class="card">
+                    <div class="card-title">${displayTitle}</div>
+
+                    ${transformNote}
+
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="metric-label">Predicted Value</div>
+                            <div class="metric-value">₹${data.predictedValue.toLocaleString()}</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Base Value</div>
+                            <div class="metric-value">₹${data.baseValue.toLocaleString()}</div>
+                        </div>
+                        <div class="metric-box" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+                            <div class="metric-label">Positive Impact</div>
+                            <div class="metric-value" style="color: #065f46;">+${totalPositive.toFixed(2)}</div>
+                        </div>
+                        <div class="metric-box" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
+                            <div class="metric-label">Negative Impact</div>
+                            <div class="metric-value" style="color: #991b1b;">${totalNegative.toFixed(2)}</div>
+                        </div>
+                    </div>
+
+                    <h3 style="color: #2a5b7f; margin-bottom: 1rem; font-size: 1.25rem;">📈 Feature Importance (Top 15)</h3>
+
+                    ${data.features.map((feature, idx) => `
+                        <div class="feature-row">
+                            <div class="feature-rank">#${idx + 1}</div>
+                            <div class="feature-name">${feature.feature}</div>
+                            <div class="feature-direction ${feature.direction}">${feature.direction}</div>
+                            <div class="feature-value value-${feature.direction}">
+                                ${feature.shapValue > 0 ? '+' : ''}${feature.shapValue.toFixed(4)}
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill bar-${feature.direction}" style="width: ${feature.barWidth}%"></div>
+                            </div>
+                            <div style="font-size: 0.7rem; color: ${feature.effectColor || '#6b7280'}; margin-top: 0.25rem; font-weight: 500;">
+                                General: ${feature.valueEffect || '○ No Clear Pattern'}
+                            </div>
+                        </div>
+                    `).join('')}
+
+                    <div class="interpretation">
+                        <h3>📖 How to Read This Analysis</h3>
+                        <ul>
+                            <li>The <strong>Base Value (₹${data.baseValue.toLocaleString()})</strong> is the average prediction across all training locations</li>
+                            <li><span class="positive" style="display: inline-block; padding: 0.25rem 0.625rem; border-radius: 8px;">Positive features</span> push the prediction higher than the base value</li>
+                            <li><span class="negative" style="display: inline-block; padding: 0.25rem 0.625rem; border-radius: 8px;">Negative features</span> pull the prediction lower than the base value</li>
+                            <li>The <strong>bar length</strong> and <strong>SHAP value</strong> show the strength of each feature's impact</li>
+                            <li>Each feature's contribution combines with the base value to produce the final prediction</li>
+                            <li>Features are sorted by absolute impact (strongest influence first)</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('content-area').innerHTML = html;
+
+            // Scroll to top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
