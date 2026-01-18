@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kentrix 10-Year Strategic Roadmap | The Bloomberg of Consumer Intelligence</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            color: #0f172a;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%);
+            box-shadow: 0 4px 20px rgba(62, 193, 189, 0.2);
+            border-bottom: 3px solid #3ec1bd;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .header-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #3ec1bd 0%, #00ffff 100%);
+            padding: 8px 24px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            color: #1e4a6b;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .header-subtitle {
+            font-size: 1.25rem;
+            color: #bae6fd;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-vision {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #3ec1bd;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #00ffff;
+        }
+
+        /* Target Metrics */
+        .target-metrics {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(42, 91, 127, 0.15);
+            padding: 1.5rem;
+            text-align: center;
+            border-left: 4px solid #3ec1bd;
+            border: 1px solid #bae6fd;
+            transition: all 0.3s;
+        }
+
+        .metric-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2a5b7f 0%, #3ec1bd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2a5b7f;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #3ec1bd, #00ffff);
+            border-radius: 2px;
+        }
+
+        /* Phase Overview */
+        .phases-overview {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .phase-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(42, 91, 127, 0.15);
+            padding: 1.5rem;
+            border: 1px solid #bae6fd;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .phase-card:hover {
+            box-shadow: 0 10px 25px rgba(62, 193, 189, 0.25);
+            transform: translateY(-3px);
+        }
+
+        .phase-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .phase-card.phase1::before { background: linear-gradient(90deg, #f97316, #fb923c); }
+        .phase-card.phase2::before { background: linear-gradient(90deg, #3ec1bd, #00ffff); }
+        .phase-card.phase3::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+        .phase-card.phase4::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+
+        .phase-number {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .phase-card.phase1 .phase-number { color: #f97316; }
+        .phase-card.phase2 .phase-number { color: #3ec1bd; }
+        .phase-card.phase3 .phase-number { color: #8b5cf6; }
+        .phase-card.phase4 .phase-number { color: #3b82f6; }
+
+        .phase-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2a5b7f;
+            margin-bottom: 6px;
+        }
+
+        .phase-years {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .phase-desc {
+            font-size: 0.85rem;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        /* Timeline Section */
+        .timeline-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(42, 91, 127, 0.15);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #bae6fd;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 70px;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, 
+                #f97316 0%, #f97316 30%,
+                #3ec1bd 30%, #3ec1bd 50%,
+                #8b5cf6 50%, #8b5cf6 70%,
+                #3b82f6 70%, #3b82f6 100%
+            );
+            border-radius: 3px;
+        }
+
+        .timeline-years {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            position: relative;
+        }
+
+        .year-item {
+            text-align: center;
+            position: relative;
+        }
+
+        .year-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            position: relative;
+            z-index: 2;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .year-item[data-phase="1"] .year-dot { background: #f97316; }
+        .year-item[data-phase="2"] .year-dot { background: #3ec1bd; }
+        .year-item[data-phase="3"] .year-dot { background: #8b5cf6; }
+        .year-item[data-phase="4"] .year-dot { background: #3b82f6; }
+
+        .year-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #2a5b7f;
+            margin-bottom: 6px;
+        }
+
+        .year-revenue {
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2a5b7f 0%, #3ec1bd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2px;
+        }
+
+        .year-clients {
+            font-size: 0.7rem;
+            color: #475569;
+            margin-bottom: 2px;
+        }
+
+        .year-countries {
+            font-size: 0.65rem;
+            color: #64748b;
+        }
+
+        /* Year Details Grid */
+        .year-details-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .year-detail-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 15px rgba(42, 91, 127, 0.12);
+            padding: 1.25rem;
+            border: 1px solid #e0f2fe;
+            transition: all 0.3s;
+        }
+
+        .year-detail-card:hover {
+            border-color: #3ec1bd;
+            box-shadow: 0 8px 20px rgba(62, 193, 189, 0.2);
+        }
+
+        .year-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0f2fe;
+        }
+
+        .year-detail-fy {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #2a5b7f;
+        }
+
+        .year-detail-phase {
+            font-size: 0.6rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .year-detail-phase.p1 { background: rgba(249,115,22,0.15); color: #f97316; }
+        .year-detail-phase.p2 { background: rgba(62,193,189,0.15); color: #0d9488; }
+        .year-detail-phase.p3 { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+        .year-detail-phase.p4 { background: rgba(59,130,246,0.15); color: #3b82f6; }
+
+        .year-detail-theme {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2a5b7f;
+        }
+
+        .year-detail-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .ydm-item {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .ydm-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #2a5b7f;
+        }
+
+        .ydm-label {
+            font-size: 0.6rem;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .year-detail-focus {
+            font-size: 0.75rem;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .year-detail-focus strong {
+            color: #2a5b7f;
+        }
+
+        /* Evolution Section */
+        .evolution-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .evolution-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(42, 91, 127, 0.15);
+            padding: 1.5rem;
+            border: 1px solid #bae6fd;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .evolution-card:hover {
+            box-shadow: 0 10px 25px rgba(62, 193, 189, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .evolution-card::after {
+            content: '→';
+            position: absolute;
+            right: -16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #3ec1bd;
+            font-weight: bold;
+        }
+
+        .evolution-card:last-child::after {
+            display: none;
+        }
+
+        .evolution-stage {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #f97316;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .evolution-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #2a5b7f;
+            margin-bottom: 12px;
+        }
+
+        .evolution-items {
+            list-style: none;
+        }
+
+        .evolution-items li {
+            font-size: 0.8rem;
+            color: #475569;
+            padding: 6px 0;
+            border-bottom: 1px solid #e0f2fe;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .evolution-items li:last-child {
+            border-bottom: none;
+        }
+
+        .evolution-items li::before {
+            content: '◆';
+            font-size: 0.5rem;
+            color: #3ec1bd;
+        }
+
+        /* Geographic Section */
+        .geo-timeline {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .geo-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(42, 91, 127, 0.15);
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid #bae6fd;
+            transition: all 0.3s;
+        }
+
+        .geo-card:hover {
+            box-shadow: 0 10px 25px rgba(62, 193, 189, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .geo-year {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #f97316;
+            margin-bottom: 10px;
+        }
+
+        .geo-count {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2a5b7f 0%, #3ec1bd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .geo-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .geo-markets {
+            font-size: 0.7rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .geo-new {
+            color: #3ec1bd;
+            font-weight: 600;
+        }
+
+        /* Displacement Section */
+        .displacement-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .displacement-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(42, 91, 127, 0.15);
+            padding: 1.5rem;
+            border: 1px solid #bae6fd;
+            transition: all 0.3s;
+        }
+
+        .displacement-card:hover {
+            box-shadow: 0 10px 25px rgba(62, 193, 189, 0.2);
+        }
+
+        .displacement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .displacement-incumbent {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #2a5b7f;
+        }
+
+        .displacement-capture {
+            text-align: right;
+        }
+
+        .displacement-capture-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #3ec1bd;
+        }
+
+        .displacement-capture-label {
+            font-size: 0.6rem;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .displacement-bar {
+            height: 8px;
+            background: #e0f2fe;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .displacement-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f97316, #3ec1bd);
+            border-radius: 4px;
+        }
+
+        .displacement-examples {
+            font-size: 0.75rem;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        /* Indices Section */
+        .indices-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .index-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, white 100%);
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(42, 91, 127, 0.15);
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid #bae6fd;
+            transition: all 0.3s;
+        }
+
+        .index-card:hover {
+            transform: translateY(-4px);
+            border-color: #8b5cf6;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.2);
+        }
+
+        .index-abbr {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            margin-bottom: 8px;
+        }
+
+        .index-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2a5b7f;
+            margin-bottom: 6px;
+        }
+
+        .index-desc {
+            font-size: 0.7rem;
+            color: #64748b;
+        }
+
+        /* Ecosystem Section */
+        .ecosystem-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .ecosystem-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(42, 91, 127, 0.15);
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid #bae6fd;
+            transition: all 0.3s;
+        }
+
+        .ecosystem-card:hover {
+            box-shadow: 0 10px 25px rgba(62, 193, 189, 0.25);
+            transform: translateY(-4px);
+        }
+
+        .ecosystem-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 12px;
+            background: linear-gradient(135deg, #2a5b7f 0%, #3ec1bd 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .ecosystem-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2a5b7f;
+            margin-bottom: 6px;
+        }
+
+        .ecosystem-target {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2a5b7f 0%, #3ec1bd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .ecosystem-desc {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Milestones Section */
+        .milestones-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .milestone-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 15px rgba(42, 91, 127, 0.12);
+            padding: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border: 1px solid #e0f2fe;
+            transition: all 0.3s;
+        }
+
+        .milestone-card:hover {
+            border-color: #3ec1bd;
+            box-shadow: 0 8px 20px rgba(62, 193, 189, 0.15);
+        }
+
+        .milestone-number {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3ec1bd 0%, #00ffff 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #1e4a6b;
+            flex-shrink: 0;
+        }
+
+        .milestone-content {
+            flex: 1;
+        }
+
+        .milestone-target {
+            font-size: 0.7rem;
+            color: #3ec1bd;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .milestone-text {
+            font-size: 0.8rem;
+            color: #475569;
+        }
+
+        /* Final Vision */
+        .vision-section {
+            background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(42, 91, 127, 0.3);
+        }
+
+        .vision-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(62,193,189,0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 50%, rgba(0,255,255,0.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .vision-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #3ec1bd, #00ffff);
+            padding: 8px 24px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            color: #1e4a6b;
+            position: relative;
+        }
+
+        .vision-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #ffffff;
+            position: relative;
+            text-shadow: 0 2px 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .vision-subtitle {
+            font-size: 1.1rem;
+            color: #bae6fd;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .vision-metrics {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1.5rem;
+            position: relative;
+        }
+
+        .vision-metric {
+            text-align: center;
+        }
+
+        .vision-metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #00ffff;
+            margin-bottom: 4px;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .vision-metric-label {
+            font-size: 0.75rem;
+            color: #bae6fd;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: #3ec1bd;
+            font-size: 0.85rem;
+            padding: 1.5rem;
+        }
+
+        .footer-brand {
+            font-weight: 700;
+            color: #2a5b7f;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .target-metrics { grid-template-columns: repeat(3, 1fr); }
+            .phases-overview { grid-template-columns: repeat(2, 1fr); }
+            .year-details-grid { grid-template-columns: repeat(2, 1fr); }
+            .evolution-grid { grid-template-columns: repeat(2, 1fr); }
+            .evolution-card::after { display: none; }
+            .geo-timeline { grid-template-columns: repeat(3, 1fr); }
+            .ecosystem-grid { grid-template-columns: repeat(2, 1fr); }
+            .indices-grid { grid-template-columns: repeat(3, 1fr); }
+            .milestones-grid { grid-template-columns: repeat(2, 1fr); }
+            .vision-metrics { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .target-metrics { grid-template-columns: repeat(2, 1fr); }
+            .phases-overview { grid-template-columns: 1fr; }
+            .timeline-years { grid-template-columns: repeat(5, 1fr); }
+            .year-details-grid { grid-template-columns: 1fr; }
+            .displacement-grid { grid-template-columns: 1fr; }
+            .vision-metrics { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-tag">10-Year Strategic Roadmap</div>
+            <h1>KENTRIX</h1>
+            <p class="header-subtitle">Building the Bloomberg of Consumer Intelligence</p>
+            <div class="header-vision">"The Consumer World Runs on Kentrix"</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- FY35 Target Metrics -->
+        <div class="target-metrics">
+            <div class="metric-card">
+                <div class="metric-value">$1.1B</div>
+                <div class="metric-label">ARR by FY35</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">5,500+</div>
+                <div class="metric-label">Enterprise Clients</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">25+</div>
+                <div class="metric-label">Countries</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">2B+</div>
+                <div class="metric-label">Consumer Profiles</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">75K+</div>
+                <div class="metric-label">Certified Professionals</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">40%</div>
+                <div class="metric-label">EBITDA Margin</div>
+            </div>
+        </div>
+
+        <!-- Phase Overview -->
+        <h2 class="section-title">Strategic Phases</h2>
+        <div class="phases-overview">
+            <div class="phase-card phase1">
+                <div class="phase-number">Phase 1</div>
+                <h3 class="phase-title">Data Monopoly</h3>
+                <div class="phase-years">FY26-FY28 (3 Years)</div>
+                <p class="phase-desc">Build proprietary data assets that are genuinely irreplaceable — data that answers questions no one else can answer. Establish building-level precision and bottom-up methodology as the moat.</p>
+            </div>
+            <div class="phase-card phase2">
+                <div class="phase-number">Phase 2</div>
+                <h3 class="phase-title">Workflow Embedding</h3>
+                <div class="phase-years">FY29-FY30 (2 Years)</div>
+                <p class="phase-desc">Become so embedded in client operations that using Kentrix is unconscious, constant, and essential. Integrate into CRM, activate campaigns, automate workflows.</p>
+            </div>
+            <div class="phase-card phase3">
+                <div class="phase-number">Phase 3</div>
+                <h3 class="phase-title">Network Effects & Standards</h3>
+                <div class="phase-years">FY31-FY32 (2 Years)</div>
+                <p class="phase-desc">Achieve network effects so strong that NOT using Kentrix becomes a competitive disadvantage. Kentrix Indices become the industry reference standard.</p>
+            </div>
+            <div class="phase-card phase4">
+                <div class="phase-number">Phase 4</div>
+                <h3 class="phase-title">Global Platform</h3>
+                <div class="phase-years">FY33-FY35 (3 Years)</div>
+                <p class="phase-desc">Become the global standard for consumer intelligence — the platform that every B2C company worldwide considers essential. Category dominance achieved.</p>
+            </div>
+        </div>
+
+        <!-- Timeline Section -->
+        <div class="timeline-card">
+            <h2 class="section-title">Revenue & Growth Timeline</h2>
+            <div class="timeline">
+                <div class="timeline-years">
+                    <div class="year-item" data-phase="1">
+                        <div class="year-dot"></div>
+                        <div class="year-label">FY26</div>
+                        <div class="year-revenue">$1.3M</div>
+                        <div class="year-clients">20 clients</div>
+                        <div class="year-countries">1 country</div>
+                    </div>
+                    <div class="year-item" data-phase="1">
+                        <div class="year-dot"></div>
+                        <div class="year-label">FY27</div>
+                        <div class="year-revenue">$5M</div>
+                        <div class="year-clients">50 clients</div>
+                        <div class="year-countries">2 countries</div>
+                    </div>
+                    <div class="year-item" data-phase="1">
+                        <div class="year-dot"></div>
+                        <div class="year-label">FY28</div>
+                        <div class="year-revenue">$18M</div>
+                        <div class="year-clients">150 clients</div>
+                        <div class="year-countries">3 countries</div>
+                    </div>
+                    <div class="year-item" data-phase="2">
+                        <div class="year-dot"></div>
+                        <div class="year-label">FY29</div>
+                        <div class="year-revenue">$55M</div>
+                        <div class="year-clients">500 clients</div>
+                        <div class="year-countries">5 countries</div>
+                    </div>
+                    <div class="year-item" data-phase="2">
+                        <div class="year-dot"></div>
+                        <div class="year-label">FY30</div>
+                        <div class="year-revenue">$164M</div>
+                        <div class="year-clients">970 clients</div>
+                        <div class="year-countries">8 countries</div>
+                    </div>
+                    <div class="year-item" data-phase="3">
+                        <div class="year-dot"></div>
+                        <div class="year-label">FY31</div>
+                        <div class="year-revenue">$255M</div>
+                        <div class="year-clients">1,770 clients</div>
+                        <div class="year-countries">10 countries</div>
+                    </div>
+                    <div class="year-item" data-phase="3">
+                        <div class="year-dot"></div>
+                        <div class="year-label">FY32</div>
+                        <div class="year-revenue">$365M</div>
+                        <div class="year-clients">2,200 clients</div>
+                        <div class="year-countries">12 countries</div>
+                    </div>
+                    <div class="year-item" data-phase="4">
+                        <div class="year-dot"></div>
+                        <div class="year-label">FY33</div>
+                        <div class="year-revenue">$520M</div>
+                        <div class="year-clients">2,950 clients</div>
+                        <div class="year-countries">18 countries</div>
+                    </div>
+                    <div class="year-item" data-phase="4">
+                        <div class="year-dot"></div>
+                        <div class="year-label">FY34</div>
+                        <div class="year-revenue">$730M</div>
+                        <div class="year-clients">3,900 clients</div>
+                        <div class="year-countries">22 countries</div>
+                    </div>
+                    <div class="year-item" data-phase="4">
+                        <div class="year-dot"></div>
+                        <div class="year-label">FY35</div>
+                        <div class="year-revenue">$1.1B</div>
+                        <div class="year-clients">5,500 clients</div>
+                        <div class="year-countries">25+ countries</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Year Details Grid -->
+        <h2 class="section-title">Year-by-Year Strategic Focus</h2>
+        <div class="year-details-grid">
+            <div class="year-detail-card">
+                <div class="year-detail-header">
+                    <span class="year-detail-fy">FY26</span>
+                    <span class="year-detail-phase p1">Phase 1</span>
+                </div>
+                <div class="year-detail-theme">Foundation & Data Moat</div>
+                <div class="year-detail-metrics">
+                    <div class="ydm-item">
+                        <div class="ydm-value">$1.3M</div>
+                        <div class="ydm-label">Revenue</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">20</div>
+                        <div class="ydm-label">Clients</div>
+                    </div>
+                </div>
+                <div class="year-detail-focus">
+                    <strong>Focus:</strong> Unified platform architecture, customer data enrichment, 1B+ India profiles, pre-scale foundation
+                </div>
+            </div>
+
+            <div class="year-detail-card">
+                <div class="year-detail-header">
+                    <span class="year-detail-fy">FY27</span>
+                    <span class="year-detail-phase p1">Phase 1</span>
+                </div>
+                <div class="year-detail-theme">Scale & Integration</div>
+                <div class="year-detail-metrics">
+                    <div class="ydm-item">
+                        <div class="ydm-value">$5M</div>
+                        <div class="ydm-label">Revenue</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">50</div>
+                        <div class="ydm-label">Clients</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">72%</div>
+                        <div class="ydm-label">Gross Margin</div>
+                    </div>
+                </div>
+                <div class="year-detail-focus">
+                    <strong>Focus:</strong> CRM integrations (Salesforce, HubSpot), ad platform activation, UAE soft launch, product-market fit
+                </div>
+            </div>
+
+            <div class="year-detail-card">
+                <div class="year-detail-header">
+                    <span class="year-detail-fy">FY28</span>
+                    <span class="year-detail-phase p1">Phase 1</span>
+                </div>
+                <div class="year-detail-theme">Network Effects Begin</div>
+                <div class="year-detail-metrics">
+                    <div class="ydm-item">
+                        <div class="ydm-value">$18M</div>
+                        <div class="ydm-label">Revenue</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">150</div>
+                        <div class="ydm-label">Clients</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">73%</div>
+                        <div class="ydm-label">Gross Margin</div>
+                    </div>
+                </div>
+                <div class="year-detail-focus">
+                    <strong>Focus:</strong> Industry benchmarking, Kentrix Retail Index launch, AI copilot v1, vertical clouds (Retail, QSR)
+                </div>
+            </div>
+
+            <div class="year-detail-card">
+                <div class="year-detail-header">
+                    <span class="year-detail-fy">FY29</span>
+                    <span class="year-detail-phase p2">Phase 2</span>
+                </div>
+                <div class="year-detail-theme">Platform & Ecosystem</div>
+                <div class="year-detail-metrics">
+                    <div class="ydm-item">
+                        <div class="ydm-value">$55M</div>
+                        <div class="ydm-label">Revenue</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">500</div>
+                        <div class="ydm-label">Clients</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">75%</div>
+                        <div class="ydm-label">Gross Margin</div>
+                    </div>
+                </div>
+                <div class="year-detail-focus">
+                    <strong>Focus:</strong> Partner ecosystem (100+ partners), developer platform, BFSI Cloud, real-time signals v1
+                </div>
+            </div>
+
+            <div class="year-detail-card">
+                <div class="year-detail-header">
+                    <span class="year-detail-fy">FY30</span>
+                    <span class="year-detail-phase p2">Phase 2</span>
+                </div>
+                <div class="year-detail-theme">Scale & International</div>
+                <div class="year-detail-metrics">
+                    <div class="ydm-item">
+                        <div class="ydm-value">$164M</div>
+                        <div class="ydm-label">Revenue</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">970</div>
+                        <div class="ydm-label">Clients</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">77%</div>
+                        <div class="ydm-label">Gross Margin</div>
+                    </div>
+                </div>
+                <div class="year-detail-focus">
+                    <strong>Focus:</strong> 30% international revenue, 10K certified professionals, Kentrix Research launch
+                </div>
+            </div>
+
+            <div class="year-detail-card">
+                <div class="year-detail-header">
+                    <span class="year-detail-fy">FY31</span>
+                    <span class="year-detail-phase p3">Phase 3</span>
+                </div>
+                <div class="year-detail-theme">Standards & Reference</div>
+                <div class="year-detail-metrics">
+                    <div class="ydm-item">
+                        <div class="ydm-value">$255M</div>
+                        <div class="ydm-label">Revenue</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">78%</div>
+                        <div class="ydm-label">Gross Margin</div>
+                    </div>
+                </div>
+                <div class="year-detail-focus">
+                    <strong>Focus:</strong> Full Kentrix Index suite, media/analyst adoption, global benchmarking
+                </div>
+            </div>
+
+            <div class="year-detail-card">
+                <div class="year-detail-header">
+                    <span class="year-detail-fy">FY32</span>
+                    <span class="year-detail-phase p3">Phase 3</span>
+                </div>
+                <div class="year-detail-theme">Category Dominance</div>
+                <div class="year-detail-metrics">
+                    <div class="ydm-item">
+                        <div class="ydm-value">$365M</div>
+                        <div class="ydm-label">Revenue</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">79%</div>
+                        <div class="ydm-label">Gross Margin</div>
+                    </div>
+                </div>
+                <div class="year-detail-focus">
+                    <strong>Focus:</strong> Category ownership, IPO readiness, adjacent verticals (Healthcare, RE)
+                </div>
+            </div>
+
+            <div class="year-detail-card">
+                <div class="year-detail-header">
+                    <span class="year-detail-fy">FY33</span>
+                    <span class="year-detail-phase p4">Phase 4</span>
+                </div>
+                <div class="year-detail-theme">Global Expansion</div>
+                <div class="year-detail-metrics">
+                    <div class="ydm-item">
+                        <div class="ydm-value">$520M</div>
+                        <div class="ydm-label">Revenue</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">80%</div>
+                        <div class="ydm-label">Gross Margin</div>
+                    </div>
+                </div>
+                <div class="year-detail-focus">
+                    <strong>Focus:</strong> 18+ countries, LatAm entry (Brazil), Africa scaling, autonomous GTM
+                </div>
+            </div>
+
+            <div class="year-detail-card">
+                <div class="year-detail-header">
+                    <span class="year-detail-fy">FY34</span>
+                    <span class="year-detail-phase p4">Phase 4</span>
+                </div>
+                <div class="year-detail-theme">Mature Platform</div>
+                <div class="year-detail-metrics">
+                    <div class="ydm-item">
+                        <div class="ydm-value">$730M</div>
+                        <div class="ydm-label">Revenue</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">81%</div>
+                        <div class="ydm-label">Gross Margin</div>
+                    </div>
+                </div>
+                <div class="year-detail-focus">
+                    <strong>Focus:</strong> M&A strategy, Fortune 500 penetration, IPO/exit preparation
+                </div>
+            </div>
+
+            <div class="year-detail-card">
+                <div class="year-detail-header">
+                    <span class="year-detail-fy">FY35</span>
+                    <span class="year-detail-phase p4">Phase 4</span>
+                </div>
+                <div class="year-detail-theme">Vision Achieved</div>
+                <div class="year-detail-metrics">
+                    <div class="ydm-item">
+                        <div class="ydm-value">$1.1B</div>
+                        <div class="ydm-label">Revenue</div>
+                    </div>
+                    <div class="ydm-item">
+                        <div class="ydm-value">82%</div>
+                        <div class="ydm-label">Gross Margin</div>
+                    </div>
+                </div>
+                <div class="year-detail-focus">
+                    <strong>Focus:</strong> Bloomberg of Consumer Intelligence achieved. 25+ countries, industry standard.
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Evolution -->
+        <h2 class="section-title">Product Evolution</h2>
+        <div class="evolution-grid">
+            <div class="evolution-card">
+                <div class="evolution-stage">FY26-27</div>
+                <h3 class="evolution-title">Data Platform</h3>
+                <ul class="evolution-items">
+                    <li>Unified consumer graph</li>
+                    <li>Customer data enrichment</li>
+                    <li>Self-service analytics</li>
+                    <li>API v2 launch</li>
+                    <li>CRM integrations</li>
+                </ul>
+            </div>
+            <div class="evolution-card">
+                <div class="evolution-stage">FY28-29</div>
+                <h3 class="evolution-title">Intelligence Platform</h3>
+                <ul class="evolution-items">
+                    <li>AI recommendation engine</li>
+                    <li>Industry benchmarking</li>
+                    <li>Kentrix Indices</li>
+                    <li>Vertical clouds</li>
+                    <li>Workflow automation</li>
+                </ul>
+            </div>
+            <div class="evolution-card">
+                <div class="evolution-stage">FY30-32</div>
+                <h3 class="evolution-title">Operating System</h3>
+                <ul class="evolution-items">
+                    <li>AI copilot (natural language)</li>
+                    <li>Real-time signals</li>
+                    <li>Autonomous workflows</li>
+                    <li>Developer platform</li>
+                    <li>Partner ecosystem</li>
+                </ul>
+            </div>
+            <div class="evolution-card">
+                <div class="evolution-stage">FY33-35</div>
+                <h3 class="evolution-title">Global Standard</h3>
+                <ul class="evolution-items">
+                    <li>Multi-country platform</li>
+                    <li>Industry standard indices</li>
+                    <li>Autonomous GTM execution</li>
+                    <li>10,000+ integrations</li>
+                    <li>Adjacent verticals</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Geographic Expansion -->
+        <h2 class="section-title">Geographic Expansion</h2>
+        <div class="geo-timeline">
+            <div class="geo-card">
+                <div class="geo-year">FY26-27</div>
+                <div class="geo-count">3</div>
+                <div class="geo-label">Countries</div>
+                <div class="geo-markets">
+                    <strong>India</strong> (dominant)<br>
+                    <span class="geo-new">+ UAE</span> (MENA beachhead)<br>
+                    <span class="geo-new">+ Indonesia</span> (SE Asia entry)
+                </div>
+            </div>
+            <div class="geo-card">
+                <div class="geo-year">FY28-30</div>
+                <div class="geo-count">8</div>
+                <div class="geo-label">Countries</div>
+                <div class="geo-markets">
+                    India, UAE, Indonesia<br>
+                    <span class="geo-new">+ Saudi Arabia</span><br>
+                    <span class="geo-new">+ Vietnam, Philippines</span><br>
+                    <span class="geo-new">+ Bangladesh, Thailand</span>
+                </div>
+            </div>
+            <div class="geo-card">
+                <div class="geo-year">FY31-32</div>
+                <div class="geo-count">12</div>
+                <div class="geo-label">Countries</div>
+                <div class="geo-markets">
+                    All previous +<br>
+                    <span class="geo-new">+ Egypt</span> (MENA)<br>
+                    <span class="geo-new">+ Malaysia, Sri Lanka</span><br>
+                    <span class="geo-new">+ Nigeria</span> (Africa pilot)
+                </div>
+            </div>
+            <div class="geo-card">
+                <div class="geo-year">FY33-34</div>
+                <div class="geo-count">22</div>
+                <div class="geo-label">Countries</div>
+                <div class="geo-markets">
+                    All previous +<br>
+                    <span class="geo-new">+ Brazil, Mexico</span> (LatAm)<br>
+                    <span class="geo-new">+ Kenya, South Africa</span><br>
+                    <span class="geo-new">+ Morocco, Turkey, Pakistan</span>
+                </div>
+            </div>
+            <div class="geo-card">
+                <div class="geo-year">FY35</div>
+                <div class="geo-count">25+</div>
+                <div class="geo-label">Countries</div>
+                <div class="geo-markets">
+                    <strong>Regional Hubs:</strong><br>
+                    Mumbai (South Asia)<br>
+                    Dubai (MENA)<br>
+                    Singapore (SE Asia)<br>
+                    + LatAm & Africa
+                </div>
+            </div>
+        </div>
+
+        <!-- Value Displacement -->
+        <h2 class="section-title">Value Displacement from Incumbents (by FY35)</h2>
+        <div class="displacement-grid">
+            <div class="displacement-card">
+                <div class="displacement-header">
+                    <span class="displacement-incumbent">Market Research</span>
+                    <div class="displacement-capture">
+                        <div class="displacement-capture-value">$200M</div>
+                        <div class="displacement-capture-label">Kentrix Capture</div>
+                    </div>
+                </div>
+                <div class="displacement-bar">
+                    <div class="displacement-bar-fill" style="width: 70%"></div>
+                </div>
+                <div class="displacement-examples">Nielsen, Kantar, Ipsos, Euromonitor — 70% of traditional research replaced by passive data platforms</div>
+            </div>
+            <div class="displacement-card">
+                <div class="displacement-header">
+                    <span class="displacement-incumbent">GTM Consulting</span>
+                    <div class="displacement-capture">
+                        <div class="displacement-capture-value">$350M</div>
+                        <div class="displacement-capture-label">Kentrix Capture</div>
+                    </div>
+                </div>
+                <div class="displacement-bar">
+                    <div class="displacement-bar-fill" style="width: 60%"></div>
+                </div>
+                <div class="displacement-examples">McKinsey, BCG, Bain, Deloitte — Routine site selection & customer analysis automated</div>
+            </div>
+            <div class="displacement-card">
+                <div class="displacement-header">
+                    <span class="displacement-incumbent">CDP / Customer Data</span>
+                    <div class="displacement-capture">
+                        <div class="displacement-capture-value">$150M</div>
+                        <div class="displacement-capture-label">Kentrix Capture</div>
+                    </div>
+                </div>
+                <div class="displacement-bar">
+                    <div class="displacement-bar-fill" style="width: 50%"></div>
+                </div>
+                <div class="displacement-examples">Segment, Treasure Data, mParticle — Intelligence layer absorbs CDP value</div>
+            </div>
+            <div class="displacement-card">
+                <div class="displacement-header">
+                    <span class="displacement-incumbent">System Integration</span>
+                    <div class="displacement-capture">
+                        <div class="displacement-capture-value">$150M</div>
+                        <div class="displacement-capture-label">Kentrix Capture</div>
+                    </div>
+                </div>
+                <div class="displacement-bar">
+                    <div class="displacement-bar-fill" style="width: 40%"></div>
+                </div>
+                <div class="displacement-examples">Accenture, TCS, Wipro — Self-service platforms reduce SI complexity</div>
+            </div>
+            <div class="displacement-card">
+                <div class="displacement-header">
+                    <span class="displacement-incumbent">Data Brokers</span>
+                    <div class="displacement-capture">
+                        <div class="displacement-capture-value">$50M</div>
+                        <div class="displacement-capture-label">Kentrix Capture</div>
+                    </div>
+                </div>
+                <div class="displacement-bar">
+                    <div class="displacement-bar-fill" style="width: 30%"></div>
+                </div>
+                <div class="displacement-examples">Experian, Acxiom, TransUnion — Intelligence platforms replace raw data purchase</div>
+            </div>
+            <div class="displacement-card">
+                <div class="displacement-header">
+                    <span class="displacement-incumbent">New Value Creation</span>
+                    <div class="displacement-capture">
+                        <div class="displacement-capture-value">$200M</div>
+                        <div class="displacement-capture-label">Kentrix Capture</div>
+                    </div>
+                </div>
+                <div class="displacement-bar">
+                    <div class="displacement-bar-fill" style="width: 100%"></div>
+                </div>
+                <div class="displacement-examples">New use cases, new markets, capabilities that didn't exist before Kentrix</div>
+            </div>
+        </div>
+
+        <!-- Kentrix Indices -->
+        <h2 class="section-title">Kentrix Indices — Industry Standards</h2>
+        <div class="indices-grid">
+            <div class="index-card">
+                <div class="index-abbr">KRI</div>
+                <div class="index-name">Kentrix Retail Index</div>
+                <div class="index-desc">Store performance benchmark across retail industry</div>
+            </div>
+            <div class="index-card">
+                <div class="index-abbr">KCI</div>
+                <div class="index-name">Kentrix Consumer Index</div>
+                <div class="index-desc">Consumer spending & sentiment benchmark</div>
+            </div>
+            <div class="index-card">
+                <div class="index-abbr">KLI</div>
+                <div class="index-name">Kentrix Location Index</div>
+                <div class="index-desc">Catchment & real estate value index</div>
+            </div>
+            <div class="index-card">
+                <div class="index-abbr">KQI</div>
+                <div class="index-name">Kentrix QSR Index</div>
+                <div class="index-desc">Quick-service restaurant performance</div>
+            </div>
+            <div class="index-card">
+                <div class="index-abbr">KBI</div>
+                <div class="index-name">Kentrix BFSI Index</div>
+                <div class="index-desc">Banking & financial services benchmark</div>
+            </div>
+        </div>
+
+        <!-- Ecosystem -->
+        <h2 class="section-title">Ecosystem by FY35</h2>
+        <div class="ecosystem-grid">
+            <div class="ecosystem-card">
+                <div class="ecosystem-icon">🤝</div>
+                <h3 class="ecosystem-title">Partners</h3>
+                <div class="ecosystem-target">2,000+</div>
+                <div class="ecosystem-desc">SI, consulting, agencies, resellers across 25+ countries</div>
+            </div>
+            <div class="ecosystem-card">
+                <div class="ecosystem-icon">👩‍💻</div>
+                <h3 class="ecosystem-title">Certified Professionals</h3>
+                <div class="ecosystem-target">75,000+</div>
+                <div class="ecosystem-desc">"Kentrix Certified" becomes a career credential</div>
+            </div>
+            <div class="ecosystem-card">
+                <div class="ecosystem-icon">🔌</div>
+                <h3 class="ecosystem-title">Integrations</h3>
+                <div class="ecosystem-target">10,000+</div>
+                <div class="ecosystem-desc">Developer platform, APIs, marketplace apps</div>
+            </div>
+            <div class="ecosystem-card">
+                <div class="ecosystem-icon">📰</div>
+                <h3 class="ecosystem-title">Content Ecosystem</h3>
+                <div class="ecosystem-target">$50M+</div>
+                <div class="ecosystem-desc">Kentrix Research, News, Events as standalone businesses</div>
+            </div>
+        </div>
+
+        <!-- Key Milestones -->
+        <h2 class="section-title">Critical Milestones</h2>
+        <div class="milestones-grid">
+            <div class="milestone-card">
+                <div class="milestone-number">1</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY27 Q1</div>
+                    <div class="milestone-text">100 clients — Product-market fit proven</div>
+                </div>
+            </div>
+            <div class="milestone-card">
+                <div class="milestone-number">2</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY27 Q2</div>
+                    <div class="milestone-text">First international revenue — Geographic model works</div>
+                </div>
+            </div>
+            <div class="milestone-card">
+                <div class="milestone-number">3</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY28 Q2</div>
+                    <div class="milestone-text">Kentrix Retail Index launched — Standard-setting begins</div>
+                </div>
+            </div>
+            <div class="milestone-card">
+                <div class="milestone-number">4</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY28 Q3</div>
+                    <div class="milestone-text">$50M ARR — Platform company status</div>
+                </div>
+            </div>
+            <div class="milestone-card">
+                <div class="milestone-number">5</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY29 Q4</div>
+                    <div class="milestone-text">$100M ARR — Major scale milestone</div>
+                </div>
+            </div>
+            <div class="milestone-card">
+                <div class="milestone-number">6</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY30 Q4</div>
+                    <div class="milestone-text">10K certified professionals — Identity created</div>
+                </div>
+            </div>
+            <div class="milestone-card">
+                <div class="milestone-number">7</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY31 Q2</div>
+                    <div class="milestone-text">Indices cited in major press — Standard achieved</div>
+                </div>
+            </div>
+            <div class="milestone-card">
+                <div class="milestone-number">8</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY31 Q4</div>
+                    <div class="milestone-text">$250M ARR — Category leader</div>
+                </div>
+            </div>
+            <div class="milestone-card">
+                <div class="milestone-number">9</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY32 Q4</div>
+                    <div class="milestone-text">IPO readiness confirmed — Exit optionality</div>
+                </div>
+            </div>
+            <div class="milestone-card">
+                <div class="milestone-number">10</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY33 Q3</div>
+                    <div class="milestone-text">$500M ARR — Major global scale</div>
+                </div>
+            </div>
+            <div class="milestone-card">
+                <div class="milestone-number">11</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY34 Q2</div>
+                    <div class="milestone-text">20+ countries operational — Global presence</div>
+                </div>
+            </div>
+            <div class="milestone-card">
+                <div class="milestone-number">12</div>
+                <div class="milestone-content">
+                    <div class="milestone-target">FY35 Q3</div>
+                    <div class="milestone-text">$1B ARR — Vision achieved 🎯</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Vision -->
+        <section class="vision-section">
+            <div class="vision-tag">FY35 Vision Achieved</div>
+            <h2 class="vision-title">The Bloomberg of Consumer Intelligence</h2>
+            <p class="vision-subtitle">"The Consumer World Runs on Kentrix"</p>
+            <div class="vision-metrics">
+                <div class="vision-metric">
+                    <div class="vision-metric-value">$1.1B</div>
+                    <div class="vision-metric-label">Annual Revenue</div>
+                </div>
+                <div class="vision-metric">
+                    <div class="vision-metric-value">5,500+</div>
+                    <div class="vision-metric-label">Enterprise Clients</div>
+                </div>
+                <div class="vision-metric">
+                    <div class="vision-metric-value">25+</div>
+                    <div class="vision-metric-label">Countries</div>
+                </div>
+                <div class="vision-metric">
+                    <div class="vision-metric-value">2B+</div>
+                    <div class="vision-metric-label">Consumer Profiles</div>
+                </div>
+                <div class="vision-metric">
+                    <div class="vision-metric-value">$15-20B</div>
+                    <div class="vision-metric-label">Valuation</div>
+                </div>
+                <div class="vision-metric">
+                    <div class="vision-metric-value">#1</div>
+                    <div class="vision-metric-label">Emerging Markets</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><span class="footer-brand">KENTRIX</span> Strategic Roadmap FY26-FY35 | The Bloomberg of Consumer Intelligence</p>
+        </footer>
+    </div>
+</body>
+</html>
