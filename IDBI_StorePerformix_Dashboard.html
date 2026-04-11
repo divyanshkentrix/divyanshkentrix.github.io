@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDBI StorePerformix — Kentrix.ai</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--k-deep:#0B1E3F;--k-teal:#00897B;--k-teal-light:#4DB6AC;--k-accent:#F7C948;--k-red:#E53935;--k-green:#2E7D32;--k-bg:#F4F6F9;--k-card:#FFFFFF;--k-text:#1A1A2E;--k-muted:#6B7280;--k-border:#E5E7EB;--k-glow:rgba(0,137,123,0.08)}
+body{font-family:'DM Sans',sans-serif;background:var(--k-bg);color:var(--k-text);line-height:1.6}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0B1E3F 0%,#0D2B4E 40%,#0E3D5C 100%);padding:48px 0 40px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;top:-50%;right:-20%;width:600px;height:600px;background:radial-gradient(circle,rgba(0,137,123,0.12) 0%,transparent 70%);border-radius:50%}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,137,123,0.15);border:1px solid rgba(0,137,123,0.3);border-radius:20px;padding:6px 16px;font-size:12px;color:var(--k-teal-light);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:20px}
+.hero h1{font-family:'Playfair Display',serif;font-size:42px;color:#fff;font-weight:700;line-height:1.15;margin-bottom:12px}
+.hero h1 span{color:var(--k-accent)}
+.hero-sub{font-size:17px;color:rgba(255,255,255,0.6);max-width:700px;margin-bottom:28px}
+.hero-stats{display:flex;gap:32px;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hero-stat-val{font-size:28px;font-weight:700;color:var(--k-accent)}
+.hero-stat-label{font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px}
+
+/* NAVIGATION */
+.nav{background:#fff;border-bottom:1px solid var(--k-border);position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.nav-inner{display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-btn{padding:14px 20px;font-size:13px;font-weight:600;color:var(--k-muted);border:none;background:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.2s}
+.nav-btn.active{color:var(--k-teal);border-bottom-color:var(--k-teal)}
+.nav-btn:hover{color:var(--k-deep)}
+
+/* SECTIONS */
+.section{padding:40px 0}
+.section-title{font-family:'Playfair Display',serif;font-size:28px;color:var(--k-deep);margin-bottom:6px}
+.section-sub{font-size:14px;color:var(--k-muted);margin-bottom:28px;max-width:800px}
+.section-narrative{background:linear-gradient(135deg,var(--k-glow),rgba(247,201,72,0.04));border-left:3px solid var(--k-teal);padding:16px 20px;border-radius:0 8px 8px 0;margin-bottom:28px;font-size:14px;color:var(--k-text);line-height:1.7}
+.section-narrative strong{color:var(--k-deep)}
+
+/* CARDS */
+.card{background:var(--k-card);border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.06);border:1px solid var(--k-border)}
+.card-title{font-size:14px;font-weight:700;color:var(--k-deep);margin-bottom:4px}
+.card-sub{font-size:12px;color:var(--k-muted);margin-bottom:16px}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.grid-9{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+
+/* CHART CONTAINERS */
+.chart-wrap{position:relative;width:100%;overflow-x:auto}
+.chart-wrap svg{display:block}
+
+/* GAP BAR */
+.gap-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0f0}
+.gap-row:last-child{border-bottom:none}
+.gap-label{width:120px;font-size:13px;font-weight:600;color:var(--k-deep);flex-shrink:0}
+.gap-bar-wrap{flex:1;height:24px;position:relative;background:#f0f0f0;border-radius:4px;overflow:hidden}
+.gap-bar-pot{position:absolute;top:0;left:0;height:100%;background:rgba(0,137,123,0.15);border-radius:4px}
+.gap-bar-act{position:absolute;top:0;left:0;height:100%;border-radius:4px}
+.gap-vals{width:160px;font-size:12px;color:var(--k-muted);text-align:right;flex-shrink:0}
+.gap-vals span{font-weight:700}
+
+/* SCORECARD */
+.scorecard{background:#fff;border-radius:12px;border:1px solid var(--k-border);overflow:hidden;transition:transform 0.2s}
+.scorecard:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.sc-header{padding:16px;display:flex;justify-content:space-between;align-items:center}
+.sc-name{font-size:16px;font-weight:700;color:var(--k-deep)}
+.sc-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px}
+.sc-body{padding:0 16px 16px}
+.sc-metric{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:12px}
+.sc-metric:last-child{border-bottom:none}
+.sc-metric-label{color:var(--k-muted)}
+.sc-metric-val{font-weight:600;color:var(--k-deep)}
+.sc-bar{height:6px;background:#f0f0f0;border-radius:3px;margin-top:8px;overflow:hidden}
+.sc-bar-fill{height:100%;border-radius:3px;transition:width 0.8s ease}
+
+/* RADAR */
+.radar-wrap{display:flex;justify-content:center;align-items:center}
+
+/* CONVERSION TABLE */
+.conv-table{width:100%;border-collapse:collapse;font-size:13px}
+.conv-table th{background:var(--k-deep);color:#fff;padding:10px 12px;text-align:left;font-weight:600;font-size:12px}
+.conv-table td{padding:8px 12px;border-bottom:1px solid #f0f0f0}
+.conv-table tr:hover{background:var(--k-glow)}
+.conv-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+
+/* FOOTER */
+.footer{background:var(--k-deep);padding:24px 0;text-align:center;color:rgba(255,255,255,0.4);font-size:12px;margin-top:40px}
+
+/* INSIGHT CALLOUT */
+.insight{display:flex;gap:12px;background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:14px 16px;margin:20px 0;font-size:13px}
+.insight-icon{font-size:18px;flex-shrink:0}
+.insight strong{color:var(--k-deep)}
+
+/* HIDDEN SECTIONS */
+.panel{display:none}.panel.active{display:block}
+
+@media(max-width:768px){
+  .grid-2,.grid-3,.grid-9{grid-template-columns:1fr}
+  .hero h1{font-size:28px}
+  .hero-stats{gap:16px}
+  .gap-label{width:80px;font-size:11px}
+  .gap-vals{width:100px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+<div class="container">
+  <div class="hero-badge">◈ Kentrix StorePerformix</div>
+  <h1>IDBI Bank — <span>Branch Intelligence</span></h1>
+  <p class="hero-sub">Catchment-driven performance benchmarking across 9 branches. Understanding what each market demands — and how much of that demand each branch is actually capturing.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-val">9</div><div class="hero-stat-label">Branches Analysed</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">920M+</div><div class="hero-stat-label">Consumer Profiles</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">132</div><div class="hero-stat-label">Data Parameters</div></div>
+    <div class="hero-stat"><div class="hero-stat-val">6</div><div class="hero-stat-label">Product Lines</div></div>
+  </div>
+</div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+<div class="container">
+  <div class="nav-inner" id="nav">
+    <button class="nav-btn active" data-panel="story">The Story</button>
+    <button class="nav-btn" data-panel="catchment">Catchment DNA</button>
+    <button class="nav-btn" data-panel="gap">Potential vs Actual</button>
+    <button class="nav-btn" data-panel="conversion">Conversion Efficiency</button>
+    <button class="nav-btn" data-panel="pmf">Product-Market Fit</button>
+    <button class="nav-btn" data-panel="competition">Competitive Landscape</button>
+    <button class="nav-btn" data-panel="scorecards">Branch Scorecards</button>
+  </div>
+</div>
+</div>
+
+<div class="container">
+
+<!-- ========== PANEL: THE STORY ========== -->
+<div class="panel active" id="panel-story">
+<div class="section">
+  <div class="section-title">The Narrative</div>
+  <div class="section-sub">Not all branches are created equal — and comparing them on raw performance alone is misleading. The real question is: given what each catchment offers, how much is each branch actually capturing?</div>
+  
+  <div class="section-narrative">
+    This analysis inverts the traditional benchmarking lens. Instead of ranking branches by profit and asking "who's winning?", we start from the catchment — the <strong>920M+ consumer profiles</strong> mapped by Kentrix at building-level precision — and ask: <strong>what should each branch be doing, given its market?</strong><br><br>
+    For every product line (SB, CA, Term Deposits, Gold Loans, MSME, SRA/Home Loans), we estimate a <strong>catchment-derived demand potential</strong> using household income distribution, financial savings propensity, real estate ownership patterns, commercial activity density, and jewellery holding segments. This potential is then adjusted for <strong>competitive displacement</strong> — accounting for the presence and tier of competitor banks — to arrive at an <strong>addressable opportunity</strong>.<br><br>
+    The ratio of actual performance to addressable opportunity gives us <strong>Conversion Efficiency</strong> — the true measure of branch effectiveness. A branch doing ₹25 Cr in a ₹500 Cr market is underperforming. A branch doing ₹11 Cr in a ₹19 Cr market is extraordinary.
+  </div>
+
+  <div class="grid-3" id="story-cards"></div>
+
+  <div class="insight" style="margin-top:28px">
+    <div class="insight-icon">⚡</div>
+    <div><strong>The biggest puzzle in this portfolio is Ahmedabad-VL.</strong> It sits in the richest catchment across all 9 branches — 94.7% affluent households, ₹2.45L average monthly income, ₹39.2k financial savings spend — yet captures only 16.7% of its addressable potential. With just 4 staff and ₹0.7 Cr profit, this is either a capacity-starved branch or a product-market mismatch waiting to be fixed. The gap is ₹448 Cr across deposit and loan products.</div>
+  </div>
+  <div class="insight">
+    <div class="insight-icon">🏆</div>
+    <div><strong>Godda defies its catchment.</strong> With zero affluent households and a demand index near the bottom on every metric, it generates ₹11 Cr profit — 19x its estimated potential. This is likely a legacy franchise effect, a government/institutional deposit base, or a regional monopoly. Whatever the cause, the model that works in Godda cannot be replicated elsewhere — it's an anomaly, not a template.</div>
+  </div>
+  <div class="insight">
+    <div class="insight-icon">📊</div>
+    <div><strong>Meerut has the largest absolute opportunity gap.</strong> With 58,019 catchment households, the highest FD propensity score (100/100), and the highest SRA demand index (100/100), yet only ₹326 Cr total book against ₹810 Cr addressable potential. The ₹328 Cr SRA gap alone is larger than many branches' entire book. With 12 staff already deployed, this is a product push problem, not a capacity problem.</div>
+  </div>
+</div>
+</div>
+
+<!-- ========== PANEL: CATCHMENT DNA ========== -->
+<div class="panel" id="panel-catchment">
+<div class="section">
+  <div class="section-title">Catchment DNA</div>
+  <div class="section-sub">Each branch serves a fundamentally different market. Before comparing performance, we must understand what each catchment looks like — its income structure, lifestyle segments, and banking propensity.</div>
+  
+  <div class="section-narrative">
+    The income pyramid tells you <strong>who lives here</strong>. The LSI (Lifestyle Segmentation Intelligence) tells you <strong>how they live</strong>. And the demand indices tell you <strong>what financial products they need</strong>. A branch in an LSI-01 dominated catchment (affluent urban) needs wealth management and premium SRA products. A branch in LSI-05/06 territory (lower middle/semi-urban) needs gold loans and basic savings accounts. Misalignment between catchment DNA and product offering is where revenue leaks.
+  </div>
+  
+  <div id="catchment-grid" class="grid-3"></div>
+</div>
+</div>
+
+<!-- ========== PANEL: POTENTIAL VS ACTUAL ========== -->
+<div class="panel" id="panel-gap">
+<div class="section">
+  <div class="section-title">Potential vs. Actual — The Gap Analysis</div>
+  <div class="section-sub">For each product line, the teal bar shows addressable potential (after competitive displacement), and the colored bar shows actual performance. The gap is revenue being left on the table.</div>
+  
+  <div class="section-narrative">
+    Demand potential is estimated bottom-up: <strong>SB</strong> from household income distribution × financial savings propensity × banking usage intensity. <strong>CA</strong> from commercial activity (office locations, employee counts). <strong>Term Deposits</strong> from households in high financial-savings bands × FD propensity. <strong>Gold Loans</strong> from mid-tier gold jewellery holding segments. <strong>MSME</strong> from commercial density and SME proxies. <strong>SRA (Home/Personal Loans)</strong> from real estate propensity in the ₹25L–4Cr bands. All potentials are then discounted by a <strong>Weighted Competitive Index</strong> (Tier-1 banks weighted 1.0, Tier-2 at 0.6, Tier-3 at 0.3) and an IDBI brand factor.
+  </div>
+  
+  <div id="gap-selector" style="margin-bottom:20px;display:flex;gap:8px;flex-wrap:wrap"></div>
+  <div id="gap-charts"></div>
+</div>
+</div>
+
+<!-- ========== PANEL: CONVERSION EFFICIENCY ========== -->
+<div class="panel" id="panel-conversion">
+<div class="section">
+  <div class="section-title">Conversion Efficiency</div>
+  <div class="section-sub">Actual ÷ Addressable Potential × 100. This is the true measure of branch effectiveness — how much of what's available is being captured.</div>
+  
+  <div class="section-narrative">
+    A conversion rate above 100% means the branch is outperforming its estimated catchment potential — either through a broader draw area, institutional deposits, or a model our catchment-level estimation doesn't fully capture. A rate below 50% signals significant untapped opportunity. <strong>The branches that matter most are those with low conversion in high-potential catchments</strong> — that's where the highest ROI interventions live.
+  </div>
+  
+  <div id="conv-table-wrap"></div>
+  
+  <div class="insight" style="margin-top:20px">
+    <div class="insight-icon">🎯</div>
+    <div><strong>Conversion efficiency varies 10x across branches.</strong> Ahmedabad-VL converts just 6.3% of SB potential vs. Udaipur at 297%. The highest-impact intervention targets are branches with <strong>high potential + low conversion</strong>: Ahmedabad-VL (SB, TD), Meerut (TD, SRA), and Bilaspur (SRA, CA).</div>
+  </div>
+</div>
+</div>
+
+<!-- ========== PANEL: PRODUCT-MARKET FIT ========== -->
+<div class="panel" id="panel-pmf">
+<div class="section">
+  <div class="section-title">Product-Market Fit</div>
+  <div class="section-sub">Is each branch selling the right products for its catchment? PMF Score measures the alignment between what the market demands and what the branch actually delivers.</div>
+  
+  <div class="section-narrative">
+    Product-Market Fit is calculated as the <strong>cosine similarity</strong> between the catchment demand vector (SB, CA, TD, Gold, MSME, SRA potentials) and the actual portfolio vector. A score of 1.0 = perfect alignment. A low PMF means the branch portfolio is structurally different from what its catchment demands — this is a strategic misallocation, not just an execution problem. <strong>Low PMF + Low Conversion = the catchment wants products the branch isn't pushing.</strong>
+  </div>
+  
+  <div id="pmf-grid" class="grid-3"></div>
+  
+  <div class="insight" style="margin-top:20px">
+    <div class="insight-icon">🔄</div>
+    <div><strong>Kandi (PMF: 0.43) and Ramanathapuram (0.45) have the worst product-market fit.</strong> Both catchments have high SRA demand indices driven by real estate propensity, but their actual SRA books are thin. Kandi captures just 7.8% of SRA potential, Ramanathapuram just 14.4%. A focused home loan push in these markets could materially change branch economics.</div>
+  </div>
+</div>
+</div>
+
+<!-- ========== PANEL: COMPETITION ========== -->
+<div class="panel" id="panel-competition">
+<div class="section">
+  <div class="section-title">Competitive Landscape</div>
+  <div class="section-sub">Not all competitors displace equally. The Weighted Competitive Index weights Tier-1 banks (SBI, HDFC, ICICI, Axis, Kotak) at 1.0, Tier-2 at 0.6, and Tier-3 at 0.3.</div>
+  
+  <div class="section-narrative">
+    Delhi-NP faces the most intense competition (WCI: 92.1) with 17 HDFC branches, 16 SBI, 11 ICICI, and 12 Axis in its catchment. Yet it leads on profit. The competitive displacement factor reduces its addressable potential to just 31.5% of raw demand — but what it captures from that reduced pool is exceptional. <strong>Contrast with Godda (WCI: 1.6) — near-zero competition, giving IDBI an effective monopoly and explaining why it outperforms its raw catchment by 19x.</strong>
+  </div>
+  
+  <div id="comp-chart"></div>
+</div>
+</div>
+
+<!-- ========== PANEL: SCORECARDS ========== -->
+<div class="panel" id="panel-scorecards">
+<div class="section">
+  <div class="section-title">Branch Scorecards</div>
+  <div class="section-sub">Each branch classified based on conversion efficiency and catchment quality — not raw profit.</div>
+  
+  <div id="scorecards-grid" class="grid-3"></div>
+</div>
+</div>
+
+</div><!-- container -->
+
+<div class="footer">
+  <div class="container">Powered by Kentrix.ai Consumer Intelligence · StorePerformix · Data as of Jun 2026 · 920M+ Indian Consumer Profiles</div>
+</div>
+
+<script>
+const D = [{"s":"Udaipur","f":"UDAIPUR-SAHELI MARG","cat":"Urban","z":"Delhi","st":11,"hh":23631,"pop":110263,"inc":139000,"fs":20200,"afl":43.2,"lsi":[20.4,24.9,31.1,22.6,0.9,0.1,0,0],"wci":27.1,"cf":0.533,"sa":182.3,"ca":95.6,"ta":389,"ga":4,"ma":52.3,"ra":158.2,"pr":21.6,"op":4.2,"sg":7.7,"cg":6.8,"sp":61.5,"cp":87.1,"tp":155.9,"gp":2.2,"mp":18.3,"rp":55.5,"sc":296.7,"cc":109.7,"tc":249.5,"gc":187.5,"mc":285.7,"rc":284.9,"ac":235.7,"pmf":0.966,"bg":"None","bgv":0,"tpo":380.5,"tac":881.5,"tcv":231.7,"mf":13378,"fd":22641,"svp":17350,"sbi":9,"hdfc":7,"icici":0,"b2":1,"b5":6,"sbi_idx":30.5,"cai_idx":38.3,"tdi_idx":45.3,"gli_idx":24.5,"msi_idx":46.1,"sri_idx":13.6},{"s":"Gangtok","f":"GANGTOK","cat":"Urban","z":"Kolkata","st":7,"hh":15756,"pop":65225,"inc":113000,"fs":15200,"afl":33.3,"lsi":[95.1,0,4.1,0.6,0.2,0,0,0],"wci":22.7,"cf":0.559,"sa":57.1,"ca":45.7,"ta":92.2,"ga":2,"ma":2.8,"ra":95.2,"pr":4.2,"op":2.6,"sg":-15.8,"cg":-23.9,"sp":38.4,"cp":127.8,"tp":69.6,"gp":2.2,"mp":18,"rp":79.4,"sc":148.6,"cc":35.8,"tc":132.5,"gc":91,"mc":15.7,"rc":119.9,"ac":90.6,"pmf":0.852,"bg":"CA","bgv":82,"tpo":335.4,"tac":295.1,"tcv":88,"mf":15,"fd":5250,"svp":5250,"sbi":9,"hdfc":4,"icici":0,"b2":8,"b5":5,"sbi_idx":18.2,"cai_idx":53.6,"tdi_idx":19.3,"gli_idx":24.2,"msi_idx":43.1,"sri_idx":18.5},{"s":"Meerut","f":"MEERUT-EVES CROSSING","cat":"Metro","z":"Lucknow","st":12,"hh":58019,"pop":314624,"inc":112000,"fs":16100,"afl":18.7,"lsi":[0,2.9,13.5,60.7,19.9,2.9,0,0],"wci":36.6,"cf":0.484,"sa":79.7,"ca":71.3,"ta":86.4,"ga":4.1,"ma":43,"ra":42.1,"pr":5.3,"op":3.1,"sg":12.5,"cg":1.6,"sp":70.7,"cp":34.5,"tp":312.7,"gp":8,"mp":13.5,"rp":370.6,"sc":112.7,"cc":206.5,"tc":27.6,"gc":51.7,"mc":300,"rc":11.4,"ac":118.3,"pmf":0.696,"bg":"SRA","bgv":328.4,"tpo":810,"tac":326.7,"tcv":40.3,"mf":17498,"fd":46161,"svp":47244,"sbi":12,"hdfc":1,"icici":5,"b2":6,"b5":10,"sbi_idx":38.6,"cai_idx":16.7,"tdi_idx":100,"gli_idx":100,"msi_idx":37.3,"sri_idx":100},{"s":"Delhi-NP","f":"DELHI-NEHRU PLACE","cat":"Metro","z":"Delhi","st":12,"hh":55868,"pop":237898,"inc":198000,"fs":31500,"afl":65.4,"lsi":[59.4,6.5,9.5,6.8,10.3,6.4,0,1],"wci":92.1,"cf":0.315,"sa":111.8,"ca":426.1,"ta":377.1,"ga":3.1,"ma":35.6,"ra":249.6,"pr":24.3,"op":9.4,"sg":-1.9,"cg":7.7,"sp":84.2,"cp":134.2,"tp":177.4,"gp":3.9,"mp":23.5,"rp":163.5,"sc":132.7,"cc":300,"tc":212.6,"gc":79.6,"mc":151.4,"rc":152.6,"ac":171.5,"pmf":0.956,"bg":"Gold","bgv":0.8,"tpo":586.7,"tac":1203.3,"tcv":205.1,"mf":38106,"fd":46216,"svp":30419,"sbi":16,"hdfc":17,"icici":11,"b2":4,"b5":18,"sbi_idx":70.8,"cai_idx":100,"tdi_idx":87.2,"gli_idx":74.3,"msi_idx":100,"sri_idx":67.8},{"s":"Godda","f":"GODDA","cat":"Semi Urban","z":"Patna","st":6,"hh":4853,"pop":25811,"inc":67000,"fs":8800,"afl":0,"lsi":[0,0,0,44.5,0.3,28.9,3.8,22.4],"wci":1.6,"cf":0.732,"sa":299.3,"ca":19,"ta":19,"ga":1.2,"ma":4.8,"ra":25.8,"pr":11,"op":1.6,"sg":-12.1,"cg":-28.6,"sp":5,"cp":3,"tp":3,"gp":1,"mp":2,"rp":5,"sc":300,"cc":300,"tc":300,"gc":116.3,"mc":238.5,"rc":300,"ac":259.1,"pmf":0.679,"bg":"None","bgv":0,"tpo":19,"tac":369,"tcv":300,"mf":0,"fd":2138,"svp":1650,"sbi":1,"hdfc":0,"icici":0,"b2":0,"b5":0,"sbi_idx":0,"cai_idx":0,"tdi_idx":0,"gli_idx":0,"msi_idx":0.1,"sri_idx":0},{"s":"Kandi","f":"KANDI","cat":"Semi Urban","z":"Kolkata","st":6,"hh":11460,"pop":51662,"inc":72000,"fs":9400,"afl":1.1,"lsi":[0,0,0.8,11.7,35.2,41.3,5.2,5.7],"wci":4.5,"cf":0.703,"sa":33.9,"ca":6.9,"ta":25.3,"ga":9,"ma":4.8,"ra":15.1,"pr":0.8,"op":1.7,"sg":12,"cg":-39.1,"sp":11.1,"cp":3,"tp":23.1,"gp":1,"mp":2,"rp":192.6,"sc":300,"cc":231.3,"tc":109.1,"gc":300,"mc":239.5,"rc":7.8,"ac":198,"pmf":0.432,"bg":"SRA","bgv":177.6,"tpo":232.8,"tac":94.9,"tcv":40.8,"mf":94,"fd":1442,"svp":6888,"sbi":2,"hdfc":0,"icici":0,"b2":0,"b5":2,"sbi_idx":4.2,"cai_idx":0,"tdi_idx":5.1,"gli_idx":6,"msi_idx":0.7,"sri_idx":35.8},{"s":"Ramanathapuram","f":"RAMANATHAPURAM","cat":"Semi Urban","z":"Chennai","st":5,"hh":18479,"pop":77045,"inc":83000,"fs":11100,"afl":2.3,"lsi":[0,0,0,38.4,36.2,20.9,0.5,4],"wci":6.7,"cf":0.682,"sa":32.1,"ca":9.9,"ta":18.2,"ga":80.6,"ma":8.3,"ra":35.5,"pr":3.3,"op":1.6,"sg":23.7,"cg":21.4,"sp":26.4,"cp":3,"tp":68.7,"gp":2.2,"mp":11.2,"rp":245.6,"sc":121.5,"cc":300,"tc":26.5,"gc":300,"mc":74.4,"rc":14.4,"ac":139.5,"pmf":0.449,"bg":"SRA","bgv":210.1,"tpo":357.1,"tac":184.5,"tcv":51.7,"mf":0,"fd":7092,"svp":13484,"sbi":2,"hdfc":2,"icici":0,"b2":0,"b5":1,"sbi_idx":10.3,"cai_idx":0,"tdi_idx":15.6,"gli_idx":19.3,"msi_idx":22,"sri_idx":47.1},{"s":"Ahmedabad-VL","f":"VASTRAPUR LAKE, AHMEDABAD","cat":"Metro","z":"Ahmedabad","st":4,"hh":71564,"pop":314807,"inc":245000,"fs":39200,"afl":94.7,"lsi":[78.2,15.6,2.4,1.2,1.4,0.9,0,0.3],"wci":62.6,"cf":0.387,"sa":9.2,"ca":9,"ta":25.2,"ga":1.4,"ma":2.5,"ra":42.8,"pr":0.7,"op":1.1,"sg":24,"cg":-5.9,"sp":146.2,"cp":5.7,"tp":237.2,"gp":1,"mp":2,"rp":145.7,"sc":6.3,"cc":158.6,"tc":10.6,"gc":142.5,"mc":123,"rc":29.4,"ac":78.4,"pmf":0.842,"bg":"TD","bgv":212,"tpo":537.7,"tac":90.1,"tcv":16.7,"mf":67887,"fd":69664,"svp":33593,"sbi":12,"hdfc":11,"icici":5,"b2":2,"b5":8,"sbi_idx":100,"cai_idx":3.4,"tdi_idx":94.9,"gli_idx":8.6,"msi_idx":0,"sri_idx":49.2},{"s":"Bilaspur","f":"Dayalband, Bilaspur","cat":"Urban","z":"Bhubaneswar","st":6,"hh":24229,"pop":114904,"inc":87000,"fs":11900,"afl":0.2,"lsi":[0,0,0,42.5,35,21.3,0,1.2],"wci":13.6,"cf":0.623,"sa":11.2,"ca":1.9,"ta":22.3,"ga":3.5,"ma":6.8,"ra":37.5,"pr":0.3,"op":1.2,"sg":-17.6,"cg":-48.4,"sp":33.1,"cp":9.1,"tp":96.8,"gp":2.6,"mp":9.4,"rp":270.4,"sc":33.8,"cc":20.9,"tc":23.1,"gc":133.7,"mc":72.1,"rc":13.9,"ac":49.6,"pmf":0.964,"bg":"SRA","bgv":232.8,"tpo":421.4,"tac":83.2,"tcv":19.8,"mf":0,"fd":10307,"svp":18418,"sbi":5,"hdfc":3,"icici":0,"b2":1,"b5":1,"sbi_idx":14.1,"cai_idx":3.4,"tdi_idx":24.1,"gli_idx":25.6,"msi_idx":20.3,"sri_idx":56.7}];
+
+const COLORS = ['#00897B','#00695C','#4DB6AC','#26A69A','#F7C948','#EF6C00','#E53935','#7B1FA2','#37474F'];
+const PRODS = [{k:'SB',pk:'sp',ak:'sa',ck:'sc',c:'#00897B'},{k:'CA',pk:'cp',ak:'ca',ck:'cc',c:'#0D47A1'},{k:'TD',pk:'tp',ak:'ta',ck:'tc',c:'#F7C948'},{k:'Gold',pk:'gp',ak:'ga',ck:'gc',c:'#FF8F00'},{k:'MSME',pk:'mp',ak:'ma',ck:'mc',c:'#1565C0'},{k:'SRA',pk:'rp',ak:'ra',ck:'rc',c:'#E53935'}];
+
+function classify(d){
+  if(d.tcv>150&&d.tpo>300) return {cls:'★ Star',color:'#2E7D32',bg:'#E8F5E9'};
+  if(d.tcv>150) return {cls:'⚙ Over-Extractor',color:'#00695C',bg:'#E0F2F1'};
+  if(d.tcv<30&&d.tpo>400) return {cls:'⚡ High-Gap',color:'#E65100',bg:'#FFF3E0'};
+  if(d.tcv<50&&d.tpo>200) return {cls:'⚡ Underperformer',color:'#F57F17',bg:'#FFFDE7'};
+  if(d.tcv<50) return {cls:'🔴 Restructure',color:'#C62828',bg:'#FFEBEE'};
+  return {cls:'⚠ Monitor',color:'#5D4037',bg:'#EFEBE9'};
+}
+
+// NAV
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.panel).classList.add('active');
+  });
+});
+
+// ===== STORY CARDS =====
+const storyEl=document.getElementById('story-cards');
+const topStories=[
+  {title:'Largest Untapped Market',branch:'Ahmedabad-VL',metric:'₹448 Cr gap',detail:'94.7% affluent catchment, 16.7% conversion. 4 staff serving a ₹538 Cr addressable market.',color:'#E65100'},
+  {title:'Highest Conversion Efficiency',branch:'Udaipur',metric:'232% conversion',detail:'Outperforming estimated potential by 2.3x across all products. PMF score: 0.97.',color:'#2E7D32'},
+  {title:'Biggest Product Gap',branch:'Meerut',metric:'₹328 Cr SRA gap',detail:'SRA demand index: 100/100 (highest). Actual SRA book: ₹42 Cr. Conversion: 11.4%.',color:'#C62828'}
+];
+storyEl.innerHTML=topStories.map(s=>`
+  <div class="card" style="border-top:3px solid ${s.color}">
+    <div style="font-size:11px;font-weight:600;color:${s.color};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">${s.title}</div>
+    <div style="font-size:20px;font-weight:700;color:var(--k-deep);margin-bottom:4px">${s.branch}</div>
+    <div style="font-size:24px;font-weight:700;color:${s.color};margin-bottom:8px">${s.metric}</div>
+    <div style="font-size:13px;color:var(--k-muted)">${s.detail}</div>
+  </div>`).join('');
+
+// ===== CATCHMENT DNA =====
+const catchEl=document.getElementById('catchment-grid');
+const lsiLabels=['LSI-01\nAffluent','LSI-02\nUpper Mid','LSI-03\nMiddle','LSI-04\nLower Mid','LSI-05\nAspirational','LSI-06\nEmerging','LSI-07\nBase','LSI-08\nSubsistence'];
+const lsiColors=['#00695C','#00897B','#4DB6AC','#80CBC4','#F7C948','#EF6C00','#E53935','#880E4F'];
+
+catchEl.innerHTML=D.map((d,i)=>{
+  const cl=classify(d);
+  const topLsi=d.lsi.map((v,j)=>({v,j})).sort((a,b)=>b.v-a.v).filter(x=>x.v>0).slice(0,3);
+  const maxIdx=Math.max(...[d.sbi_idx,d.cai_idx,d.tdi_idx,d.gli_idx,d.msi_idx,d.sri_idx],1);
+  const indices=[{l:'SB',v:d.sbi_idx},{l:'CA',v:d.cai_idx},{l:'TD',v:d.tdi_idx},{l:'Gold',v:d.gli_idx},{l:'MSME',v:d.msi_idx},{l:'SRA',v:d.sri_idx}];
+  return `
+  <div class="card" style="padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--k-deep)">${d.s}</div>
+        <div style="font-size:11px;color:var(--k-muted)">${d.cat} · ${d.z}</div>
+      </div>
+      <div class="sc-badge" style="background:${cl.bg};color:${cl.color}">${cl.cls}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;margin-bottom:14px">
+      <div><span style="color:var(--k-muted)">HH:</span> <strong>${(d.hh/1000).toFixed(1)}k</strong></div>
+      <div><span style="color:var(--k-muted)">Income:</span> <strong>₹${(d.inc/1000).toFixed(0)}k</strong></div>
+      <div><span style="color:var(--k-muted)">Affluent:</span> <strong style="color:${d.afl>30?'#2E7D32':d.afl>10?'#F57F17':'#E53935'}">${d.afl}%</strong></div>
+      <div><span style="color:var(--k-muted)">Fin Sav:</span> <strong>₹${(d.fs/1000).toFixed(1)}k</strong></div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--k-deep);margin-bottom:6px">LSI Composition</div>
+    <div style="display:flex;height:14px;border-radius:3px;overflow:hidden;margin-bottom:8px">
+      ${d.lsi.map((v,j)=>v>0?`<div style="width:${v}%;background:${lsiColors[j]}" title="LSI-0${j+1}: ${v}%"></div>`:'').join('')}
+    </div>
+    <div style="font-size:10px;color:var(--k-muted);margin-bottom:14px">Dominant: ${topLsi.map(x=>`LSI-0${x.j+1} (${x.v}%)`).join(', ')}</div>
+    <div style="font-size:11px;font-weight:600;color:var(--k-deep);margin-bottom:6px">Demand Index (0–100)</div>
+    ${indices.map(idx=>`
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+        <div style="width:36px;font-size:10px;color:var(--k-muted)">${idx.l}</div>
+        <div style="flex:1;height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden">
+          <div style="width:${idx.v}%;height:100%;background:${idx.v>60?'#00897B':idx.v>30?'#F7C948':'#E0E0E0'};border-radius:4px"></div>
+        </div>
+        <div style="width:28px;font-size:10px;font-weight:600;text-align:right;color:${idx.v>60?'#00897B':'var(--k-muted)'}">${idx.v.toFixed(0)}</div>
+      </div>
+    `).join('')}
+  </div>`;
+}).join('');
+
+// ===== GAP ANALYSIS =====
+const gapSel=document.getElementById('gap-selector');
+const gapCharts=document.getElementById('gap-charts');
+let currentProd='ALL';
+
+function renderGapSelector(){
+  gapSel.innerHTML=['ALL',...PRODS.map(p=>p.k)].map(p=>`
+    <button onclick="currentProd='${p}';renderGaps()" style="padding:6px 14px;border-radius:16px;border:1px solid ${currentProd===p?'var(--k-teal)':'var(--k-border)'};background:${currentProd===p?'var(--k-teal)':'#fff'};color:${currentProd===p?'#fff':'var(--k-muted)'};font-size:12px;font-weight:600;cursor:pointer">${p}</button>
+  `).join('');
+}
+
+function renderGaps(){
+  renderGapSelector();
+  const prods=currentProd==='ALL'?PRODS:PRODS.filter(p=>p.k===currentProd);
+  
+  let html='';
+  D.forEach((d,i)=>{
+    const maxVal=Math.max(...prods.map(p=>Math.max(d[p.pk],d[p.ak])),1);
+    html+=`<div class="card" style="margin-bottom:16px;padding:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div>
+          <span style="font-size:16px;font-weight:700;color:var(--k-deep)">${d.s}</span>
+          <span style="font-size:12px;color:var(--k-muted);margin-left:8px">${d.cat} · WCI: ${d.wci}</span>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:${d.tcv>100?'#2E7D32':d.tcv>50?'#F57F17':'#E53935'}">
+          Overall: ${Math.min(d.tcv,300).toFixed(0)}% capture
+        </div>
+      </div>
+      ${prods.map(p=>{
+        const pot=d[p.pk], act=d[p.ak], conv=d[p.ck];
+        const gap=pot-act;
+        const pctPot=pot/maxVal*100, pctAct=Math.min(act/maxVal*100,100);
+        return `<div class="gap-row">
+          <div class="gap-label" style="color:${p.c}">${p.k}</div>
+          <div class="gap-bar-wrap">
+            <div class="gap-bar-pot" style="width:${Math.min(pctPot,100)}%"></div>
+            <div class="gap-bar-act" style="width:${Math.min(pctAct,100)}%;background:${p.c};opacity:0.85"></div>
+          </div>
+          <div class="gap-vals">
+            <span style="color:${p.c}">₹${act.toFixed(0)}</span> / ₹${pot.toFixed(0)} Cr
+            ${gap>0?`<span style="color:#E53935;font-size:10px"> ▼₹${gap.toFixed(0)}</span>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+  gapCharts.innerHTML=html;
+}
+renderGaps();
+
+// ===== CONVERSION TABLE =====
+const convWrap=document.getElementById('conv-table-wrap');
+function convColor(v){return v>150?'#2E7D32':v>80?'#00897B':v>40?'#F57F17':'#E53935'}
+function convBg(v){return v>150?'#E8F5E9':v>80?'#E0F2F1':v>40?'#FFFDE7':'#FFEBEE'}
+
+convWrap.innerHTML=`<div style="overflow-x:auto"><table class="conv-table">
+<tr><th>Branch</th><th>SB %</th><th>CA %</th><th>TD %</th><th>Gold %</th><th>MSME %</th><th>SRA %</th><th>Avg</th><th>Biggest Gap</th></tr>
+${D.map(d=>`<tr>
+  <td style="font-weight:600">${d.s}</td>
+  ${['sc','cc','tc','gc','mc','rc'].map(k=>{const v=Math.min(d[k],300);return `<td><span class="conv-pill" style="background:${convBg(v)};color:${convColor(v)}">${v.toFixed(0)}%</span></td>`}).join('')}
+  <td><strong style="color:${convColor(d.ac)}">${Math.min(d.ac,300).toFixed(0)}%</strong></td>
+  <td style="font-size:12px">${d.bg!=='None'?`<span style="color:#E53935;font-weight:600">${d.bg}</span> ₹${d.bgv.toFixed(0)} Cr`:'-'}</td>
+</tr>`).join('')}
+</table></div>`;
+
+// ===== PMF =====
+const pmfGrid=document.getElementById('pmf-grid');
+pmfGrid.innerHTML=D.sort((a,b)=>a.pmf-b.pmf).map(d=>{
+  const cl=classify(d);
+  const pcts=PRODS.map(p=>({k:p.k,pot:d[p.pk],act:d[p.ak],c:p.c}));
+  const maxP=Math.max(...pcts.map(p=>Math.max(p.pot,p.act)),1);
+  return `<div class="card" style="padding:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700;color:var(--k-deep)">${d.s}</div>
+      <div style="font-size:28px;font-weight:700;color:${d.pmf>0.8?'#2E7D32':d.pmf>0.5?'#F57F17':'#E53935'}">${d.pmf.toFixed(2)}</div>
+    </div>
+    <div style="font-size:11px;color:var(--k-muted);margin-bottom:12px">PMF Score — ${d.pmf>0.8?'Strong alignment':d.pmf>0.5?'Moderate misalignment':'Significant misalignment'}</div>
+    <div style="font-size:11px;font-weight:600;color:var(--k-deep);margin-bottom:8px">Demand (teal) vs Actual (colored)</div>
+    ${pcts.map(p=>`
+      <div style="margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px">
+          <span style="color:var(--k-muted)">${p.k}</span>
+          <span style="font-weight:600;color:${p.act<p.pot*0.5?'#E53935':'var(--k-text)'}">₹${p.act.toFixed(0)} / ₹${p.pot.toFixed(0)}</span>
+        </div>
+        <div style="position:relative;height:10px;background:#f0f0f0;border-radius:3px">
+          <div style="position:absolute;height:100%;width:${Math.min(p.pot/maxP*100,100)}%;background:rgba(0,137,123,0.2);border-radius:3px"></div>
+          <div style="position:absolute;height:100%;width:${Math.min(p.act/maxP*100,100)}%;background:${p.c};border-radius:3px;opacity:0.8"></div>
+        </div>
+      </div>
+    `).join('')}
+  </div>`;
+}).join('');
+
+// ===== COMPETITION =====
+const compChart=document.getElementById('comp-chart');
+const sorted=[...D].sort((a,b)=>b.wci-a.wci);
+compChart.innerHTML=`<div class="card"><div class="card-title">Weighted Competitive Index & Displacement Factor</div><div class="card-sub">Higher WCI = more competition → lower addressable share for IDBI</div>
+${sorted.map(d=>{
+  const barW=d.wci/Math.max(...D.map(x=>x.wci))*100;
+  return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f5f5f5">
+    <div style="width:120px;font-size:13px;font-weight:600;color:var(--k-deep)">${d.s}</div>
+    <div style="flex:1;display:flex;align-items:center;gap:8px">
+      <div style="flex:1;height:20px;background:#f0f0f0;border-radius:4px;overflow:hidden;position:relative">
+        <div style="height:100%;width:${barW}%;background:linear-gradient(90deg,#00897B,${d.wci>50?'#E53935':'#F7C948'});border-radius:4px"></div>
+      </div>
+      <div style="width:50px;font-size:13px;font-weight:700;color:var(--k-deep)">${d.wci.toFixed(0)}</div>
+    </div>
+    <div style="width:140px;font-size:12px;color:var(--k-muted)">
+      SBI:${d.sbi} HDFC:${d.hdfc} ICICI:${d.icici}
+    </div>
+    <div style="width:80px;text-align:right">
+      <span style="font-size:12px;font-weight:600;color:${d.cf<0.4?'#E53935':d.cf<0.6?'#F57F17':'#2E7D32'}">${(d.cf*100).toFixed(0)}% share</span>
+    </div>
+  </div>`;
+}).join('')}
+</div>`;
+
+// ===== SCORECARDS =====
+const scGrid=document.getElementById('scorecards-grid');
+const actions={
+  'Udaipur':'Protect franchise. Cross-sell wealth products to LSI-01/02 base. Push MF distribution.',
+  'Gangtok':'Arrest CASA decline (SB -16%, CA -24%). Investigate attrition drivers. CA gap: ₹82 Cr.',
+  'Meerut':'Massive SRA gap (₹328 Cr). Launch home loan campaign targeting 60.7% LSI-04 segment.',
+  'Delhi-NP':'Maintain CA dominance. Marginal SB decline (-1.9%) needs attention. Near-saturated market.',
+  'Godda':'Anomaly — outperforms 19x potential. Document this model. Don\'t use as template for others.',
+  'Kandi':'SRA gap ₹178 Cr, PMF 0.43 (worst). Re-orient product mix toward home loans for LSI-05/06.',
+  'Ramanathapuram':'Gold loan strength (₹81Cr). SRA gap ₹210 Cr. Growth momentum strong (+24% SB).',
+  'Ahmedabad-VL':'Critical: only 4 staff for richest catchment. Add capacity. TD gap alone is ₹212 Cr.',
+  'Bilaspur':'SRA gap ₹233 Cr but CASA declining fast (-48% CA). Stabilize deposits before loan push.'
+};
+scGrid.innerHTML=[...D].sort((a,b)=>a.tcv-b.tcv).map(d=>{
+  const cl=classify(d);
+  return `<div class="scorecard">
+    <div class="sc-header" style="background:${cl.bg}">
+      <div class="sc-name">${d.s}</div>
+      <div class="sc-badge" style="background:${cl.color};color:#fff">${cl.cls}</div>
+    </div>
+    <div class="sc-body">
+      <div class="sc-metric"><span class="sc-metric-label">Catchment HH</span><span class="sc-metric-val">${(d.hh/1000).toFixed(1)}k</span></div>
+      <div class="sc-metric"><span class="sc-metric-label">Avg Income</span><span class="sc-metric-val">₹${(d.inc/1000).toFixed(0)}k/mo</span></div>
+      <div class="sc-metric"><span class="sc-metric-label">Affluent HH</span><span class="sc-metric-val" style="color:${d.afl>30?'#2E7D32':'var(--k-muted)'}">${d.afl}%</span></div>
+      <div class="sc-metric"><span class="sc-metric-label">WCI (Competition)</span><span class="sc-metric-val">${d.wci.toFixed(0)}</span></div>
+      <div class="sc-metric"><span class="sc-metric-label">Addressable Pot.</span><span class="sc-metric-val">₹${d.tpo.toFixed(0)} Cr</span></div>
+      <div class="sc-metric"><span class="sc-metric-label">Actual Book</span><span class="sc-metric-val">₹${d.tac.toFixed(0)} Cr</span></div>
+      <div class="sc-metric"><span class="sc-metric-label">Conversion</span><span class="sc-metric-val" style="color:${convColor(d.tcv)}">${Math.min(d.tcv,300).toFixed(0)}%</span></div>
+      <div class="sc-metric"><span class="sc-metric-label">PMF Score</span><span class="sc-metric-val" style="color:${d.pmf>0.8?'#2E7D32':d.pmf>0.5?'#F57F17':'#E53935'}">${d.pmf.toFixed(2)}</span></div>
+      <div class="sc-metric"><span class="sc-metric-label">Profit (9M)</span><span class="sc-metric-val">₹${d.pr} Cr</span></div>
+      <div class="sc-metric"><span class="sc-metric-label">Staff</span><span class="sc-metric-val">${d.st}</span></div>
+      <div class="sc-metric"><span class="sc-metric-label">SB Growth</span><span class="sc-metric-val" style="color:${d.sg>0?'#2E7D32':'#E53935'}">${d.sg>0?'+':''}${d.sg}%</span></div>
+      <div class="sc-metric"><span class="sc-metric-label">CA Growth</span><span class="sc-metric-val" style="color:${d.cg>0?'#2E7D32':'#E53935'}">${d.cg>0?'+':''}${d.cg}%</span></div>
+      <div class="sc-bar"><div class="sc-bar-fill" style="width:${Math.min(d.tcv/3,100)}%;background:${cl.color}"></div></div>
+      <div style="margin-top:12px;padding:10px;background:#F4F6F9;border-radius:6px;font-size:11px;color:var(--k-text);line-height:1.5">
+        <strong style="color:${cl.color}">Action:</strong> ${actions[d.s]||''}
+      </div>
+    </div>
+  </div>`;
+}).join('');
+</script>
+</body>
+</html>
