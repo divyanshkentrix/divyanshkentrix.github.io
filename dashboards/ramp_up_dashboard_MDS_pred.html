@@ -1,0 +1,2194 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramp-Up Sales Projections - MDS_pred</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1e4a6b;
+            border-bottom: 3px solid #3ec1bd;
+            padding-bottom: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #3ec1bd;
+        }
+        .summary-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        .summary-value {
+            font-size: 2rem;
+            color: #1e4a6b;
+            font-weight: 700;
+        }
+        .controls-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .control-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+        .control-card.store-select {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid #3ec1bd;
+        }
+        .control-card.opening-month {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+        }
+        .control-card h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .control-card.store-select h3 { color: #1e4a6b; }
+        .control-card.opening-month h3 { color: #92400e; }
+        .control-card select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            color: #1e4a6b;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .control-card.store-select select:hover { border-color: #3ec1bd; }
+        .control-card.opening-month select { border-color: #f59e0b; }
+        .control-card.opening-month select:hover { border-color: #d97706; }
+        .store-detail-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .store-detail-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e4a6b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+        .metric-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .metric-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .metric-value {
+            font-size: 1.25rem;
+            color: #1e4a6b;
+            font-weight: 700;
+        }
+        .metric-value.highlight {
+            color: #0891b2;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: #0891b2;
+            color: white;
+        }
+        .tab-btn:not(.active) {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        .tab-btn:not(.active):hover {
+            background: #e2e8f0;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .chart-container {
+            margin: 1rem 0;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px solid #e0f2fe;
+            position: relative;
+        }
+        h2 {
+            color: #1e4a6b;
+            margin: 2rem 0 1rem 0;
+            font-size: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #f1f5f9;
+            color: #1e4a6b;
+            font-weight: 600;
+        }
+        tr:hover {
+            background: #f8fafc;
+        }
+        .cluster-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .cluster-0 { background: #d1fae5; color: #065f46; }
+        .cluster-1 { background: #fed7aa; color: #92400e; }
+        .cluster-2 { background: #fecaca; color: #991b1b; }
+        .mom-table {
+            width: 100%;
+            font-size: 0.875rem;
+        }
+        .mom-table th, .mom-table td {
+            padding: 0.5rem;
+            text-align: center;
+        }
+        .mom-table th {
+            background: #f1f5f9;
+        }
+        @media (max-width: 1200px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .controls-row { grid-template-columns: 1fr; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 Ramp-Up Sales Projections</h1>
+        <p class="subtitle">Monthly sales trajectory forecasts for new stores - MDS_pred</p>
+
+        <!-- Summary Statistics -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total Stores</div>
+                <div class="summary-value">54</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Avg Maturity (Months)</div>
+                <div class="summary-value">17.7</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Revenue (12M)</div>
+                <div class="summary-value">INR 861,317,946</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Revenue (24M)</div>
+                <div class="summary-value">INR 1,788,815,000</div>
+            </div>
+        </div>
+
+        <!-- Control Dropdowns Row -->
+        <div class="controls-row">
+            <div class="control-card store-select">
+                <h3>🏪 Select Store</h3>
+                <select id="storeSelector">
+                    <option value="449">449 - Fast Ramp</option>
+                    <option value="452">452 - Cluster 3.0</option>
+                    <option value="456">456 - Fast Ramp</option>
+                    <option value="459">459 - Fast Ramp</option>
+                    <option value="461">461 - Cluster 3.0</option>
+                    <option value="462">462 - Cluster 3.0</option>
+                    <option value="463">463 - Fast Ramp</option>
+                    <option value="464">464 - Fast Ramp</option>
+                    <option value="466">466 - Fast Ramp</option>
+                    <option value="469">469 - Fast Ramp</option>
+                    <option value="470">470 - Cluster 3.0</option>
+                    <option value="471">471 - Cluster 3.0</option>
+                    <option value="473">473 - Fast Ramp</option>
+                    <option value="475">475 - Cluster 3.0</option>
+                    <option value="476">476 - Fast Ramp</option>
+                    <option value="477">477 - Cluster 3.0</option>
+                    <option value="478">478 - Fast Ramp</option>
+                    <option value="479">479 - Fast Ramp</option>
+                    <option value="480">480 - Fast Ramp</option>
+                    <option value="481">481 - Fast Ramp</option>
+                    <option value="482">482 - Cluster 3.0</option>
+                    <option value="483">483 - Fast Ramp</option>
+                    <option value="484">484 - Fast Ramp</option>
+                    <option value="486">486 - Cluster 3.0</option>
+                    <option value="489">489 - Fast Ramp</option>
+                    <option value="490">490 - Fast Ramp</option>
+                    <option value="491">491 - Fast Ramp</option>
+                    <option value="492">492 - Cluster 3.0</option>
+                    <option value="493">493 - Fast Ramp</option>
+                    <option value="494">494 - Cluster 3.0</option>
+                    <option value="495">495 - Cluster 3.0</option>
+                    <option value="496">496 - Fast Ramp</option>
+                    <option value="497">497 - Medium Ramp</option>
+                    <option value="500">500 - Fast Ramp</option>
+                    <option value="501">501 - Cluster 3.0</option>
+                    <option value="502">502 - Fast Ramp</option>
+                    <option value="505">505 - Cluster 3.0</option>
+                    <option value="509">509 - Cluster 3.0</option>
+                    <option value="511">511 - Fast Ramp</option>
+                    <option value="512">512 - Fast Ramp</option>
+                    <option value="513">513 - Fast Ramp</option>
+                    <option value="514">514 - Fast Ramp</option>
+                    <option value="517">517 - Cluster 3.0</option>
+                    <option value="518">518 - Fast Ramp</option>
+                    <option value="519">519 - Fast Ramp</option>
+                    <option value="520">520 - Cluster 3.0</option>
+                    <option value="521">521 - Cluster 3.0</option>
+                    <option value="522">522 - Fast Ramp</option>
+                    <option value="525">525 - Cluster 3.0</option>
+                    <option value="526">526 - Cluster 3.0</option>
+                    <option value="527">527 - Fast Ramp</option>
+                    <option value="530">530 - Cluster 3.0</option>
+                    <option value="534">534 - Fast Ramp</option>
+                    <option value="538">538 - Fast Ramp</option>
+                </select>
+            </div>
+            <div class="control-card opening-month">
+                <h3>📅 Opening Month <span id="seasonalityStatus" style="font-size: 0.75rem; font-weight: normal;"></span></h3>
+                <select id="openingMonth">
+                    <option value="0">No Seasonality Adjustment</option>
+                    <option value="1">January</option>
+                    <option value="2" selected>February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Individual Store Detail Card -->
+        <div class="store-detail-card">
+            <div class="store-detail-header">
+                📍 <span id="selectedStoreName">Loading...</span>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-label">Predicted Sales</div>
+                    <div class="metric-value highlight" id="metricPredictedSales">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Ramp-Up Pattern</div>
+                    <div class="metric-value" id="metricRampPattern">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Maturity (Months)</div>
+                    <div class="metric-value" id="metricMaturity">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">12-Month Revenue</div>
+                    <div class="metric-value highlight" id="metricRev12">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">24-Month Revenue</div>
+                    <div class="metric-value highlight" id="metricRev24">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Peak Sales Month</div>
+                    <div class="metric-value" id="metricPeakMonth">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Post-Maturity Growth</div>
+                    <div class="metric-value" id="metricGrowthRate" style="color: #22c55e;">-</div>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="chart">📊 Sales Chart</button>
+                <button class="tab-btn" data-tab="table">📋 MoM Table</button>
+            </div>
+
+            <!-- Tab Content: Chart -->
+            <div id="chartTab" class="tab-content active">
+                <div class="chart-container">
+                    <canvas id="storeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Tab Content: MoM Table -->
+            <div id="tableTab" class="tab-content">
+                <div style="overflow-x: auto;">
+                    <table class="mom-table" id="momTable">
+                        <thead>
+                            <tr id="momTableHeader"></tr>
+                        </thead>
+                        <tbody>
+                            <tr id="momTableRow"></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <h2>📋 Detailed Store Projections</h2>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Store ID</th>
+                        <th>Steady State</th>
+                        <th>Cluster</th>
+                        <th>Maturity (Mo)</th>
+                        <th>Month 1</th>
+                        <th>Month 6</th>
+                        <th>Month 12</th>
+                        <th>Month 18</th>
+                        <th>Month 24</th>
+                        <th>Rev 12M</th>
+                        <th>Rev 24M</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td><strong>449</strong></td>
+                        <td>INR 1,756,578</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,455,213</td>
+                        <td>INR 1,756,578</td>
+                        <td>INR 1,756,578</td>
+                        <td>INR 1,765,360</td>
+                        <td>INR 1,818,988</td>
+                        <td>INR 20,074,202</td>
+                        <td>INR 41,401,528</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>452</strong></td>
+                        <td>INR 1,193,477</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 847,871</td>
+                        <td>INR 920,182</td>
+                        <td>INR 989,655</td>
+                        <td>INR 1,042,910</td>
+                        <td>INR 1,083,026</td>
+                        <td>INR 11,082,571</td>
+                        <td>INR 23,617,553</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>456</strong></td>
+                        <td>INR 1,383,698</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,146,306</td>
+                        <td>INR 1,383,698</td>
+                        <td>INR 1,383,698</td>
+                        <td>INR 1,390,617</td>
+                        <td>INR 1,432,860</td>
+                        <td>INR 15,812,932</td>
+                        <td>INR 32,612,980</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>459</strong></td>
+                        <td>INR 1,466,102</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,214,572</td>
+                        <td>INR 1,466,102</td>
+                        <td>INR 1,466,102</td>
+                        <td>INR 1,473,432</td>
+                        <td>INR 1,518,191</td>
+                        <td>INR 16,754,636</td>
+                        <td>INR 34,555,174</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>461</strong></td>
+                        <td>INR 840,609</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 597,186</td>
+                        <td>INR 648,117</td>
+                        <td>INR 697,050</td>
+                        <td>INR 734,559</td>
+                        <td>INR 762,814</td>
+                        <td>INR 7,805,852</td>
+                        <td>INR 16,634,690</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>462</strong></td>
+                        <td>INR 711,124</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 505,197</td>
+                        <td>INR 548,283</td>
+                        <td>INR 589,678</td>
+                        <td>INR 621,410</td>
+                        <td>INR 645,312</td>
+                        <td>INR 6,603,461</td>
+                        <td>INR 14,072,329</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>463</strong></td>
+                        <td>INR 1,876,799</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,554,808</td>
+                        <td>INR 1,876,799</td>
+                        <td>INR 1,876,799</td>
+                        <td>INR 1,886,183</td>
+                        <td>INR 1,943,480</td>
+                        <td>INR 21,448,091</td>
+                        <td>INR 44,235,071</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>464</strong></td>
+                        <td>INR 1,761,097</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,458,957</td>
+                        <td>INR 1,761,097</td>
+                        <td>INR 1,761,097</td>
+                        <td>INR 1,769,902</td>
+                        <td>INR 1,823,668</td>
+                        <td>INR 20,125,850</td>
+                        <td>INR 41,508,047</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>466</strong></td>
+                        <td>INR 1,248,439</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,034,252</td>
+                        <td>INR 1,248,439</td>
+                        <td>INR 1,248,439</td>
+                        <td>INR 1,254,681</td>
+                        <td>INR 1,292,795</td>
+                        <td>INR 14,267,183</td>
+                        <td>INR 29,424,990</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>469</strong></td>
+                        <td>INR 1,397,024</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,157,346</td>
+                        <td>INR 1,397,024</td>
+                        <td>INR 1,397,024</td>
+                        <td>INR 1,404,009</td>
+                        <td>INR 1,446,660</td>
+                        <td>INR 15,965,220</td>
+                        <td>INR 32,927,063</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>470</strong></td>
+                        <td>INR 764,973</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 543,453</td>
+                        <td>INR 589,801</td>
+                        <td>INR 634,331</td>
+                        <td>INR 668,465</td>
+                        <td>INR 694,178</td>
+                        <td>INR 7,103,500</td>
+                        <td>INR 15,137,939</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>471</strong></td>
+                        <td>INR 1,261,875</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 896,462</td>
+                        <td>INR 972,917</td>
+                        <td>INR 1,046,372</td>
+                        <td>INR 1,102,679</td>
+                        <td>INR 1,145,094</td>
+                        <td>INR 11,717,707</td>
+                        <td>INR 24,971,062</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>473</strong></td>
+                        <td>INR 1,490,356</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,234,665</td>
+                        <td>INR 1,490,356</td>
+                        <td>INR 1,490,356</td>
+                        <td>INR 1,497,808</td>
+                        <td>INR 1,543,308</td>
+                        <td>INR 17,031,819</td>
+                        <td>INR 35,126,842</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>475</strong></td>
+                        <td>INR 1,000,888</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 711,052</td>
+                        <td>INR 771,694</td>
+                        <td>INR 829,956</td>
+                        <td>INR 874,617</td>
+                        <td>INR 908,260</td>
+                        <td>INR 9,294,193</td>
+                        <td>INR 19,806,424</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>476</strong></td>
+                        <td>INR 999,637</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 828,136</td>
+                        <td>INR 999,637</td>
+                        <td>INR 999,637</td>
+                        <td>INR 1,004,635</td>
+                        <td>INR 1,035,153</td>
+                        <td>INR 11,423,870</td>
+                        <td>INR 23,560,871</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>477</strong></td>
+                        <td>INR 1,522,967</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 1,081,948</td>
+                        <td>INR 1,174,222</td>
+                        <td>INR 1,262,875</td>
+                        <td>INR 1,330,833</td>
+                        <td>INR 1,382,024</td>
+                        <td>INR 14,142,201</td>
+                        <td>INR 30,137,789</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>478</strong></td>
+                        <td>INR 3,443,021</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 2,852,323</td>
+                        <td>INR 3,443,021</td>
+                        <td>INR 3,443,021</td>
+                        <td>INR 3,460,236</td>
+                        <td>INR 3,565,349</td>
+                        <td>INR 39,346,908</td>
+                        <td>INR 81,150,030</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>479</strong></td>
+                        <td>INR 2,418,566</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 2,003,628</td>
+                        <td>INR 2,418,566</td>
+                        <td>INR 2,418,566</td>
+                        <td>INR 2,430,659</td>
+                        <td>INR 2,504,496</td>
+                        <td>INR 27,639,418</td>
+                        <td>INR 57,004,215</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>480</strong></td>
+                        <td>INR 2,740,914</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 2,270,673</td>
+                        <td>INR 2,740,914</td>
+                        <td>INR 2,740,914</td>
+                        <td>INR 2,754,619</td>
+                        <td>INR 2,838,297</td>
+                        <td>INR 31,323,218</td>
+                        <td>INR 64,601,776</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>481</strong></td>
+                        <td>INR 1,462,262</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,211,391</td>
+                        <td>INR 1,462,262</td>
+                        <td>INR 1,462,262</td>
+                        <td>INR 1,469,573</td>
+                        <td>INR 1,514,215</td>
+                        <td>INR 16,710,755</td>
+                        <td>INR 34,464,671</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>482</strong></td>
+                        <td>INR 1,185,009</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 841,855</td>
+                        <td>INR 913,653</td>
+                        <td>INR 982,633</td>
+                        <td>INR 1,035,511</td>
+                        <td>INR 1,075,342</td>
+                        <td>INR 11,003,937</td>
+                        <td>INR 23,449,981</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>483</strong></td>
+                        <td>INR 1,360,202</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,126,841</td>
+                        <td>INR 1,360,202</td>
+                        <td>INR 1,360,202</td>
+                        <td>INR 1,367,004</td>
+                        <td>INR 1,408,530</td>
+                        <td>INR 15,544,420</td>
+                        <td>INR 32,059,195</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>484</strong></td>
+                        <td>INR 1,206,326</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 999,365</td>
+                        <td>INR 1,206,326</td>
+                        <td>INR 1,206,326</td>
+                        <td>INR 1,212,358</td>
+                        <td>INR 1,249,186</td>
+                        <td>INR 13,785,920</td>
+                        <td>INR 28,432,421</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>486</strong></td>
+                        <td>INR 980,889</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 696,844</td>
+                        <td>INR 756,275</td>
+                        <td>INR 813,373</td>
+                        <td>INR 857,142</td>
+                        <td>INR 890,112</td>
+                        <td>INR 9,108,487</td>
+                        <td>INR 19,410,675</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>489</strong></td>
+                        <td>INR 1,908,024</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,580,676</td>
+                        <td>INR 1,908,024</td>
+                        <td>INR 1,908,024</td>
+                        <td>INR 1,917,564</td>
+                        <td>INR 1,975,815</td>
+                        <td>INR 21,804,931</td>
+                        <td>INR 44,971,026</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>490</strong></td>
+                        <td>INR 2,169,984</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,797,693</td>
+                        <td>INR 2,169,984</td>
+                        <td>INR 2,169,984</td>
+                        <td>INR 2,180,834</td>
+                        <td>INR 2,247,082</td>
+                        <td>INR 24,798,615</td>
+                        <td>INR 51,145,273</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>491</strong></td>
+                        <td>INR 1,523,582</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,262,190</td>
+                        <td>INR 1,523,582</td>
+                        <td>INR 1,523,582</td>
+                        <td>INR 1,531,200</td>
+                        <td>INR 1,577,714</td>
+                        <td>INR 17,411,521</td>
+                        <td>INR 35,909,949</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>492</strong></td>
+                        <td>INR 659,606</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 468,598</td>
+                        <td>INR 508,562</td>
+                        <td>INR 546,958</td>
+                        <td>INR 576,391</td>
+                        <td>INR 598,562</td>
+                        <td>INR 6,125,065</td>
+                        <td>INR 13,052,842</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>493</strong></td>
+                        <td>INR 2,214,619</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,834,671</td>
+                        <td>INR 2,214,619</td>
+                        <td>INR 2,214,619</td>
+                        <td>INR 2,225,692</td>
+                        <td>INR 2,293,303</td>
+                        <td>INR 25,308,710</td>
+                        <td>INR 52,197,306</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>494</strong></td>
+                        <td>INR 1,493,337</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 1,060,898</td>
+                        <td>INR 1,151,377</td>
+                        <td>INR 1,238,305</td>
+                        <td>INR 1,304,940</td>
+                        <td>INR 1,355,135</td>
+                        <td>INR 13,867,053</td>
+                        <td>INR 29,551,435</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>495</strong></td>
+                        <td>INR 1,187,080</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 843,327</td>
+                        <td>INR 915,250</td>
+                        <td>INR 984,351</td>
+                        <td>INR 1,037,320</td>
+                        <td>INR 1,077,221</td>
+                        <td>INR 11,023,168</td>
+                        <td>INR 23,490,963</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>496</strong></td>
+                        <td>INR 1,711,931</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,418,226</td>
+                        <td>INR 1,711,931</td>
+                        <td>INR 1,711,931</td>
+                        <td>INR 1,720,491</td>
+                        <td>INR 1,772,755</td>
+                        <td>INR 19,563,979</td>
+                        <td>INR 40,349,232</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>497</strong></td>
+                        <td>INR 1,069,231</td>
+                        <td><span class="cluster-badge cluster-1.0">Medium Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,016,372</td>
+                        <td>INR 1,069,231</td>
+                        <td>INR 1,069,231</td>
+                        <td>INR 1,074,577</td>
+                        <td>INR 1,107,220</td>
+                        <td>INR 12,702,910</td>
+                        <td>INR 25,684,882</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>500</strong></td>
+                        <td>INR 1,406,238</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,164,979</td>
+                        <td>INR 1,406,238</td>
+                        <td>INR 1,406,238</td>
+                        <td>INR 1,413,270</td>
+                        <td>INR 1,456,201</td>
+                        <td>INR 16,070,520</td>
+                        <td>INR 33,144,235</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>501</strong></td>
+                        <td>INR 1,081,852</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 768,570</td>
+                        <td>INR 834,118</td>
+                        <td>INR 897,093</td>
+                        <td>INR 945,367</td>
+                        <td>INR 981,731</td>
+                        <td>INR 10,046,020</td>
+                        <td>INR 21,408,608</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>502</strong></td>
+                        <td>INR 4,089,643</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 3,388,008</td>
+                        <td>INR 4,089,643</td>
+                        <td>INR 4,089,643</td>
+                        <td>INR 4,110,091</td>
+                        <td>INR 4,234,945</td>
+                        <td>INR 46,736,515</td>
+                        <td>INR 96,390,538</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>505</strong></td>
+                        <td>INR 737,829</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 524,169</td>
+                        <td>INR 568,873</td>
+                        <td>INR 611,823</td>
+                        <td>INR 644,746</td>
+                        <td>INR 669,546</td>
+                        <td>INR 6,851,443</td>
+                        <td>INR 14,600,792</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>509</strong></td>
+                        <td>INR 782,279</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 555,747</td>
+                        <td>INR 603,144</td>
+                        <td>INR 648,681</td>
+                        <td>INR 683,588</td>
+                        <td>INR 709,882</td>
+                        <td>INR 7,264,202</td>
+                        <td>INR 15,480,405</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>511</strong></td>
+                        <td>INR 723,676</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 599,519</td>
+                        <td>INR 723,676</td>
+                        <td>INR 723,676</td>
+                        <td>INR 727,294</td>
+                        <td>INR 749,388</td>
+                        <td>INR 8,270,181</td>
+                        <td>INR 17,056,625</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>512</strong></td>
+                        <td>INR 646,932</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 535,942</td>
+                        <td>INR 646,932</td>
+                        <td>INR 646,932</td>
+                        <td>INR 650,167</td>
+                        <td>INR 669,918</td>
+                        <td>INR 7,393,156</td>
+                        <td>INR 15,247,827</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>513</strong></td>
+                        <td>INR 2,431,661</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 2,014,477</td>
+                        <td>INR 2,431,661</td>
+                        <td>INR 2,431,661</td>
+                        <td>INR 2,443,820</td>
+                        <td>INR 2,518,057</td>
+                        <td>INR 27,789,074</td>
+                        <td>INR 57,312,869</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>514</strong></td>
+                        <td>INR 2,236,797</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,853,044</td>
+                        <td>INR 2,236,797</td>
+                        <td>INR 2,236,797</td>
+                        <td>INR 2,247,981</td>
+                        <td>INR 2,316,269</td>
+                        <td>INR 25,562,156</td>
+                        <td>INR 52,720,019</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>517</strong></td>
+                        <td>INR 597,735</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 424,644</td>
+                        <td>INR 460,860</td>
+                        <td>INR 495,654</td>
+                        <td>INR 522,326</td>
+                        <td>INR 542,418</td>
+                        <td>INR 5,550,541</td>
+                        <td>INR 11,828,501</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>518</strong></td>
+                        <td>INR 2,082,614</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,725,313</td>
+                        <td>INR 2,082,614</td>
+                        <td>INR 2,082,614</td>
+                        <td>INR 2,093,027</td>
+                        <td>INR 2,156,608</td>
+                        <td>INR 23,800,152</td>
+                        <td>INR 49,086,019</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>519</strong></td>
+                        <td>INR 1,853,114</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,535,187</td>
+                        <td>INR 1,853,114</td>
+                        <td>INR 1,853,114</td>
+                        <td>INR 1,862,379</td>
+                        <td>INR 1,918,954</td>
+                        <td>INR 21,177,422</td>
+                        <td>INR 43,676,835</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>520</strong></td>
+                        <td>INR 970,520</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 689,477</td>
+                        <td>INR 748,280</td>
+                        <td>INR 804,774</td>
+                        <td>INR 848,081</td>
+                        <td>INR 880,702</td>
+                        <td>INR 9,012,197</td>
+                        <td>INR 19,205,475</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>521</strong></td>
+                        <td>INR 1,062,395</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 754,748</td>
+                        <td>INR 819,117</td>
+                        <td>INR 880,959</td>
+                        <td>INR 928,365</td>
+                        <td>INR 964,075</td>
+                        <td>INR 9,865,349</td>
+                        <td>INR 21,023,588</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>522</strong></td>
+                        <td>INR 1,823,717</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>6</td>
+                        <td>INR 1,510,833</td>
+                        <td>INR 1,823,717</td>
+                        <td>INR 1,823,717</td>
+                        <td>INR 1,832,835</td>
+                        <td>INR 1,888,512</td>
+                        <td>INR 20,841,470</td>
+                        <td>INR 42,983,961</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>525</strong></td>
+                        <td>INR 651,757</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 463,022</td>
+                        <td>INR 502,511</td>
+                        <td>INR 540,450</td>
+                        <td>INR 569,533</td>
+                        <td>INR 591,440</td>
+                        <td>INR 6,052,185</td>
+                        <td>INR 12,897,532</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>526</strong></td>
+                        <td>INR 754,758</td>
+                        <td><span class="cluster-badge cluster-3.0">Cluster 3.0</span></td>
+                        <td>36</td>
+                        <td>INR 536,196</td>
+                        <td>INR 581,925</td>
+                        <td>INR 625,860</td>
+                        <td>INR 659,539</td>
+                        <td>INR 684,908</td>
+                        <td>INR 7,008,643</td>
+                        <td>INR 14,935,794</td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="11" style="text-align: center; font-style: italic; color: #64748b;">
+                            ... and 4 more stores (showing first 50)
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 2rem; padding: 1rem; background: #f1f5f9; border-radius: 8px; color: #64748b; font-size: 0.875rem;">
+            <p><strong>Generated:</strong> 2026-03-24 10:56:33 | <strong>Advanced Regression Pipeline</strong> | Powered by Kentrix Analytics</p>
+        </div>
+    </div>
+
+    <script>
+        // ========================================================================
+        // STORE DATA
+        // ========================================================================
+
+        const salesUnit = 'INR ';
+        const clusterNames = {0: 'Fast Ramp', 1: 'Medium Ramp', 2: 'Slow Ramp'};
+
+        // Seasonal patterns from training data
+        const seasonalPatterns = {"1": 0.9966777973386008, "2": 0.9363278286948608, "3": 0.9803318684031808, "4": 0.9915650327880322, "5": 1.0328975966007625, "6": 0.9869115668360763, "7": 1.0356179047218115, "8": 1.0437811704359252, "9": 0.9858005971964514, "10": 0.9956438720736619, "11": 0.9678223663717107, "12": 1.046622398538927};
+        const hasSeasonality = Object.keys(seasonalPatterns).length > 0;
+
+        // Cluster growth rates for post-maturity projection
+        const clusterGrowthRates = {"0": 0.005, "1": 0.005, "2": 0.005, "3": 0.005, "4": 0.005};
+        const hasGrowthRates = Object.keys(clusterGrowthRates).length > 0;
+
+        // All store data for interactive features
+        const allStoreData = {
+            '449': {
+                place_id: '449',
+                place_name: '',
+                steady_state: 1756577.5195706044,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 20074201.918688394,
+                rev_24m: 41401527.64649035,
+                monthly_sales: [1455212.6115581244, 1515953.8581207038, 1565261.73434926, 1604973.029570479, 1636758.0480955958, 1756577.5195706044, 1756577.5195706044, 1756577.5195706044, 1756577.5195706044, 1756577.5195706044, 1756577.5195706044, 1756577.5195706044, 1756577.5195706044, 1756577.5195706044, 1756577.5195706044, 1756577.5195706044, 1756577.5195706044, 1765360.4071684573, 1774187.2092042994, 1783058.1452503207, 1791973.435976572, 1800933.3031564546, 1809937.969672237, 1818987.659520598]
+            },
+            '452': {
+                place_id: '452',
+                place_name: '',
+                steady_state: 1193477.288257269,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 11082570.875845,
+                rev_24m: 23617553.389781013,
+                monthly_sales: [847871.2851978631, 863450.0389652945, 878462.8700797462, 892916.6910837833, 906819.8905287893, 920182.137680661, 933014.2003983847, 945327.7762643631, 957135.3368573204, 968449.9849056163, 979285.3239369746, 989655.3399462026, 999574.2945318552, 1009056.628902685, 1018116.8781220249, 1026769.5949402106, 1035029.2825592807, 1042910.3356782552, 1050426.9891793497, 1057593.27383384, 1064422.9784294555, 1070929.6177479324, 1077126.4058505762, 1083026.234160549]
+            },
+            '456': {
+                place_id: '456',
+                place_name: '',
+                steady_state: 1383698.3910759375,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 15812932.015555242,
+                rev_24m: 32612979.81687624,
+                monthly_sales: [1146305.999508982, 1194153.341402059, 1232994.3422942387, 1264275.8853476727, 1289313.7094707289, 1383698.3910759375, 1383698.3910759375, 1383698.3910759375, 1383698.3910759375, 1383698.3910759375, 1383698.3910759375, 1383698.3910759375, 1383698.3910759375, 1383698.3910759375, 1383698.3910759375, 1383698.3910759375, 1383698.3910759375, 1390616.883031317, 1397569.9674464734, 1404557.8172837056, 1411580.606370124, 1418638.5094019745, 1425731.7019489845, 1432860.360458729]
+            },
+            '459': {
+                place_id: '459',
+                place_name: '',
+                steady_state: 1466101.506313906,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 16754636.412649136,
+                rev_24m: 34555174.12123899,
+                monthly_sales: [1214571.73283983, 1265268.5179737709, 1306422.609271431, 1339567.0558403118, 1366095.9525264546, 1466101.506313906, 1466101.506313906, 1466101.506313906, 1466101.506313906, 1466101.506313906, 1466101.506313906, 1466101.506313906, 1466101.506313906, 1466101.506313906, 1466101.506313906, 1466101.506313906, 1466101.506313906, 1473432.0138454754, 1480799.1739147026, 1488203.169784276, 1495644.1856331972, 1503122.406561363, 1510638.0185941698, 1518191.2086871406]
+            },
+            '461': {
+                place_id: '461',
+                place_name: '',
+                steady_state: 840608.8551661281,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 7805852.116251865,
+                rev_24m: 16634689.836283786,
+                monthly_sales: [597186.152925578, 608158.8278966098, 618732.9032477625, 628913.2477306653, 638705.7697028919, 648117.2795751775, 657155.3615367677, 665828.2546144532, 674144.7429883911, 682114.0553800613, 689745.773241896, 697049.7474116101, 704036.0228445221, 710714.7710018541, 717096.2294499744, 723190.6482128422, 729008.2424157741, 734559.1507615193, 739853.3993881204, 744900.8706709647, 749711.2765477507, 754294.1359639282, 758658.7560567637, 762814.2167179085]
+            },
+            '462': {
+                place_id: '462',
+                place_name: '',
+                steady_state: 711123.8238157019,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 6603460.540457777,
+                rev_24m: 14072328.85029329,
+                monthly_sales: [505197.2721775552, 514479.747058628, 523425.02148776903, 532037.2142477563, 540321.3235893274, 548283.110866641, 555928.9920216945, 563265.9369646901, 570301.3767853006, 577043.1186386225, 583499.2680770172, 589678.1585427758, 595588.287694461, 601238.2602099247, 606636.7366895133, 611792.3882722321, 616713.8565741327, 621409.7185606171, 625888.4559715329, 630158.4289288685, 634227.8533706673, 638104.7819707091, 641797.0882209288, 645312.4533719241]
+            },
+            '463': {
+                place_id: '463',
+                place_name: '',
+                steady_state: 1876798.6534190527,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 21448091.36500065,
+                rev_24m: 44235071.02346335,
+                monthly_sales: [1554808.1649583783, 1619706.575922621, 1672389.1103839122, 1714818.2685430858, 1748778.6712592845, 1876798.6534190527, 1876798.6534190527, 1876798.6534190527, 1876798.6534190527, 1876798.6534190527, 1876798.6534190527, 1876798.6534190527, 1876798.6534190527, 1876798.6534190527, 1876798.6534190527, 1876798.6534190527, 1876798.6534190527, 1886182.6466861477, 1895613.5599195783, 1905091.627719176, 1914617.0858577716, 1924190.1712870602, 1933811.1221434956, 1943480.1777542129]
+            },
+            '464': {
+                place_id: '464',
+                place_name: '',
+                steady_state: 1761096.9219167242,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 20125849.736241,
+                rev_24m: 41508047.37539149,
+                monthly_sales: [1458956.6485946376, 1519854.1729924749, 1569288.9107623107, 1609102.3770057533, 1640969.17346876, 1761096.9219167242, 1761096.9219167242, 1761096.9219167242, 1761096.9219167242, 1761096.9219167242, 1761096.9219167242, 1761096.9219167242, 1761096.9219167242, 1761096.9219167242, 1761096.9219167242, 1761096.9219167242, 1761096.9219167242, 1769902.4065263076, 1778751.918558939, 1787645.6781517335, 1796583.9065424919, 1805566.8260752042, 1814594.6602055803, 1823667.633506608]
+            },
+            '466': {
+                place_id: '466',
+                place_name: '',
+                steady_state: 1248438.858769132,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 14267183.460366,
+                rev_24m: 29424989.987870306,
+                monthly_sales: [1034252.090670144, 1077422.2506510925, 1112466.4590855464, 1140690.1631543208, 1163280.485420971, 1248438.858769132, 1248438.858769132, 1248438.858769132, 1248438.858769132, 1248438.858769132, 1248438.858769132, 1248438.858769132, 1248438.858769132, 1248438.858769132, 1248438.858769132, 1248438.858769132, 1248438.858769132, 1254681.0530629775, 1260954.4583282922, 1267259.2306199337, 1273595.5267730332, 1279963.504406898, 1286363.3219289326, 1292795.1385385771]
+            },
+            '469': {
+                place_id: '469',
+                place_name: '',
+                steady_state: 1397024.273965476,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 15965220.46334022,
+                rev_24m: 32927063.25624531,
+                monthly_sales: [1157345.6448562273, 1205653.7866452604, 1244868.8507238543, 1276451.6546460025, 1301730.6087105435, 1397024.273965476, 1397024.273965476, 1397024.273965476, 1397024.273965476, 1397024.273965476, 1397024.273965476, 1397024.273965476, 1397024.273965476, 1397024.273965476, 1397024.273965476, 1397024.273965476, 1397024.273965476, 1404009.3953353034, 1411029.4423119796, 1418084.5895235394, 1425175.012471157, 1432300.8875335124, 1439462.3919711802, 1446659.703931036]
+            },
+            '470': {
+                place_id: '470',
+                place_name: '',
+                steady_state: 764972.8102448406,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 7103499.556336143,
+                rev_24m: 15137938.832560189,
+                monthly_sales: [543452.7210072058, 553438.1000059014, 563060.7444586693, 572325.0850381029, 581236.4984813959, 589801.1824142417, 598026.03861804, 605918.5647909638, 613486.7547329107, 620739.006786299, 627684.0402865822, 634330.8197158303, 640688.4862074626, 646766.2960180934, 652573.5655614942, 658119.6225881223, 663413.7630898916, 668465.2135124749, 673283.0978651511, 677876.4093299755, 682253.9859869048, 686424.4902886439, 690396.3919377262, 694177.9538381057]
+            },
+            '471': {
+                place_id: '471',
+                place_name: '',
+                steady_state: 1261874.7954963022,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 11717706.734035127,
+                rev_24m: 24971061.994292967,
+                monthly_sales: [896462.3082007143, 912933.8715205912, 928807.0794808634, 944089.2407779938, 958789.2247064934, 972917.2546724097, 986484.7156346269, 999503.975557368, 1011988.2207584685, 1023951.304876227, 1035407.6110488343, 1046371.9268005366, 1056859.3310540218, 1066885.0926355352, 1076464.5796046543, 1085613.1787215918, 1094346.2243586788, 1102678.9361669805, 1110626.3648217483, 1118203.34518981, 1125424.456286509, 1132303.9874180653, 1138855.9099361517, 1145093.8540640883]
+            },
+            '473': {
+                place_id: '473',
+                place_name: '',
+                steady_state: 1490356.143399329,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 17031818.875075452,
+                rev_24m: 35126842.04745337,
+                monthly_sales: [1234665.155066992, 1286200.6489257556, 1328035.578176795, 1361728.354120868, 1388696.1349897415, 1490356.143399329, 1490356.143399329, 1490356.143399329, 1490356.143399329, 1490356.143399329, 1490356.143399329, 1490356.143399329, 1490356.143399329, 1490356.143399329, 1490356.143399329, 1490356.143399329, 1490356.143399329, 1497807.9241163253, 1505296.9637369069, 1512823.4485555913, 1520387.565798369, 1527989.5036273606, 1535629.4511454974, 1543307.5984012247]
+            },
+            '475': {
+                place_id: '475',
+                place_name: '',
+                steady_state: 1000887.6500243017,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 9294193.051926062,
+                rev_24m: 19806424.256416872,
+                monthly_sales: [711051.5688186622, 724116.4024790999, 736706.6355754471, 748828.0651836527, 760487.7262071572, 771693.7275969364, 782455.0996187376, 792781.6522336528, 802683.8445004713, 812172.6647799484, 821259.5214189623, 829956.1435133354, 838274.4912888746, 846226.6755981572, 853824.8860031674, 861081.326898767, 868008.1611270561, 874617.460536084, 880921.1629464945, 886931.0350050665, 892658.6404235557, 898115.3131236584, 903312.1348334459, 908259.9167064786]
+            },
+            '476': {
+                place_id: '476',
+                place_name: '',
+                steady_state: 999636.9542603164,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 11423870.476328094,
+                rev_24m: 23560871.37468254,
+                monthly_sales: [828135.5571342859, 862702.3178011505, 890762.5512181235, 913361.5414490672, 931449.8289032541, 999636.9542603164, 999636.9542603164, 999636.9542603164, 999636.9542603164, 999636.9542603164, 999636.9542603164, 999636.9542603164, 999636.9542603164, 999636.9542603164, 999636.9542603164, 999636.9542603164, 999636.9542603164, 1004635.1390316179, 1009658.3147267759, 1014706.6063004097, 1019780.1393319116, 1024879.040028571, 1030003.4352287139, 1035153.4524048574]
+            },
+            '477': {
+                place_id: '477',
+                place_name: '',
+                steady_state: 1522967.498429601,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 14142200.617491819,
+                rev_24m: 30137788.59385284,
+                monthly_sales: [1081948.0378161406, 1101827.708663066, 1120985.2193016715, 1139429.390660316, 1157170.927166509, 1174222.167536571, 1190596.852374889, 1206309.9086834139, 1221377.2511420797, 1235815.5998256034, 1249642.313866656, 1262875.2404549036, 1275532.5784712862, 1287632.7559929742, 1299194.3208626967, 1310235.8434931391, 1320775.8310696045, 1330832.6523193175, 1340424.4720311447, 1349569.1945329192, 1358284.4153631257, 1366587.3804078265, 1374494.951811018, 1382023.5800059657]
+            },
+            '478': {
+                place_id: '478',
+                place_name: '',
+                steady_state: 3443020.7500109584,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 39346907.82268996,
+                rev_24m: 81150030.204112,
+                monthly_sales: [2852323.4309050217, 2971380.7283863276, 3068027.781592036, 3145864.8322961177, 3208165.7994337436, 3443020.7500109584, 3443020.7500109584, 3443020.7500109584, 3443020.7500109584, 3443020.7500109584, 3443020.7500109584, 3443020.7500109584, 3443020.7500109584, 3443020.7500109584, 3443020.7500109584, 3443020.7500109584, 3443020.7500109584, 3460235.8537610127, 3477537.0330298175, 3494924.718194966, 3512399.341785941, 3529961.33849487, 3547611.1451873444, 3565349.2009132807]
+            },
+            '479': {
+                place_id: '479',
+                place_name: '',
+                steady_state: 2418565.902549816,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 27639417.9821384,
+                rev_24m: 57004215.27867011,
+                monthly_sales: [2003627.8297215707, 2087260.1808008084, 2155150.351798035, 2209827.349253637, 2253590.952715643, 2418565.902549816, 2418565.902549816, 2418565.902549816, 2418565.902549816, 2418565.902549816, 2418565.902549816, 2418565.902549816, 2418565.902549816, 2418565.902549816, 2418565.902549816, 2418565.902549816, 2418565.902549816, 2430658.7320625647, 2442812.025722877, 2455026.0858514914, 2467301.2162807486, 2479637.722362152, 2492035.910973963, 2504496.0905288323]
+            },
+            '480': {
+                place_id: '480',
+                place_name: '',
+                steady_state: 2740913.9972048094,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 31323218.251761936,
+                rev_24m: 64601775.53659403,
+                monthly_sales: [2270672.698181658, 2365451.6254172404, 2442390.2441924196, 2504354.628744932, 2553951.074792017, 2740913.9972048094, 2740913.9972048094, 2740913.9972048094, 2740913.9972048094, 2740913.9972048094, 2740913.9972048094, 2740913.9972048094, 2740913.9972048094, 2740913.9972048094, 2740913.9972048094, 2740913.9972048094, 2740913.9972048094, 2754618.5671908334, 2768391.660026787, 2782233.6183269206, 2796144.786418555, 2810125.5103506474, 2824176.1379024005, 2838297.0185919125]
+            },
+            '481': {
+                place_id: '481',
+                place_name: '',
+                steady_state: 1462261.673637482,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 16710754.730445124,
+                rev_24m: 34464671.46084418,
+                monthly_sales: [1211390.675997903, 1261954.6823499461, 1303000.9879152728, 1336058.6266277882, 1362518.042091842, 1462261.673637482, 1462261.673637482, 1462261.673637482, 1462261.673637482, 1462261.673637482, 1462261.673637482, 1462261.673637482, 1462261.673637482, 1462261.673637482, 1462261.673637482, 1462261.673637482, 1462261.673637482, 1469572.9820056693, 1476920.8469156974, 1484305.4511502758, 1491726.9784060272, 1499185.6132980569, 1506681.5413645473, 1514214.9490713698]
+            },
+            '482': {
+                place_id: '482',
+                place_name: '',
+                steady_state: 1185009.2753840499,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 11003937.328505313,
+                rev_24m: 23449981.07977029,
+                monthly_sales: [841855.4313324139, 857323.6500366738, 872229.9614474064, 886581.2290609989, 900385.7819100138, 913653.2206545447, 926394.2367529881, 938620.4447905424, 950344.2278570345, 961578.5957137662, 972337.055368109, 982633.4935808213, 992482.0707609324, 1001897.1256532917, 1010893.0901914075, 1019484.4138702969, 1027685.4969882382, 1035510.6321103453, 1042973.9531188679, 1050089.391233332, 1056870.6374066512, 1063331.1105298828, 1069483.9309073407, 1075341.8984943905]
+            },
+            '483': {
+                place_id: '483',
+                place_name: '',
+                steady_state: 1360202.4936127567,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 15544420.444228757,
+                rev_24m: 32059194.949676767,
+                monthly_sales: [1126841.1447403433, 1173876.0146046486, 1212057.4756865522, 1242807.8423414198, 1267420.5115664937, 1360202.4936127567, 1360202.4936127567, 1360202.4936127567, 1360202.4936127567, 1360202.4936127567, 1360202.4936127567, 1360202.4936127567, 1360202.4936127567, 1360202.4936127567, 1360202.4936127567, 1360202.4936127567, 1360202.4936127567, 1367003.5060808205, 1373838.5236112243, 1380707.7162292802, 1387611.2548104266, 1394549.3110844784, 1401522.0576399008, 1408529.6679281003]
+            },
+            '484': {
+                place_id: '484',
+                place_name: '',
+                steady_state: 1206326.2796432974,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 13785920.09039221,
+                rev_24m: 28432420.57973541,
+                monthly_sales: [999364.5007025036, 1041078.4365637824, 1074940.5270352846, 1102212.1837030414, 1124040.4848845175, 1206326.2796432974, 1206326.2796432974, 1206326.2796432974, 1206326.2796432974, 1206326.2796432974, 1206326.2796432974, 1206326.2796432974, 1206326.2796432974, 1206326.2796432974, 1206326.2796432974, 1206326.2796432974, 1206326.2796432974, 1212357.9110415138, 1218419.7005967211, 1224511.7990997047, 1230634.358095203, 1236787.5298856788, 1242971.4675351074, 1249186.3248727827]
+            },
+            '486': {
+                place_id: '486',
+                place_name: '',
+                steady_state: 980889.0551797888,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 9108487.092573239,
+                rev_24m: 19410674.889329568,
+                monthly_sales: [696844.1477979168, 709647.9348612868, 721986.6042874401, 733865.8373217696, 745292.5283043032, 756274.624162212, 766820.974728778, 776941.1939536456, 786645.531914627, 795944.7574155922, 804850.0508548509, 813372.9069708177, 821525.0470137162, 829318.3398508877, 836764.731486399, 843876.1824608216, 850664.6125922238, 857141.8525227638, 863319.6015451761, 869209.3911985314, 874822.5541416929, 880170.1978348678, 885263.1825836829, 890112.1035255657]
+            },
+            '489': {
+                place_id: '489',
+                place_name: '',
+                steady_state: 1908023.6296256762,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 21804930.99792003,
+                rev_24m: 44971025.85681198,
+                monthly_sales: [1580676.0692582058, 1646654.2184961918, 1700213.2512872647, 1743348.3186560243, 1777873.7328426058, 1908023.6296256762, 1908023.6296256762, 1908023.6296256762, 1908023.6296256762, 1908023.6296256762, 1908023.6296256762, 1908023.6296256762, 1908023.6296256762, 1908023.6296256762, 1908023.6296256762, 1908023.6296256762, 1908023.6296256762, 1917563.7477738045, 1927151.5665126732, 1936787.3243452362, 1946471.2609669624, 1956203.6172717968, 1965984.635358156, 1975814.5585349465]
+            },
+            '490': {
+                place_id: '490',
+                place_name: '',
+                steady_state: 2169983.606536454,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 24798614.688240387,
+                rev_24m: 51145272.712138206,
+                monthly_sales: [1797693.2278389584, 1872729.7735153518, 1933642.1339987374, 1982699.382349177, 2021964.9247829784, 2169983.606536454, 2169983.606536454, 2169983.606536454, 2169983.606536454, 2169983.606536454, 2169983.606536454, 2169983.606536454, 2169983.606536454, 2169983.606536454, 2169983.606536454, 2169983.606536454, 2169983.606536454, 2180833.524569136, 2191737.6921919812, 2202696.3806529413, 2213709.8625562056, 2224778.411868986, 2235902.3039283315, 2247081.8154479726]
+            },
+            '491': {
+                place_id: '491',
+                place_name: '',
+                steady_state: 1523581.7001803138,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 17411521.181550026,
+                rev_24m: 35909949.42091802,
+                monthly_sales: [1262190.4129705252, 1314874.8238079748, 1357642.4085342947, 1392086.3212084684, 1419655.3137665642, 1523581.7001803138, 1523581.7001803138, 1523581.7001803138, 1523581.7001803138, 1523581.7001803138, 1523581.7001803138, 1523581.7001803138, 1523581.7001803138, 1523581.7001803138, 1523581.7001803138, 1523581.7001803138, 1523581.7001803138, 1531199.6086812152, 1538855.606724621, 1546549.884758244, 1554282.634182035, 1562054.047352945, 1569864.3175897098, 1577713.6391776581]
+            },
+            '492': {
+                place_id: '492',
+                place_name: '',
+                steady_state: 659605.6163425253,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 6125065.0223062085,
+                rev_24m: 13052842.32338983,
+                monthly_sales: [468597.6575798148, 477207.6525765523, 485504.87600738445, 493493.14826499386, 501177.10549592465, 508562.09166621167, 515654.05790733674, 522459.4691861044, 528985.2182380968, 535238.5466198148, 541226.9726672812, 546958.2260966923, 552440.188943674, 557680.8425100022, 562688.2199685762, 567470.3642674683, 572035.2909706223, 576390.9556750258, 580545.2256508395, 584505.8553611151, 588280.4655305358, 591876.5254473939, 595301.3381991781, 598562.0285591909]
+            },
+            '493': {
+                place_id: '493',
+                place_name: '',
+                steady_state: 2214619.089959602,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 25308709.85739271,
+                rev_24m: 52197305.53185097,
+                monthly_sales: [1834670.8833518426, 1911250.893449156, 1973416.190889499, 2023482.5224371273, 2063555.7375478677, 2214619.089959602, 2214619.089959602, 2214619.089959602, 2214619.089959602, 2214619.089959602, 2214619.089959602, 2214619.089959602, 2214619.089959602, 2214619.089959602, 2214619.089959602, 2214619.089959602, 2214619.089959602, 2225692.1854093997, 2236820.646336446, 2248004.7495681285, 2259244.773315969, 2270540.997182548, 2281893.702168461, 2293303.1706793034]
+            },
+            '494': {
+                place_id: '494',
+                place_name: '',
+                steady_state: 1493336.9859484623,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 13867053.148921773,
+                rev_24m: 29551434.56987998,
+                monthly_sales: [1060897.9005863494, 1080390.7970367377, 1099175.5834650958, 1117260.909181788, 1134657.270351394, 1151376.76563095, 1167432.8682907405, 1182840.2149163296, 1197614.4105552244, 1211771.849980136, 1225329.5545883616, 1238305.0243386663, 1250716.1040386641, 1262580.8632330075, 1273917.4889017772, 1284744.190155894, 1295079.1141090335, 1304940.2721106026, 1314345.4755394289, 1323312.2803807775, 1331857.939838301, 1339999.3642659886, 1347753.0877417624, 1355135.2406429653]
+            },
+            '495': {
+                place_id: '495',
+                place_name: '',
+                steady_state: 1187080.2580216685,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 11023168.370511623,
+                rev_24m: 23490963.46250561,
+                monthly_sales: [843326.7008134983, 858821.9525655466, 873754.315006228, 888130.6636269258, 901959.3420164441, 915249.9676134803, 928013.2505613683, 940260.8257435481, 952005.0978911659, 963259.0995020454, 974036.3611890934, 984350.7939822793, 994216.5830380853, 1003648.0921604827, 1012659.7785049623, 1021266.116819216, 1029481.5325682174, 1037320.3432954962, 1044796.7075843953, 1051924.5810013507, 1058717.6784262827, 1065189.4422017878, 1071353.015561892, 1077221.220831816]
+            },
+            '496': {
+                place_id: '496',
+                place_name: '',
+                steady_state: 1711930.8876392879,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 19563979.34416877,
+                rev_24m: 40349232.06281527,
+                monthly_sales: [1418225.7202161883, 1477423.116850077, 1525477.7431783217, 1564179.7031658236, 1595156.8472833438, 1711930.8876392879, 1711930.8876392879, 1711930.8876392879, 1711930.8876392879, 1711930.8876392879, 1711930.8876392879, 1711930.8876392879, 1711930.8876392879, 1711930.8876392879, 1711930.8876392879, 1711930.8876392879, 1711930.8876392879, 1720490.542077484, 1729092.9947878711, 1737738.4597618105, 1746427.1520606193, 1755159.2878209222, 1763935.084260027, 1772754.7596813268]
+            },
+            '497': {
+                place_id: '497',
+                place_name: '',
+                steady_state: 1069231.10981561,
+                cluster: 1,
+                cluster_name: 'Medium Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 12702909.835707264,
+                rev_24m: 25684881.825711496,
+                monthly_sales: [1016372.1415929892, 1036039.8742181452, 1048464.1774133211, 1056266.7971615235, 1061149.076612013, 1069231.10981561, 1069231.10981561, 1069231.10981561, 1069231.10981561, 1069231.10981561, 1069231.10981561, 1069231.10981561, 1069231.10981561, 1069231.10981561, 1069231.10981561, 1069231.10981561, 1069231.10981561, 1074577.2653646881, 1079950.1516915113, 1085349.9024499687, 1090776.6519622186, 1096230.5352220293, 1101711.6878981397, 1107220.2463376303]
+            },
+            '500': {
+                place_id: '500',
+                place_name: '',
+                steady_state: 1406238.38984983,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 16070519.558144718,
+                rev_24m: 33144234.698594917,
+                monthly_sales: [1164978.9530876495, 1213605.712688053, 1253079.4209087468, 1284870.5301701182, 1310316.2123413405, 1406238.38984983, 1406238.38984983, 1406238.38984983, 1406238.38984983, 1406238.38984983, 1406238.38984983, 1406238.38984983, 1406238.38984983, 1406238.38984983, 1406238.38984983, 1406238.38984983, 1406238.38984983, 1413269.581799079, 1420335.929708074, 1427437.6093566143, 1434574.7974033973, 1441747.671390414, 1448956.409747366, 1456201.1917961028]
+            },
+            '501': {
+                place_id: '501',
+                place_name: '',
+                steady_state: 1081851.571994366,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 10046020.013735997,
+                rev_24m: 21408607.86609932,
+                monthly_sales: [768570.0362841445, 782691.7120117312, 796300.3957303563, 809402.3534537212, 822005.1891535057, 834117.6677309058, 845749.5499289918, 856911.4392573867, 867614.6408302984, 877871.031880258, 887692.9435994864, 897093.0538752101, 906084.2904212346, 914679.7437626534, 922892.5895009384, 930736.0192703018, 938223.1797909026, 945367.1194281483, 952180.7416782797, 958676.7650170564, 964867.6885693707, 970765.7630818512, 976382.9667070248, 981730.9851355624]
+            },
+            '502': {
+                place_id: '502',
+                place_name: '',
+                steady_state: 4089642.6394134685,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 46736515.29989532,
+                rev_24m: 96390538.36993894,
+                monthly_sales: [3388008.4877182823, 3529425.526901486, 3644223.530881703, 3736678.8904622653, 3810680.3880373, 4089642.6394134685, 4089642.6394134685, 4089642.6394134685, 4089642.6394134685, 4089642.6394134685, 4089642.6394134685, 4089642.6394134685, 4089642.6394134685, 4089642.6394134685, 4089642.6394134685, 4089642.6394134685, 4089642.6394134685, 4110090.8526105355, 4130641.3068735874, 4151294.513407955, 4172050.9859749945, 4192911.2409048686, 4213875.797109393, 4234945.17609494]
+            },
+            '505': {
+                place_id: '505',
+                place_name: '',
+                steady_state: 737828.9079321055,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 6851442.626398945,
+                rev_24m: 14600791.98579101,
+                monthly_sales: [524169.1237694317, 533800.1867081755, 543081.3861873208, 552016.9956637501, 560612.2010892761, 568872.9801762253, 576805.9898067306, 584418.461634494, 591718.1058115233, 598713.0226777677, 605411.6221762592, 611822.5506979906, 617954.6250170978, 623816.7729459391, 629417.9803194449, 634767.2439069657, 639873.5298462128, 644745.7371963994, 649392.6662151451, 653822.9909750522, 658045.2359501873, 662067.7562192325, 665898.7209501463, 669546.099850243]
+            },
+            '509': {
+                place_id: '509',
+                place_name: '',
+                steady_state: 782278.8305740402,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 7264202.40235111,
+                rev_24m: 15480405.223090615,
+                monthly_sales: [555747.2806461286, 565958.5594018245, 575798.897448783, 585272.8256949377, 594385.8425156921, 603144.2857459536, 611555.2133064868, 619626.2925162873, 627365.6980194104, 634782.0181544189, 641884.169514753, 648681.3193864347, 655182.8157032282, 661398.12412653, 667336.7718358334, 673008.297603787, 678422.2077260216, 683587.9373785781, 688514.8169836795, 693212.0431766147, 697688.65398169, 701953.5078227359, 706015.2660128141, 709882.3783879917]
+            },
+            '511': {
+                place_id: '511',
+                place_name: '',
+                steady_state: 723675.7991819159,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 8270181.0507042995,
+                rev_24m: 17056624.75644692,
+                monthly_sales: [599519.3140729477, 624543.5271576203, 644857.413870907, 661217.695717614, 674312.505611799, 723675.7991819159, 723675.7991819159, 723675.7991819159, 723675.7991819159, 723675.7991819159, 723675.7991819159, 723675.7991819159, 723675.7991819159, 723675.7991819159, 723675.7991819159, 723675.7991819159, 723675.7991819159, 727294.1781778254, 730930.6490687145, 734585.302314058, 738258.2288256282, 741949.5199697562, 745659.267569605, 749387.563907453]
+            },
+            '512': {
+                place_id: '512',
+                place_name: '',
+                steady_state: 646932.4185571998,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 7393156.210400125,
+                rev_24m: 15247827.160428494,
+                monthly_sales: [535942.3104426201, 558312.7900298313, 576472.4574894586, 591097.786559924, 602803.9359778933, 646932.4185571998, 646932.4185571998, 646932.4185571998, 646932.4185571998, 646932.4185571998, 646932.4185571998, 646932.4185571998, 646932.4185571998, 646932.4185571998, 646932.4185571998, 646932.4185571998, 646932.4185571998, 650167.0806499857, 653417.9160532355, 656685.0056335017, 659968.4306616691, 663268.2728149773, 666584.6141790523, 669917.5372499474]
+            },
+            '513': {
+                place_id: '513',
+                place_name: '',
+                steady_state: 2431661.3997912756,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 27789073.578274544,
+                rev_24m: 57312868.66005881,
+                monthly_sales: [2014476.6152309375, 2098561.799628341, 2166819.5667890958, 2221792.6167395236, 2265793.181347723, 2431661.3997912756, 2431661.3997912756, 2431661.3997912756, 2431661.3997912756, 2431661.3997912756, 2431661.3997912756, 2431661.3997912756, 2431661.3997912756, 2431661.3997912756, 2431661.3997912756, 2431661.3997912756, 2431661.3997912756, 2443819.7067902316, 2456038.8053241824, 2468318.999350803, 2480660.594347557, 2493063.8973192945, 2505529.216805891, 2518056.8628899204]
+            },
+            '514': {
+                place_id: '514',
+                place_name: '',
+                steady_state: 2236796.6810850524,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 25562155.79835593,
+                rev_24m: 52720018.67253682,
+                monthly_sales: [1853043.6052728337, 1930390.5012694069, 1993178.3331018148, 2043746.0378360327, 2084220.553280468, 2236796.6810850524, 2236796.6810850524, 2236796.6810850524, 2236796.6810850524, 2236796.6810850524, 2236796.6810850524, 2236796.6810850524, 2236796.6810850524, 2236796.6810850524, 2236796.6810850524, 2236796.6810850524, 2236796.6810850524, 2247980.6644904776, 2259220.5678129294, 2270516.6706519937, 2281869.254005254, 2293278.6002752795, 2304744.993276656, 2316268.718243039]
+            },
+            '517': {
+                place_id: '517',
+                place_name: '',
+                steady_state: 597735.373855083,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 5550541.020702426,
+                rev_24m: 11828500.8385849,
+                monthly_sales: [424643.74029167683, 432446.1277346497, 439965.08122217155, 447204.0627985182, 454167.27374506026, 460859.5567700108, 467286.3047956147, 473453.3763822814, 479367.0177349826, 485033.7911606106, 490460.5097839812, 495654.1782828684, 500621.9393670898, 505371.02570156317, 509908.71695687843, 514242.3016618983, 518379.0435299571, 522326.1519322634, 526090.7561981531, 529679.8834310295, 533100.4395404309, 536359.1932040629, 539462.7624882704, 542417.6038708759]
+            },
+            '518': {
+                place_id: '518',
+                place_name: '',
+                steady_state: 2082613.8996154906,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 23800151.985189967,
+                rev_24m: 49086018.68192708,
+                monthly_sales: [1725312.9895841714, 1797328.3506837045, 1855788.2064259173, 1902870.2705409478, 1940554.8706467978, 2082613.8996154906, 2082613.8996154906, 2082613.8996154906, 2082613.8996154906, 2082613.8996154906, 2082613.8996154906, 2082613.8996154906, 2082613.8996154906, 2082613.8996154906, 2082613.8996154906, 2082613.8996154906, 2082613.8996154906, 2093026.9691135678, 2103492.1039591352, 2114009.564478931, 2124579.6123013254, 2135202.5103628314, 2145878.5229146457, 2156607.915529219]
+            },
+            '519': {
+                place_id: '519',
+                place_name: '',
+                steady_state: 1853113.9024700942,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 21177421.572380584,
+                rev_24m: 43676834.987599,
+                monthly_sales: [1535186.8571034519, 1599266.2656148365, 1651283.9590683817, 1693177.6713809038, 1726709.5019223546, 1853113.9024700942, 1853113.9024700942, 1853113.9024700942, 1853113.9024700942, 1853113.9024700942, 1853113.9024700942, 1853113.9024700942, 1853113.9024700942, 1853113.9024700942, 1853113.9024700942, 1853113.9024700942, 1853113.9024700942, 1862379.4719824444, 1871691.3693423565, 1881049.826189068, 1890455.075320013, 1899907.3506966128, 1909406.887450096, 1918953.9218873463]
+            },
+            '520': {
+                place_id: '520',
+                place_name: '',
+                steady_state: 970519.5905211854,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 9012196.758308604,
+                rev_24m: 19205475.018659536,
+                monthly_sales: [689477.4627227931, 702145.894603282, 714354.1258357649, 726107.7776063723, 737413.6713716441, 748279.6700478435, 758714.5299122758, 768727.763280756, 778329.5118724399, 787530.4306488318, 796341.5818147056, 804774.3385918959, 812840.2983194769, 820551.2043931072, 827918.8765297204, 834955.1488290814, 841671.8150989509, 848080.5809139012, 854193.0218876414, 860020.5476536237, 865574.3710675543, 870865.48216717, 875904.6264484208, 880702.2870422819]
+            },
+            '521': {
+                place_id: '521',
+                place_name: '',
+                steady_state: 1062395.1870547875,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 9865348.988654772,
+                rev_24m: 21023588.214193244,
+                monthly_sales: [754747.8125465541, 768615.5192768584, 781979.4598201675, 794845.7875000708, 807221.9695358474, 819116.6131977426, 830539.3036883187, 841500.4538200918, 852011.1653922683, 862083.1020332086, 871728.3731667977, 880959.4286768461, 889788.9637807774, 898229.8335792501, 906294.9767192582, 913997.3475921984, 921349.8564831632, 928365.3170913392, 935056.4008521221, 941435.5975078976, 947515.1813950642, 953307.1829386756, 958823.3648721084, 964075.2027266161]
+            },
+            '522': {
+                place_id: '522',
+                place_name: '',
+                steady_state: 1823716.7521093576,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 20841470.368633125,
+                rev_24m: 42983960.964205146,
+                monthly_sales: [1510833.1901162576, 1573896.0653187477, 1625088.5682894876, 1666317.693412642, 1699317.5867304911, 1823716.7521093576, 1823716.7521093576, 1823716.7521093576, 1823716.7521093576, 1823716.7521093576, 1823716.7521093576, 1823716.7521093576, 1823716.7521093576, 1823716.7521093576, 1823716.7521093576, 1823716.7521093576, 1823716.7521093576, 1832835.3358699041, 1841999.5125492534, 1851209.5101119995, 1860465.5576625594, 1869767.885450872, 1879116.7248781263, 1888512.3085025167]
+            },
+            '525': {
+                place_id: '525',
+                place_name: '',
+                steady_state: 651757.2398399989,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 6052185.387557083,
+                rev_24m: 12897531.909948964,
+                monthly_sales: [463022.00638193515, 471529.55458206416, 479728.05275677756, 487621.27584147354, 495213.80481909134, 502510.92007000727, 509518.5019156322, 516242.9383987842, 522691.04024121363, 528869.9628351128, 534787.13505891, 540450.1946560811, 545866.9298771452, 551045.227057644, 555993.0237870499, 560718.2673136968, 565228.8778276234, 569532.7162654336, 573637.5562878698, 577551.0600908105, 581280.7577230637, 584834.029598926, 588218.0919094455, 591439.9846531714]
+            },
+            '526': {
+                place_id: '526',
+                place_name: '',
+                steady_state: 754757.7357029528,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 7008642.88103416,
+                rev_24m: 14935794.166090742,
+                monthly_sales: [536195.7179075747, 546047.7570157086, 555541.9053584728, 564682.5344434155, 573474.9492093989, 581925.2645220403, 590040.2899997096, 597827.4232199682, 605294.5512374012, 612449.9602470503, 619302.2531506073, 625860.2747228128, 632133.0440308398, 638129.6937277573, 643859.4158204824, 649331.4135012333, 654554.8586277729, 659538.8544403096, 664292.4031105436, 668824.3777299549, 673143.4983590823, 677258.311776454, 681177.1745843185, 684908.2393478327]
+            },
+            '527': {
+                place_id: '527',
+                place_name: '',
+                steady_state: 1781236.2038202286,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 20356001.839933623,
+                rev_24m: 41982718.733312674,
+                monthly_sales: [1475640.761130057, 1537234.688091439, 1587234.744048697, 1627503.50301922, 1659734.7169026101, 1781236.2038202286, 1781236.2038202286, 1781236.2038202286, 1781236.2038202286, 1781236.2038202286, 1781236.2038202286, 1781236.2038202286, 1781236.2038202286, 1781236.2038202286, 1781236.2038202286, 1781236.2038202286, 1781236.2038202286, 1790142.3848393296, 1799093.0967635259, 1808088.5622473434, 1817129.0050585798, 1826214.6500838725, 1835345.723334292, 1844522.4519509631]
+            },
+            '530': {
+                place_id: '530',
+                place_name: '',
+                steady_state: 841291.8119671139,
+                cluster: 3,
+                cluster_name: 'Cluster 3.0',
+                maturity: 36.0,
+                growth_rate: 0.005,
+                rev_12m: 7812194.019216031,
+                rev_24m: 16648204.771899987,
+                monthly_sales: [597671.339754254, 608652.9295290621, 619235.5958397685, 629424.2113936436, 639224.6893485351, 648643.8456483302, 657689.2706440862, 666369.2100564316, 674692.455202274, 682668.2423010137, 690306.1605895805, 697616.0689090515, 704608.0203758181, 711292.1947149565, 717678.8378103959, 723778.208013778, 729600.5287497482, 735155.9469582947, 740454.4969232453, 745506.0690489718, 750320.3831636843, 754906.9659465464, 759275.1320964545, 763433.9688820624]
+            },
+            '534': {
+                place_id: '534',
+                place_name: '',
+                steady_state: 701170.4133409138,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 8012989.065382352,
+                rev_24m: 16526185.681763241,
+                monthly_sales: [580875.0351049387, 605121.027373778, 624803.1783582623, 640654.6764984478, 653342.2546605279, 701170.4133409138, 701170.4133409138, 701170.4133409138, 701170.4133409138, 701170.4133409138, 701170.4133409138, 701170.4133409138, 701170.4133409138, 701170.4133409138, 701170.4133409138, 701170.4133409138, 701170.4133409138, 704676.2654076184, 708199.6467346563, 711740.6449683295, 715299.3481931711, 718875.8449341368, 722470.2241588075, 726082.5752796015]
+            },
+            '538': {
+                place_id: '538',
+                place_name: '',
+                steady_state: 2460901.632755783,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 6.0,
+                growth_rate: 0.005,
+                rev_12m: 28123231.526978396,
+                rev_24m: 58002044.23015594,
+                monthly_sales: [2038700.286148262, 2123796.577758559, 2192875.1306642327, 2248509.2203414324, 2293038.882775433, 2460901.632755783, 2460901.632755783, 2460901.632755783, 2460901.632755783, 2460901.632755783, 2460901.632755783, 2460901.632755783, 2460901.632755783, 2460901.632755783, 2460901.632755783, 2460901.632755783, 2460901.632755783, 2473206.1409195615, 2485572.171624159, 2498000.0324822795, 2510490.032644691, 2523042.482807914, 2535657.6952219536, 2548335.983698063]
+            },
+        };
+
+        // Log data availability for debugging
+        console.log('Ramp-up dashboard loaded with', Object.keys(allStoreData).length, 'stores');
+        console.log('Seasonal patterns available:', hasSeasonality);
+        console.log('Seasonal patterns keys:', Object.keys(seasonalPatterns));
+        console.log('Seasonal patterns values:', seasonalPatterns);
+        console.log('Sample lookup test - month 1:', seasonalPatterns['1'], seasonalPatterns[1]);
+        console.log('Growth rates available:', hasGrowthRates, clusterGrowthRates);
+
+        // Update seasonality status indicator
+        const statusEl = document.getElementById('seasonalityStatus');
+        if (hasSeasonality) {
+            statusEl.textContent = '(✓ Seasonality data available)';
+            statusEl.style.color = '#22c55e';
+        } else {
+            statusEl.textContent = '(⚠ No seasonality data)';
+            statusEl.style.color = '#f59e0b';
+            // If no seasonality data, default to "No Seasonality Adjustment"
+            document.getElementById('openingMonth').value = '0';
+        }
+
+        // ========================================================================
+        // CHART SETUP
+        // ========================================================================
+
+        let storeChart = null;
+
+        // Function to apply seasonality to sales data
+        function applySeasonality(baseSales, openingMonth) {
+            if (!hasSeasonality || openingMonth === 0) {
+                return baseSales;
+            }
+            return baseSales.map((sales, monthIndex) => {
+                const calendarMonth = ((openingMonth - 1 + monthIndex) % 12) + 1;
+                // Use String() for lookup since JSON keys are always strings
+                const seasonalIndex = seasonalPatterns[String(calendarMonth)] || seasonalPatterns[calendarMonth] || 1.0;
+                return sales * seasonalIndex;
+            });
+        }
+
+        // Function to create growth projection line (shows post-maturity growth)
+        function createGrowthProjection(steadyState, maturityMonth, growthRate, numMonths) {
+            const projection = [];
+            const steadyStateEndMonth = Math.round(maturityMonth) + 12;
+
+            for (let i = 0; i < numMonths; i++) {
+                const month = i + 1;
+                if (month < Math.round(maturityMonth)) {
+                    // Phase 1: Ramp-up (use ramp-up fraction)
+                    const progress = month / Math.round(maturityMonth);
+                    const smoothProgress = 0.5 * (1 - Math.cos(Math.PI * progress));
+                    projection.push(steadyState * (0.15 + smoothProgress * 0.85));
+                } else if (month < steadyStateEndMonth) {
+                    // Phase 2: Steady state (flat at 100%)
+                    projection.push(steadyState);
+                } else {
+                    // Phase 3: Growth phase - apply compound growth
+                    const monthsInGrowth = month - steadyStateEndMonth + 1;
+                    const growthMultiplier = Math.pow(1 + growthRate, monthsInGrowth);
+                    projection.push(steadyState * growthMultiplier);
+                }
+            }
+            return projection;
+        }
+
+        // Function to find peak sales month
+        function findPeakMonth(sales) {
+            let maxVal = 0;
+            let peakMonth = 1;
+            sales.forEach((val, idx) => {
+                if (val > maxVal) {
+                    maxVal = val;
+                    peakMonth = idx + 1;
+                }
+            });
+            return peakMonth;
+        }
+
+        // Function to update store display
+        function updateStoreDisplay(storeId) {
+            console.log('updateStoreDisplay called with:', storeId);
+
+            // Check if allStoreData has any entries
+            const storeKeys = Object.keys(allStoreData);
+            console.log('Total stores in data:', storeKeys.length);
+
+            if (storeKeys.length === 0) {
+                console.error('allStoreData is empty - no stores to display');
+                document.getElementById('selectedStoreName').textContent = 'No store data available';
+                return;
+            }
+
+            // Normalize storeId - remove decimals, whitespace
+            let normalizedId = String(storeId).trim();
+            if (normalizedId.includes('.')) {
+                normalizedId = normalizedId.split('.')[0];
+            }
+
+            // Try to find store with various key formats
+            let store = allStoreData[normalizedId] ||
+                       allStoreData[storeId] ||
+                       allStoreData[String(parseInt(storeId))] ||
+                       allStoreData[storeId + '.0'];
+
+            // If still not found, try partial match
+            if (!store) {
+                // Try finding a key that contains the storeId
+                const matchingKey = storeKeys.find(k => k.includes(normalizedId) || normalizedId.includes(k));
+                if (matchingKey) {
+                    store = allStoreData[matchingKey];
+                    console.log('Found via partial match:', matchingKey);
+                }
+            }
+
+            // If still not found, use first available store as fallback
+            if (!store) {
+                console.warn('Store not found:', storeId, 'normalized:', normalizedId);
+                console.log('Available keys (first 10):', storeKeys.slice(0, 10));
+                // Use first available store as fallback
+                store = allStoreData[storeKeys[0]];
+                console.log('Using fallback store:', storeKeys[0]);
+            }
+
+            if (!store) {
+                document.getElementById('selectedStoreName').textContent = 'Store not found: ' + storeId;
+                return;
+            }
+
+            console.log('Loaded store:', store.place_id, 'steady_state:', store.steady_state);
+
+            const openingMonth = parseInt(document.getElementById('openingMonth').value);
+            const adjustedSales = applySeasonality(store.monthly_sales, openingMonth);
+
+            // Calculate values
+            const rev12m = adjustedSales.slice(0, 12).reduce((a, b) => a + b, 0);
+            const rev24m = adjustedSales.slice(0, 24).reduce((a, b) => a + b, 0);
+            const peakMonth = findPeakMonth(adjustedSales);
+
+            // Update header
+            const displayName = store.place_name ? `${store.place_id} (${store.place_name})` : store.place_id;
+            document.getElementById('selectedStoreName').textContent = displayName;
+
+            // Update metrics
+            document.getElementById('metricPredictedSales').textContent = salesUnit + Math.round(store.steady_state).toLocaleString();
+            document.getElementById('metricRampPattern').textContent = store.cluster_name;
+            document.getElementById('metricMaturity').textContent = Math.round(store.maturity);
+            document.getElementById('metricRev12').textContent = salesUnit + Math.round(rev12m).toLocaleString();
+            document.getElementById('metricRev24').textContent = salesUnit + Math.round(rev24m).toLocaleString();
+            document.getElementById('metricPeakMonth').textContent = 'Month ' + peakMonth;
+
+            // Update growth rate metric (use String for cluster key lookup since JSON keys are strings)
+            const growthRate = store.growth_rate || clusterGrowthRates[String(store.cluster)] || 0;
+            const growthRateElement = document.getElementById('metricGrowthRate');
+            if (growthRate > 0) {
+                growthRateElement.textContent = '+' + (growthRate * 100).toFixed(1) + '%/mo';
+                growthRateElement.style.color = '#22c55e';  // Green for positive growth
+            } else if (growthRate < 0) {
+                growthRateElement.textContent = (growthRate * 100).toFixed(1) + '%/mo';
+                growthRateElement.style.color = '#ef4444';  // Red for negative
+            } else {
+                growthRateElement.textContent = 'N/A';
+                growthRateElement.style.color = '#64748b';  // Gray for no data
+            }
+
+            // Update chart (with error handling)
+            try {
+                updateStoreChart(store, adjustedSales);
+            } catch (chartError) {
+                console.error('Chart update failed:', chartError);
+            }
+
+            // Update MoM table
+            try {
+                updateMomTable(adjustedSales);
+            } catch (tableError) {
+                console.error('MoM table update failed:', tableError);
+            }
+
+            console.log('Store display updated successfully');
+        }
+
+        // Function to update store chart
+        function updateStoreChart(store, adjustedSales) {
+            const ctx = document.getElementById('storeChart').getContext('2d');
+
+            // Destroy existing chart
+            if (storeChart) {
+                storeChart.destroy();
+            }
+
+            // Create month labels
+            const monthLabels = adjustedSales.map((_, i) => `Month ${i + 1}`);
+
+            // Get growth rate for this store's cluster (use String for cluster key lookup since JSON keys are strings)
+            const growthRate = store.growth_rate || clusterGrowthRates[String(store.cluster)] || 0;
+
+            // Create projection line with post-maturity growth
+            const growthProjectionLine = createGrowthProjection(
+                store.steady_state, store.maturity, growthRate, adjustedSales.length
+            );
+
+            // Also create a flat steady state line for reference
+            const steadyStateLine = adjustedSales.map(() => store.steady_state);
+
+            // Determine chart label based on whether there's growth
+            const projectionLabel = growthRate > 0
+                ? `Growth Projection (${(growthRate * 100).toFixed(1)}% monthly)`
+                : 'Predicted Sales (Steady State)';
+
+            storeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: monthLabels,
+                    datasets: [
+                        {
+                            label: 'Monthly Sales',
+                            data: adjustedSales,
+                            borderColor: '#0891b2',
+                            backgroundColor: 'rgba(8, 145, 178, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#0891b2'
+                        },
+                        {
+                            label: projectionLabel,
+                            data: growthRate > 0 ? growthProjectionLine : steadyStateLine,
+                            borderColor: growthRate > 0 ? '#22c55e' : '#ef4444',
+                            borderWidth: 2,
+                            borderDash: [8, 4],
+                            fill: false,
+                            pointRadius: 0
+                        },
+                        // Show steady state reference if there's growth
+                        ...(growthRate > 0 ? [{
+                            label: 'Steady State Reference',
+                            data: steadyStateLine,
+                            borderColor: '#94a3b8',
+                            borderWidth: 1,
+                            borderDash: [4, 4],
+                            fill: false,
+                            pointRadius: 0
+                        }] : [])
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { font: { size: 12 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + salesUnit + Math.round(context.parsed.y).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return salesUnit + value.toLocaleString();
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Sales (' + salesUnit + ')'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Months Since Opening'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to update MoM table
+        function updateMomTable(adjustedSales) {
+            const headerRow = document.getElementById('momTableHeader');
+            const dataRow = document.getElementById('momTableRow');
+
+            // Clear existing content
+            headerRow.innerHTML = '';
+            dataRow.innerHTML = '';
+
+            // Add month columns (show first 24 months)
+            const monthsToShow = Math.min(24, adjustedSales.length);
+            for (let i = 0; i < monthsToShow; i++) {
+                const th = document.createElement('th');
+                th.textContent = 'M' + (i + 1);
+                headerRow.appendChild(th);
+
+                const td = document.createElement('td');
+                td.textContent = salesUnit + Math.round(adjustedSales[i]).toLocaleString();
+                dataRow.appendChild(td);
+            }
+        }
+
+        // ========================================================================
+        // EVENT LISTENERS
+        // ========================================================================
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update button states
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // Show/hide content
+                const tab = this.getAttribute('data-tab');
+                document.getElementById('chartTab').classList.toggle('active', tab === 'chart');
+                document.getElementById('tableTab').classList.toggle('active', tab === 'table');
+            });
+        });
+
+        // Store selector
+        document.getElementById('storeSelector').addEventListener('change', function(e) {
+            updateStoreDisplay(e.target.value);
+        });
+
+        // Opening month selector
+        document.getElementById('openingMonth').addEventListener('change', function() {
+            const selectedStoreId = document.getElementById('storeSelector').value;
+            updateStoreDisplay(selectedStoreId);
+        });
+
+        // Initialize with first store - with robust error handling
+        function initializeDashboard() {
+            try {
+                // Check if Chart.js is loaded
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js not loaded - retrying in 500ms');
+                    setTimeout(initializeDashboard, 500);
+                    return;
+                }
+
+                const selector = document.getElementById('storeSelector');
+                if (!selector) {
+                    console.error('storeSelector element not found');
+                    return;
+                }
+
+                const firstStoreId = selector.value;
+                console.log('Initializing dashboard with store:', firstStoreId);
+                console.log('Total stores in data:', Object.keys(allStoreData).length);
+
+                if (firstStoreId) {
+                    updateStoreDisplay(firstStoreId);
+                } else if (Object.keys(allStoreData).length > 0) {
+                    // No selection but data exists - use first store
+                    const firstKey = Object.keys(allStoreData)[0];
+                    console.log('No selection, using first store:', firstKey);
+                    updateStoreDisplay(firstKey);
+                } else {
+                    console.warn('No stores available to display');
+                    document.getElementById('selectedStoreName').textContent = 'No stores available';
+                }
+            } catch (e) {
+                console.error('Dashboard initialization error:', e);
+                document.getElementById('selectedStoreName').textContent = 'Error loading: ' + e.message;
+            }
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeDashboard);
+        } else {
+            // DOM already ready, but give Chart.js time to initialize
+            setTimeout(initializeDashboard, 100);
+        }
+    </script>
+</body>
+</html>

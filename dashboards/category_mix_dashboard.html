@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Mix Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            color: #0f172a;
+        }
+        .header {
+            background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 20px rgba(62, 193, 189, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 2px solid #3ec1bd;
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+        }
+        .header-badges {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .info-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+        .controls {
+            background: white;
+            padding: 0.875rem 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .control-group {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .control-group label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+        .control-group select {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            max-width: 600px;
+        }
+        .control-group select:hover {
+            border-color: #3ec1bd;
+        }
+        .control-group select:focus {
+            outline: none;
+            border-color: #3ec1bd;
+            box-shadow: 0 0 0 3px rgba(62, 193, 189, 0.1);
+        }
+        .iframe-container {
+            width: 100%;
+            height: calc(100vh - 140px);
+            background: white;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Category Mix Dashboard</h1>
+        <p>Recommended Product Category Mix for New Sites
+        <span class="info-badge">54 Sites</span>
+        </p>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="site-select">Select Site:</label>
+            <select id="site-select" onchange="loadReport(this.value)">
+                <option value="">-- Choose a site to view category mix report --</option>
+                <option value="individual_reports/category_mix_report_449.html">449</option>
+<option value="individual_reports/category_mix_report_452.html">452</option>
+<option value="individual_reports/category_mix_report_456.html">456</option>
+<option value="individual_reports/category_mix_report_459.html">459</option>
+<option value="individual_reports/category_mix_report_461.html">461</option>
+<option value="individual_reports/category_mix_report_462.html">462</option>
+<option value="individual_reports/category_mix_report_463.html">463</option>
+<option value="individual_reports/category_mix_report_464.html">464</option>
+<option value="individual_reports/category_mix_report_466.html">466</option>
+<option value="individual_reports/category_mix_report_469.html">469</option>
+<option value="individual_reports/category_mix_report_470.html">470</option>
+<option value="individual_reports/category_mix_report_471.html">471</option>
+<option value="individual_reports/category_mix_report_473.html">473</option>
+<option value="individual_reports/category_mix_report_475.html">475</option>
+<option value="individual_reports/category_mix_report_476.html">476</option>
+<option value="individual_reports/category_mix_report_477.html">477</option>
+<option value="individual_reports/category_mix_report_478.html">478</option>
+<option value="individual_reports/category_mix_report_479.html">479</option>
+<option value="individual_reports/category_mix_report_480.html">480</option>
+<option value="individual_reports/category_mix_report_481.html">481</option>
+<option value="individual_reports/category_mix_report_482.html">482</option>
+<option value="individual_reports/category_mix_report_483.html">483</option>
+<option value="individual_reports/category_mix_report_484.html">484</option>
+<option value="individual_reports/category_mix_report_486.html">486</option>
+<option value="individual_reports/category_mix_report_489.html">489</option>
+<option value="individual_reports/category_mix_report_490.html">490</option>
+<option value="individual_reports/category_mix_report_491.html">491</option>
+<option value="individual_reports/category_mix_report_492.html">492</option>
+<option value="individual_reports/category_mix_report_493.html">493</option>
+<option value="individual_reports/category_mix_report_494.html">494</option>
+<option value="individual_reports/category_mix_report_495.html">495</option>
+<option value="individual_reports/category_mix_report_496.html">496</option>
+<option value="individual_reports/category_mix_report_497.html">497</option>
+<option value="individual_reports/category_mix_report_500.html">500</option>
+<option value="individual_reports/category_mix_report_501.html">501</option>
+<option value="individual_reports/category_mix_report_502.html">502</option>
+<option value="individual_reports/category_mix_report_505.html">505</option>
+<option value="individual_reports/category_mix_report_509.html">509</option>
+<option value="individual_reports/category_mix_report_511.html">511</option>
+<option value="individual_reports/category_mix_report_512.html">512</option>
+<option value="individual_reports/category_mix_report_513.html">513</option>
+<option value="individual_reports/category_mix_report_514.html">514</option>
+<option value="individual_reports/category_mix_report_517.html">517</option>
+<option value="individual_reports/category_mix_report_518.html">518</option>
+<option value="individual_reports/category_mix_report_519.html">519</option>
+<option value="individual_reports/category_mix_report_520.html">520</option>
+<option value="individual_reports/category_mix_report_521.html">521</option>
+<option value="individual_reports/category_mix_report_522.html">522</option>
+<option value="individual_reports/category_mix_report_525.html">525</option>
+<option value="individual_reports/category_mix_report_526.html">526</option>
+<option value="individual_reports/category_mix_report_527.html">527</option>
+<option value="individual_reports/category_mix_report_530.html">530</option>
+<option value="individual_reports/category_mix_report_534.html">534</option>
+<option value="individual_reports/category_mix_report_538.html">538</option>
+
+            </select>
+        </div>
+    </div>
+
+    <div class="iframe-container">
+        <iframe id="report-frame" src=""></iframe>
+    </div>
+
+    <script>
+        function loadReport(reportPath) {
+            const iframe = document.getElementById('report-frame');
+            if (reportPath) {
+                iframe.src = reportPath;
+            } else {
+                iframe.src = '';
+            }
+        }
+
+        // Auto-load first report on page load
+        setTimeout(function() {
+            const select = document.getElementById('site-select');
+            if (select.options.length > 1) {
+                select.selectedIndex = 1;
+                loadReport(select.value);
+            }
+        });
+    </script>
+</body>
+</html>

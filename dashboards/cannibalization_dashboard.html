@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Cannibalization Analysis Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#1e293b;padding:24px}
+h1{font-size:1.5rem;margin-bottom:16px}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.metric{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08);text-align:center}
+.metric .label{font-size:0.75rem;color:#64748b;text-transform:uppercase;letter-spacing:0.5px}
+.metric .value{font-size:1.5rem;font-weight:700;margin-top:4px}
+.negative{color:#dc2626} .positive{color:#16a34a} .neutral{color:#2563eb}
+select{width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:1rem;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:0.85rem}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid #f1f5f9}
+th{background:#f8fafc;font-weight:600;color:#64748b;font-size:0.75rem;text-transform:uppercase}
+tr:hover{background:#f8fafc}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.charts{grid-template-columns:1fr}}
+</style></head><body>
+<h1>🔄 Cannibalization Analysis Dashboard</h1>
+<div class="card">
+<label><strong>Select Store:</strong></label>
+<select id="storeSelect" onchange="loadStore(this.value)"><option value="449">449 (Hyderabad Bandlaguda PBEL City) — Ratio: 0.0%</option>
+<option value="452">452 (Belgaum, Udyambag, Khanapur Road) — Ratio: 0.0%</option>
+<option value="456">456 (Trivandrum, Kazhakottam, Naomi Edifice) — Ratio: 0.0%</option>
+<option value="459">459 (Rajkot Ayodhya Chokdi West Gate 2) — Ratio: 0.0%</option>
+<option value="461">461 (Vijaywada, Ashok Nagar) — Ratio: 0.0%</option>
+<option value="462">462 (Bangalore, Bannerghatta Road, Lakshmipura) — Ratio: 0.0%</option>
+<option value="463">463 (Surat Mota Varachha AR Mall) — Ratio: 30.0%</option>
+<option value="464">464 (Ahmedabad Vastral Orinda Arcade) — Ratio: 0.0%</option>
+<option value="466">466 (Cochin Tripunithura Vadakkekota Metro station) — Ratio: 15.6%</option>
+<option value="469">469 (Vizag Dwarka Nagar Diamond Park) — Ratio: 10.3%</option>
+<option value="470">470 (Nashik Gangapur Road) — Ratio: 0.0%</option>
+<option value="471">471 (Ahmedabad, SP Ring Road, Zundal) — Ratio: 30.0%</option>
+<option value="473">473 (Pune, Kharadi, Nyati Plaza) — Ratio: 30.0%</option>
+<option value="475">475 (Vizag, Gajuwaka, Celest) — Ratio: 0.0%</option>
+<option value="476">476 (Hyderabad Kukutpally -Ashoka One Mall) — Ratio: 5.6%</option>
+<option value="477">477 (Ahmedabad Nava Naroda Galaxy Central) — Ratio: 0.0%</option>
+<option value="478">478 (Bangalore, Kudlu, ND Passion Elite) — Ratio: 30.0%</option>
+<option value="479">479 (Pune Spine Road Aryan Square) — Ratio: 6.9%</option>
+<option value="480">480 (Pune Dhanori Vasantam) — Ratio: 19.2%</option>
+<option value="481">481 (Chennai, Ambattur, Fortune Plaza) — Ratio: 0.0%</option>
+<option value="482">482 (Hyderabad Alwal DT) — Ratio: 15.9%</option>
+<option value="483">483 (Bangalore, Yelhanka New Town) — Ratio: 25.4%</option>
+<option value="484">484 (Hyderabad, Champapet, Karmanghat) — Ratio: 30.0%</option>
+<option value="486">486 (Palakkad, Calicut Bypass) — Ratio: 0.0%</option>
+<option value="489">489 (Hyderabad, Miyapur, Alwyn 'X" Road) — Ratio: 18.6%</option>
+<option value="490">490 (Mumbai, Ulwe Sec 17 Platinum Emporius) — Ratio: 0.0%</option>
+<option value="491">491 (Bangalore, E-City Phase 1, Velankani Tech Park) — Ratio: 30.0%</option>
+<option value="492">492 (Pondy ECR Road - Dr.Vinod - FSDT) — Ratio: 0.0%</option>
+<option value="493">493 (Chennai, Mugalivakkam, Ishwarya Plaza) — Ratio: 0.0%</option>
+<option value="494">494 (Chennai, OMR, Padur) — Ratio: 10.8%</option>
+<option value="495">495 (Bangalore, Bagalur Road, Sathanur) — Ratio: 0.0%</option>
+<option value="496">496 (Pune Bavdhan M Connect) — Ratio: 30.0%</option>
+<option value="497">497 (Bangalore, Old Madras Road, Brigade Uptown Mall) — Ratio: 21.6%</option>
+<option value="500">500 (Indore Rajendra Nagar Royal Park) — Ratio: 0.0%</option>
+<option value="501">501 (Nashik, Adgaon, Agra Mumbai Highway) — Ratio: 0.0%</option>
+<option value="502">502 (Mumbai, Chembur, KK Pavilion) — Ratio: 8.0%</option>
+<option value="505">505 (Nagpur, Katol Road) — Ratio: 0.0%</option>
+<option value="509">509 (Baramati, Bhigwan Road) — Ratio: 0.0%</option>
+<option value="511">511 (Mumbai, Virar East, Nalasopara Link Road) — Ratio: 30.0%</option>
+<option value="512">512 (Coimbatore Ondipudur, RV Complex) — Ratio: 0.0%</option>
+<option value="513">513 (Surat Piplod IBC) — Ratio: 24.9%</option>
+<option value="514">514 (Pune, Kiwale, K Flow) — Ratio: 0.0%</option>
+<option value="517">517 (Vijaywada Ibrahimpatnam, Maaya - Autobahn) — Ratio: 0.0%</option>
+<option value="518">518 (Madurai Bypass Road) — Ratio: 0.0%</option>
+<option value="519">519 (Hyderabad, Shaikpet, Navya Trident) — Ratio: 3.2%</option>
+<option value="520">520 (Hyderabad, Kokapet, Oceans Park) — Ratio: 0.0%</option>
+<option value="521">521 (Bangalore, Budhigere Cross) — Ratio: 6.8%</option>
+<option value="522">522 (Bengaluru Uttarhalli Main road) — Ratio: 25.9%</option>
+<option value="525">525 (Hyderabad, Medchel) — Ratio: 0.0%</option>
+<option value="526">526 (Bangalore, Hoskote, STRR Junction) — Ratio: 0.0%</option>
+<option value="527">527 (Aurangabad, Jalna Road,  Kranti Chowk) — Ratio: 0.0%</option>
+<option value="530">530 (Vizag, Madhurwada 100 feet Road) — Ratio: 0.0%</option>
+<option value="534">534 (Mumbai Kalyan Mid Town Eve) — Ratio: 17.8%</option>
+<option value="538">538 (Goa Candolim) — Ratio: 30.0%</option></select>
+</div>
+<div class="metrics" id="metricsPanel"></div>
+<div class="charts">
+<div class="card"><canvas id="waterfallChart"></canvas></div>
+<div class="card"><canvas id="neighborChart"></canvas></div>
+</div>
+<div class="card"><table id="neighborTable"><thead><tr><th>Neighbor</th><th>Portfolio</th><th>Distance from Overlap Area</th><th>Current Sales</th><th>% Change</th><th>Impact</th></tr></thead><tbody></tbody></table></div>
+<script>
+const storesData = {"449": {"predicted_sales": 1756577.5195706044, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 1756577.5195706044, "ratio": 0.0, "neighbors": []},
+"452": {"predicted_sales": 1193477.288257269, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 1193477.288257269, "ratio": 0.0, "neighbors": []},
+"456": {"predicted_sales": 1383698.3910759375, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 1383698.3910759375, "ratio": 0.0, "neighbors": []},
+"459": {"predicted_sales": 1466101.506313906, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 1466101.506313906, "ratio": 0.0, "neighbors": []},
+"461": {"predicted_sales": 840608.8551661281, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 840608.8551661281, "ratio": 0.0, "neighbors": []},
+"462": {"predicted_sales": 711123.8238157019, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 711123.8238157019, "ratio": 0.0, "neighbors": []},
+"463": {"predicted_sales": 1876799.0, "total_cannib": -563040.0, "total_lift": 0, "net_impact": 1313759.0, "ratio": 0.3, "neighbors": [{"name": "Surat, Katargam, Laxmi Enclave", "id": "375", "distance": 2060.394396, "current_sales": 2611882.0, "pct_change": -11.89, "abs_impact": -310631.0, "portfolio": "Instore"}, {"name": "SURAT DEEPKAMAL MALL", "id": "278", "distance": 1322.071538, "current_sales": 1619336.0, "pct_change": -15.59, "abs_impact": -252409.0, "portfolio": "Mall"}]},
+"464": {"predicted_sales": 1761096.9219167242, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 1761096.9219167242, "ratio": 0.0, "neighbors": []},
+"466": {"predicted_sales": 1248439.0, "total_cannib": -195124.0, "total_lift": 0, "net_impact": 1053315.0, "ratio": 0.1563, "neighbors": [{"name": "Cochin, ABAD Nucleus", "id": "374", "distance": 880.8952192, "current_sales": 579723.0, "pct_change": -25.29, "abs_impact": -146619.0, "portfolio": "Mall"}, {"name": "Cochin, Kundannur, Forum Mall", "id": "458", "distance": 1307.941156, "current_sales": 191766.0, "pct_change": -25.29, "abs_impact": -48505.0, "portfolio": "Unknown"}]},
+"469": {"predicted_sales": 1397024.0, "total_cannib": -144219.0, "total_lift": 0, "net_impact": 1252805.0, "ratio": 0.1032, "neighbors": [{"name": "VISHAKHAPATNAM CMR MALL", "id": "298", "distance": 962.5441, "current_sales": 597042.0, "pct_change": -24.16, "abs_impact": -144219.0, "portfolio": "Mall"}]},
+"470": {"predicted_sales": 764972.8102448406, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 764972.8102448406, "ratio": 0.0, "neighbors": []},
+"471": {"predicted_sales": 1261875.0, "total_cannib": -378562.0, "total_lift": 0, "net_impact": 883312.0, "ratio": 0.3, "neighbors": [{"name": "Ahmedabad, Vaishnodevi Circle, Master Avenue", "id": "432", "distance": 1207.569079, "current_sales": 1569173.0, "pct_change": -24.13, "abs_impact": -378562.0, "portfolio": "DT"}]},
+"473": {"predicted_sales": 1490356.0, "total_cannib": -447107.0, "total_lift": 118010.0, "net_impact": 1161259.0, "ratio": 0.3, "neighbors": [{"name": "PUNE KHARADI GANGA", "id": "326", "distance": 601.9657358, "current_sales": 3398626.0, "pct_change": -10.23, "abs_impact": -347520.0, "portfolio": "Instore"}, {"name": "PUNE - MAGARPATTA", "id": "182", "distance": 1778.533533, "current_sales": 1420189.0, "pct_change": -2.66, "abs_impact": -37777.0, "portfolio": "Mall"}, {"name": "PUNE-MARKET CITY", "id": "125", "distance": 1189.734934, "current_sales": 1491228.0, "pct_change": -2.11, "abs_impact": -31412.0, "portfolio": "Mall"}, {"name": "PUNE-AMANORA", "id": "137", "distance": 1829.811868, "current_sales": 2448186.0, "pct_change": -1.24, "abs_impact": -30397.0, "portfolio": "Mall"}, {"name": "PUNE MARIGOLD", "id": "27", "distance": 1749.701047, "current_sales": 4032030.0, "pct_change": 2.93, "abs_impact": 118010.0, "portfolio": "Mall"}]},
+"475": {"predicted_sales": 1000887.6500243017, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 1000887.6500243017, "ratio": 0.0, "neighbors": []},
+"476": {"predicted_sales": 999637.0, "total_cannib": -55772.0, "total_lift": 99964.0, "net_impact": 1043829.0, "ratio": 0.0558, "neighbors": [{"name": "HYDERABAD FORUM SUJAN MALL", "id": "246", "distance": 1581.05393, "current_sales": 992286.0, "pct_change": -5.62, "abs_impact": -55772.0, "portfolio": "Food_Court"}, {"name": "HYDERABAD-SIS MALL", "id": "169", "distance": 870.197387, "current_sales": 3334353.0, "pct_change": 3.0, "abs_impact": 99964.0, "portfolio": "Instore"}]},
+"477": {"predicted_sales": 1522967.498429601, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 1522967.498429601, "ratio": 0.0, "neighbors": []},
+"478": {"predicted_sales": 3443021.0, "total_cannib": -1032906.0, "total_lift": 0, "net_impact": 2410115.0, "ratio": 0.3, "neighbors": [{"name": "Bangalore, Sarjapur Road, Near Wipro Gate", "id": "424", "distance": 1750.210016, "current_sales": 4228083.0, "pct_change": -13.82, "abs_impact": -584182.0, "portfolio": "Instore"}, {"name": "BENGALURU-HSR LAYOUT", "id": "103", "distance": 1496.557924, "current_sales": 4548189.0, "pct_change": -9.87, "abs_impact": -448724.0, "portfolio": "Instore"}]},
+"479": {"predicted_sales": 2418566.0, "total_cannib": -165611.0, "total_lift": 0, "net_impact": 2252955.0, "ratio": 0.0685, "neighbors": [{"name": "Pune, Moshi, Silver Galaxy", "id": "553", "distance": 1763.382259, "current_sales": 1062259.0, "pct_change": -15.59, "abs_impact": -165611.0, "portfolio": "Unknown"}]},
+"480": {"predicted_sales": 2740914.0, "total_cannib": -525387.0, "total_lift": 0, "net_impact": 2215527.0, "ratio": 0.1917, "neighbors": [{"name": "Pune, Vimannagar Pebbles", "id": "412", "distance": 1232.177175, "current_sales": 2821415.0, "pct_change": -18.62, "abs_impact": -525387.0, "portfolio": "Mall"}]},
+"481": {"predicted_sales": 1462261.673637482, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 1462261.673637482, "ratio": 0.0, "neighbors": []},
+"482": {"predicted_sales": 1185009.0, "total_cannib": -188243.0, "total_lift": 0, "net_impact": 996766.0, "ratio": 0.1589, "neighbors": [{"name": "HYDERABAD KHARKHANA RD", "id": "47", "distance": 1037.683475, "current_sales": 694241.0, "pct_change": -27.11, "abs_impact": -188243.0, "portfolio": "Instore"}]},
+"483": {"predicted_sales": 1360202.0, "total_cannib": -345718.0, "total_lift": 0, "net_impact": 1014484.0, "ratio": 0.2542, "neighbors": [{"name": "Bangalore Yelahanka Dodballapur Road", "id": "448", "distance": 2031.906705, "current_sales": 1796222.0, "pct_change": -19.25, "abs_impact": -345718.0, "portfolio": "DT"}]},
+"484": {"predicted_sales": 1206326.0, "total_cannib": -361898.0, "total_lift": 0, "net_impact": 844428.0, "ratio": 0.3, "neighbors": [{"name": "HYDERABAD LB ROAD", "id": "254", "distance": 1548.267714, "current_sales": 2610882.0, "pct_change": -7.14, "abs_impact": -186299.0, "portfolio": "DT"}, {"name": "HYDERABAD APPAJI COMPLEX", "id": "240", "distance": 1371.79334, "current_sales": 1769890.0, "pct_change": -9.92, "abs_impact": -175599.0, "portfolio": "Instore"}]},
+"486": {"predicted_sales": 980889.0551797888, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 980889.0551797888, "ratio": 0.0, "neighbors": []},
+"489": {"predicted_sales": 1908024.0, "total_cannib": -355386.0, "total_lift": 0, "net_impact": 1552638.0, "ratio": 0.1863, "neighbors": [{"name": "HYDERABAD GSM MALL", "id": "332", "distance": 968.9957874, "current_sales": 1231665.0, "pct_change": -28.85, "abs_impact": -355386.0, "portfolio": "Food_Court"}]},
+"490": {"predicted_sales": 2169983.606536454, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 2169983.606536454, "ratio": 0.0, "neighbors": []},
+"491": {"predicted_sales": 1523582.0, "total_cannib": -457075.0, "total_lift": 0, "net_impact": 1066507.0, "ratio": 0.3, "neighbors": [{"name": "BENGALURU ELECTRONIC CITY", "id": "293", "distance": 722.1735455, "current_sales": 2547147.0, "pct_change": -14.17, "abs_impact": -360932.0, "portfolio": "Instore"}, {"name": "Bangalore, Ecity Ph 2, Anant Nagar", "id": "546", "distance": 1983.357781, "current_sales": 1253756.0, "pct_change": -7.67, "abs_impact": -96143.0, "portfolio": "Unknown"}]},
+"492": {"predicted_sales": 659605.6163425253, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 659605.6163425253, "ratio": 0.0, "neighbors": []},
+"493": {"predicted_sales": 2214619.089959602, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 2214619.089959602, "ratio": 0.0, "neighbors": []},
+"494": {"predicted_sales": 1493337.0, "total_cannib": -160517.0, "total_lift": 0, "net_impact": 1332820.0, "ratio": 0.1075, "neighbors": [{"name": "Chennai OMR Marina Mall", "id": "422", "distance": 1660.566444, "current_sales": 727645.0, "pct_change": -22.06, "abs_impact": -160517.0, "portfolio": "Mall"}]},
+"495": {"predicted_sales": 1187080.2580216685, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 1187080.2580216685, "ratio": 0.0, "neighbors": []},
+"496": {"predicted_sales": 1711931.0, "total_cannib": -513579.0, "total_lift": 0, "net_impact": 1198352.0, "ratio": 0.3, "neighbors": [{"name": "PUNE-PAUD ROAD", "id": "120", "distance": 1372.47433, "current_sales": 3612850.0, "pct_change": -11.0, "abs_impact": -397341.0, "portfolio": "Instore"}, {"name": "PUNE WARJE", "id": "232", "distance": 1916.783521, "current_sales": 1774690.0, "pct_change": -6.55, "abs_impact": -116239.0, "portfolio": "Instore"}]},
+"497": {"predicted_sales": 1069231.0, "total_cannib": -230605.0, "total_lift": 0, "net_impact": 838626.0, "ratio": 0.2157, "neighbors": [{"name": "Bangalore, Budhigere Cross", "id": "521", "distance": 1570.356845, "current_sales": 1281477.0, "pct_change": -18.0, "abs_impact": -230605.0, "portfolio": "DT"}]},
+"500": {"predicted_sales": 1406238.38984983, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 1406238.38984983, "ratio": 0.0, "neighbors": []},
+"501": {"predicted_sales": 1081851.571994366, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 1081851.571994366, "ratio": 0.0, "neighbors": []},
+"502": {"predicted_sales": 4089643.0, "total_cannib": -325378.0, "total_lift": 386353.0, "net_impact": 4150618.0, "ratio": 0.0796, "neighbors": [{"name": "GHATKOPAR", "id": "20", "distance": 1155.50482, "current_sales": 4232674.0, "pct_change": -3.98, "abs_impact": -168507.0, "portfolio": "Instore"}, {"name": "Mumbai, Kurla, East Point", "id": "390", "distance": 307.1970684, "current_sales": 1155123.0, "pct_change": -13.58, "abs_impact": -156871.0, "portfolio": "Instore"}, {"name": "MUMBAI ARTISTA", "id": "299", "distance": 1773.673737, "current_sales": 6172957.0, "pct_change": 3.04, "abs_impact": 187578.0, "portfolio": "Instore"}, {"name": "MUMBAI SION AVISHKAR", "id": "285", "distance": 1630.676784, "current_sales": 3992549.0, "pct_change": 4.98, "abs_impact": 198775.0, "portfolio": "Instore"}]},
+"505": {"predicted_sales": 737828.9079321055, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 737828.9079321055, "ratio": 0.0, "neighbors": []},
+"509": {"predicted_sales": 782278.8305740402, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 782278.8305740402, "ratio": 0.0, "neighbors": []},
+"511": {"predicted_sales": 723676.0, "total_cannib": -217103.0, "total_lift": 0, "net_impact": 506573.0, "ratio": 0.3, "neighbors": [{"name": "VIRAR GLOBAL CITY", "id": "244", "distance": 1320.611104, "current_sales": 2919381.0, "pct_change": -5.58, "abs_impact": -162751.0, "portfolio": "DT"}, {"name": "MUMBAI NALLASOPAR STN RD", "id": "295", "distance": 1478.79929, "current_sales": 1569486.0, "pct_change": -3.46, "abs_impact": -54352.0, "portfolio": "Instore"}]},
+"512": {"predicted_sales": 646932.4185571998, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 646932.4185571998, "ratio": 0.0, "neighbors": []},
+"513": {"predicted_sales": 2431661.0, "total_cannib": -606780.0, "total_lift": 0, "net_impact": 1824881.0, "ratio": 0.2495, "neighbors": [{"name": "SURAT GHOD DAUD ROAD", "id": "260", "distance": 1712.271849, "current_sales": 2484998.0, "pct_change": -12.21, "abs_impact": -303396.0, "portfolio": "Instore"}, {"name": "SURAT VIP ROAD", "id": "311", "distance": 2027.460675, "current_sales": 2547804.0, "pct_change": -11.91, "abs_impact": -303384.0, "portfolio": "Instore"}]},
+"514": {"predicted_sales": 2236796.6810850524, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 2236796.6810850524, "ratio": 0.0, "neighbors": []},
+"517": {"predicted_sales": 597735.373855083, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 597735.373855083, "ratio": 0.0, "neighbors": []},
+"518": {"predicted_sales": 2082613.8996154906, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 2082613.8996154906, "ratio": 0.0, "neighbors": []},
+"519": {"predicted_sales": 1853114.0, "total_cannib": -59484.0, "total_lift": 34800.0, "net_impact": 1828430.0, "ratio": 0.0321, "neighbors": [{"name": "HYDERABAD JUBILEE HILLS", "id": "322", "distance": 1867.738648, "current_sales": 1915371.0, "pct_change": -1.8, "abs_impact": -34457.0, "portfolio": "Instore"}, {"name": "INORBIT - CYBERABAD", "id": "91", "distance": 1511.204452, "current_sales": 492576.0, "pct_change": -5.08, "abs_impact": -25027.0, "portfolio": "Unknown"}, {"name": "HYDERABAD-TOLI CHOWKI", "id": "134", "distance": 1008.485596, "current_sales": 3206686.0, "pct_change": 1.09, "abs_impact": 34800.0, "portfolio": "Instore"}]},
+"520": {"predicted_sales": 970519.5905211854, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 970519.5905211854, "ratio": 0.0, "neighbors": []},
+"521": {"predicted_sales": 1062395.0, "total_cannib": -72599.0, "total_lift": 0, "net_impact": 989796.0, "ratio": 0.0683, "neighbors": [{"name": "Bangalore, Old Madras Road, Brigade Uptown Mall", "id": "497", "distance": 1570.249874, "current_sales": 428619.0, "pct_change": -16.94, "abs_impact": -72599.0, "portfolio": "Mall"}]},
+"522": {"predicted_sales": 1823717.0, "total_cannib": -472190.0, "total_lift": 0, "net_impact": 1351527.0, "ratio": 0.2589, "neighbors": [{"name": "BENGALURU-BANASHANKARI", "id": "124", "distance": 1295.024896, "current_sales": 2085265.0, "pct_change": -22.64, "abs_impact": -472190.0, "portfolio": "Instore"}]},
+"525": {"predicted_sales": 651757.2398399989, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 651757.2398399989, "ratio": 0.0, "neighbors": []},
+"526": {"predicted_sales": 754757.7357029528, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 754757.7357029528, "ratio": 0.0, "neighbors": []},
+"527": {"predicted_sales": 1781236.0, "total_cannib": 0, "total_lift": 0, "net_impact": 1781236.0, "ratio": 0.0, "neighbors": []},
+"530": {"predicted_sales": 841291.8119671139, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 841291.8119671139, "ratio": 0.0, "neighbors": []},
+"534": {"predicted_sales": 701170.0, "total_cannib": -124501.0, "total_lift": 0, "net_impact": 576669.0, "ratio": 0.1776, "neighbors": [{"name": "KALYAN SHELAR PARK", "id": "193", "distance": 1077.220835, "current_sales": 3923936.0, "pct_change": -3.14, "abs_impact": -123266.0, "portfolio": "Instore"}, {"name": "MUMBAI- METRO JUNCTION", "id": "56", "distance": 1952.020561, "current_sales": 1685374.0, "pct_change": -0.07, "abs_impact": -1235.0, "portfolio": "Mall"}]},
+"538": {"predicted_sales": 2460902.0, "total_cannib": -738270.0, "total_lift": 0, "net_impact": 1722631.0, "ratio": 0.3, "neighbors": [{"name": "GOA CALANGUTE", "id": "290", "distance": 890.1235603, "current_sales": 4060262.0, "pct_change": -18.18, "abs_impact": -738270.0, "portfolio": "Instore"}]}};
+const salesUnit = 'INR ';
+let waterfallChart, neighborChart;
+
+function formatCurrency(val) { return salesUnit + val.toLocaleString('en-IN'); }
+
+function loadStore(storeId) {
+    const data = storesData[storeId];
+    if (!data) return;
+
+    // Update metrics
+    document.getElementById('metricsPanel').innerHTML = `
+        <div class="metric"><div class="label">Predicted Sales</div><div class="value neutral">${formatCurrency(data.predicted_sales)}</div></div>
+        <div class="metric"><div class="label">Cannibalization</div><div class="value negative">${formatCurrency(data.total_cannib)}</div></div>
+        <div class="metric"><div class="label">Cluster Lift</div><div class="value positive">${formatCurrency(data.total_lift)}</div></div>
+        <div class="metric"><div class="label">Net Network Impact</div><div class="value ${data.net_impact >= 0 ? 'positive' : 'negative'}">${formatCurrency(data.net_impact)}</div></div>
+        <div class="metric"><div class="label">Cannibalization Ratio</div><div class="value">${(data.ratio * 100).toFixed(1)}%</div></div>
+    `;
+
+    // Update waterfall chart
+    if (waterfallChart) waterfallChart.destroy();
+    const wfCtx = document.getElementById('waterfallChart').getContext('2d');
+    waterfallChart = new Chart(wfCtx, {
+        type: 'bar',
+        data: {
+            labels: ['New Store Sales', 'Cannibalization', 'Cluster Lift', 'Net Impact'],
+            datasets: [{
+                data: [data.predicted_sales, data.total_cannib, data.total_lift, data.net_impact],
+                backgroundColor: ['#3b82f6', '#dc2626', '#16a34a', data.net_impact >= 0 ? '#16a34a' : '#dc2626']
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+
+    // Update neighbor chart
+    if (neighborChart) neighborChart.destroy();
+    const nCtx = document.getElementById('neighborChart').getContext('2d');
+    const neighbors = data.neighbors.slice(0, 10);
+    neighborChart = new Chart(nCtx, {
+        type: 'bar',
+        data: {
+            labels: neighbors.map(n => n.name || `Store ${n.id}`),
+            datasets: [{
+                label: '% Change',
+                data: neighbors.map(n => n.pct_change),
+                backgroundColor: neighbors.map(n => n.pct_change < 0 ? '#dc2626' : '#16a34a')
+            }]
+        },
+        options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } } }
+    });
+
+    // Update table
+    const tbody = document.querySelector('#neighborTable tbody');
+    tbody.innerHTML = data.neighbors.map(n => `
+        <tr>
+            <td>${n.name || 'Store ' + n.id}</td>
+            <td>${n.portfolio}</td>
+            <td>${n.distance.toFixed(0)}m</td>
+            <td>${formatCurrency(n.current_sales)}</td>
+            <td class="${n.pct_change < 0 ? 'negative' : 'positive'}">${n.pct_change.toFixed(1)}%</td>
+            <td class="${n.abs_impact < 0 ? 'negative' : 'positive'}">${formatCurrency(n.abs_impact)}</td>
+        </tr>
+    `).join('');
+}
+
+// Load first store on page load
+setTimeout(() => {
+    const firstStore = Object.keys(storesData)[0];
+    if (firstStore) {
+        document.getElementById('storeSelect').value = firstStore;
+        loadStore(firstStore);
+    }
+});
+</script>
+</body></html>
