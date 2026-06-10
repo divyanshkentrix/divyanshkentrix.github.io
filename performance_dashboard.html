@@ -1,0 +1,810 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Model Performance Dashboard</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                min-height: 100vh;
+                color: #0f172a;
+            }
+            
+            .header {
+                background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%);
+                box-shadow: 0 4px 20px rgba(62, 193, 189, 0.2);
+                border-bottom: 3px solid #3ec1bd;
+            }
+            
+            .header-content {
+                max-width: 1280px;
+                margin: 0 auto;
+                padding: 1.5rem 2rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            
+            .header h1 {
+                color: white;
+                font-size: 2rem;
+                font-weight: 600;
+            }
+            
+            .header-subtitle {
+                color: #bae6fd;
+                font-size: 0.875rem;
+                margin-top: 0.25rem;
+            }
+            
+            .best-model-badge {
+                background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(10px);
+                padding: 0.75rem 1.5rem;
+                border-radius: 20px;
+                color: white;
+                font-weight: 600;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+            }
+            
+            .container {
+                max-width: 1280px;
+                margin: 0 auto;
+                padding: 2rem;
+            }
+            
+            /* Metrics */
+            .metrics-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+            
+            .metric-card {
+                background: white;
+                border-radius: 16px;
+                padding: 1.5rem;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                border: 2px solid #e0f2fe;
+                position: relative;
+                overflow: hidden;
+                transition: transform 0.3s ease;
+            }
+            
+            .metric-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #2a5b7f 0%, #3ec1bd 100%);
+            }
+            
+            .metric-card:hover {
+                transform: translateY(-4px);
+            }
+            
+            .metric-label {
+                font-size: 0.875rem;
+                color: #64748b;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 0.75rem;
+            }
+            
+            .metric-value {
+                font-size: 2.5rem;
+                font-weight: 700;
+                background: linear-gradient(135deg, #2a5b7f 0%, #3ec1bd 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                margin-bottom: 0.5rem;
+            }
+            
+            .metric-subtext {
+                font-size: 0.8125rem;
+                color: #64748b;
+            }
+            
+            /* Section */
+            .section {
+                background: white;
+                border-radius: 20px;
+                padding: 2rem;
+                margin-bottom: 2rem;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                border: 2px solid #e0f2fe;
+            }
+            
+            .section-header {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                margin-bottom: 1.5rem;
+                padding-bottom: 1rem;
+                border-bottom: 2px solid #e0f2fe;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+                font-weight: 600;
+                color: #1e4a6b;
+            }
+            
+            .section-subtitle {
+                font-size: 0.875rem;
+                color: #64748b;
+                margin-top: 0.25rem;
+            }
+            
+            /* Chart */
+            .chart-wrapper {
+                margin: 2rem 0;
+                padding: 1.5rem;
+                background: #f8fafc;
+                border-radius: 12px;
+            }
+            
+            .chart-container {
+                position: relative;
+                height: 500px;
+                margin-top: 1rem;
+            }
+            
+            /* Insights */
+            .insights-grid {
+                display: grid;
+                gap: 1rem;
+                margin: 1.5rem 0;
+            }
+            
+            .insight-card {
+                background: white;
+                border-radius: 12px;
+                padding: 1.25rem;
+                border-left: 4px solid;
+                transition: transform 0.3s ease;
+            }
+            
+            .insight-card:hover {
+                transform: translateX(4px);
+            }
+            
+            .insight-card.success {
+                border-color: #10b981;
+                background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            }
+            
+            .insight-card.warning {
+                border-color: #f59e0b;
+                background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            }
+            
+            .insight-card.info {
+                border-color: #3b82f6;
+                background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            }
+            
+            .insight-header {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .insight-icon {
+                font-size: 1.5rem;
+            }
+            
+            .insight-title {
+                font-weight: 600;
+                color: #1e4a6b;
+            }
+            
+            .insight-description {
+                color: #475569;
+                line-height: 1.6;
+                font-size: 0.9375rem;
+            }
+            
+            /* Rankings */
+            .ranking-list {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .ranking-item {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem;
+                background: #f8fafc;
+                border-radius: 12px;
+                border: 2px solid #e0f2fe;
+                transition: all 0.3s ease;
+            }
+            
+            .ranking-item:hover {
+                border-color: #3ec1bd;
+                transform: translateX(4px);
+            }
+            
+            .ranking-item.best {
+                background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+                border-color: #10b981;
+            }
+            
+            .ranking-position {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #3ec1bd;
+                min-width: 3rem;
+                text-align: center;
+            }
+            
+            .ranking-position.best {
+                color: #10b981;
+            }
+            
+            .ranking-content {
+                flex: 1;
+            }
+            
+            .ranking-name {
+                font-weight: 600;
+                color: #1e4a6b;
+                margin-bottom: 0.25rem;
+                font-size: 0.9375rem;
+            }
+            
+            .ranking-metrics {
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                font-size: 0.8125rem;
+                color: #64748b;
+            }
+            
+            .ranking-metric {
+                display: flex;
+                gap: 0.25rem;
+            }
+            
+            .ranking-metric-value {
+                font-weight: 600;
+                color: #1e4a6b;
+            }
+            
+            /* Footer */
+            .footer {
+                text-align: center;
+                padding: 2rem;
+                color: #64748b;
+                font-size: 0.875rem;
+                margin-top: 3rem;
+                border-top: 2px solid #e0f2fe;
+            }
+            
+            @media (max-width: 768px) {
+                .header-content {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                .metrics-grid {
+                    grid-template-columns: 1fr;
+                }
+                .chart-container {
+                    height: 400px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="header-content">
+                <div>
+                    <h1>Model Performance Dashboard</h1>
+                    <div class="header-subtitle">Cross-Validation vs Test Set Comparison</div>
+                </div>
+                <div class="best-model-badge">
+                    ada_boost
+                </div>
+                <img src="data:image/png;base64,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" alt="Kentrix" style="height:32px;opacity:0.95;">
+            </div>
+        </div>
+        
+        <div class="container">
+            <!-- Key Metrics -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Test WMAPE</div>
+                    <div class="metric-value">24.88%</div>
+                    <div class="metric-subtext">CV: 21.91% | Gap: 2.97%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Test R² Score</div>
+                    <div class="metric-value">0.555</div>
+                    <div class="metric-subtext">55.5% variance explained</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Test RMSE</div>
+                    <div class="metric-value">1261283</div>
+                    <div class="metric-subtext">Root Mean Squared Error</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Models Evaluated</div>
+                    <div class="metric-value">24</div>
+                    <div class="metric-subtext">Top 10 shown in rankings</div>
+                </div>
+            </div>
+            
+            <!-- Insights -->
+            <div class="section">
+                <div class="section-header">
+                    <span style="font-size: 1.75rem;"></span>
+                    <div>
+                        <div class="section-title">Key Insights</div>
+                    </div>
+                </div>
+                <div class="insights-grid">
+    
+                    <div class="insight-card info">
+                        <div class="insight-header">
+                            <span class="insight-icon"></span>
+                            <span class="insight-title">Good Generalization</span>
+                        </div>
+                        <div class="insight-description">CV and Test WMAPE difference is 2.97%. Model performs consistently.</div>
+                    </div>
+        
+                </div>
+            </div>
+            
+            <!-- CV vs Test WMAPE Line Chart -->
+            <div class="section">
+                <div class="section-header">
+                    <span style="font-size: 1.75rem;"></span>
+                    <div>
+                        <div class="section-title">CV vs Test WMAPE Comparison</div>
+                        <div class="section-subtitle">All successful models sorted by Test WMAPE (lower is better)</div>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-container">
+                        <canvas id="wmapeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Top 10 Rankings -->
+            <div class="section">
+                <div class="section-header">
+                    <span style="font-size: 1.75rem;"></span>
+                    <div>
+                        <div class="section-title">Top 10 Model Rankings</div>
+                        <div class="section-subtitle">Best performing models by Test WMAPE</div>
+                    </div>
+                </div>
+                <div class="ranking-list">
+    
+                    <div class="ranking-item ">
+                        <div class="ranking-position ">#1</div>
+                        <div class="ranking-content">
+                            <div class="ranking-name">lasso</div>
+                            <div class="ranking-metrics">
+                                <div class="ranking-metric">
+                                    <span>Test WMAPE:</span>
+                                    <span class="ranking-metric-value">20.46%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>CV WMAPE:</span>
+                                    <span class="ranking-metric-value">35.96%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>Gap:</span>
+                                    <span class="ranking-metric-value">15.50%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>R²:</span>
+                                    <span class="ranking-metric-value">0.596</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="ranking-item best">
+                        <div class="ranking-position best">#2</div>
+                        <div class="ranking-content">
+                            <div class="ranking-name">ada_boost</div>
+                            <div class="ranking-metrics">
+                                <div class="ranking-metric">
+                                    <span>Test WMAPE:</span>
+                                    <span class="ranking-metric-value">24.88%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>CV WMAPE:</span>
+                                    <span class="ranking-metric-value">21.91%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>Gap:</span>
+                                    <span class="ranking-metric-value">2.97%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>R²:</span>
+                                    <span class="ranking-metric-value">0.555</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="ranking-item ">
+                        <div class="ranking-position ">#3</div>
+                        <div class="ranking-content">
+                            <div class="ranking-name">knn</div>
+                            <div class="ranking-metrics">
+                                <div class="ranking-metric">
+                                    <span>Test WMAPE:</span>
+                                    <span class="ranking-metric-value">25.68%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>CV WMAPE:</span>
+                                    <span class="ranking-metric-value">22.92%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>Gap:</span>
+                                    <span class="ranking-metric-value">2.75%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>R²:</span>
+                                    <span class="ranking-metric-value">0.367</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="ranking-item ">
+                        <div class="ranking-position ">#4</div>
+                        <div class="ranking-content">
+                            <div class="ranking-name">lightgbm</div>
+                            <div class="ranking-metrics">
+                                <div class="ranking-metric">
+                                    <span>Test WMAPE:</span>
+                                    <span class="ranking-metric-value">27.40%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>CV WMAPE:</span>
+                                    <span class="ranking-metric-value">24.57%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>Gap:</span>
+                                    <span class="ranking-metric-value">2.83%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>R²:</span>
+                                    <span class="ranking-metric-value">0.228</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="ranking-item ">
+                        <div class="ranking-position ">#5</div>
+                        <div class="ranking-content">
+                            <div class="ranking-name">ridge_boxcox</div>
+                            <div class="ranking-metrics">
+                                <div class="ranking-metric">
+                                    <span>Test WMAPE:</span>
+                                    <span class="ranking-metric-value">27.44%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>CV WMAPE:</span>
+                                    <span class="ranking-metric-value">44.07%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>Gap:</span>
+                                    <span class="ranking-metric-value">16.63%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>R²:</span>
+                                    <span class="ranking-metric-value">0.277</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="ranking-item ">
+                        <div class="ranking-position ">#6</div>
+                        <div class="ranking-content">
+                            <div class="ranking-name">elastic_net</div>
+                            <div class="ranking-metrics">
+                                <div class="ranking-metric">
+                                    <span>Test WMAPE:</span>
+                                    <span class="ranking-metric-value">27.53%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>CV WMAPE:</span>
+                                    <span class="ranking-metric-value">31.60%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>Gap:</span>
+                                    <span class="ranking-metric-value">4.07%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>R²:</span>
+                                    <span class="ranking-metric-value">0.290</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="ranking-item ">
+                        <div class="ranking-position ">#7</div>
+                        <div class="ranking-content">
+                            <div class="ranking-name">stacking_ensemble</div>
+                            <div class="ranking-metrics">
+                                <div class="ranking-metric">
+                                    <span>Test WMAPE:</span>
+                                    <span class="ranking-metric-value">27.80%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>CV WMAPE:</span>
+                                    <span class="ranking-metric-value">23.44%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>Gap:</span>
+                                    <span class="ranking-metric-value">4.37%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>R²:</span>
+                                    <span class="ranking-metric-value">0.403</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="ranking-item ">
+                        <div class="ranking-position ">#8</div>
+                        <div class="ranking-content">
+                            <div class="ranking-name">extra_trees</div>
+                            <div class="ranking-metrics">
+                                <div class="ranking-metric">
+                                    <span>Test WMAPE:</span>
+                                    <span class="ranking-metric-value">28.42%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>CV WMAPE:</span>
+                                    <span class="ranking-metric-value">23.01%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>Gap:</span>
+                                    <span class="ranking-metric-value">5.41%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>R²:</span>
+                                    <span class="ranking-metric-value">0.329</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="ranking-item ">
+                        <div class="ranking-position ">#9</div>
+                        <div class="ranking-content">
+                            <div class="ranking-name">automl_flaml</div>
+                            <div class="ranking-metrics">
+                                <div class="ranking-metric">
+                                    <span>Test WMAPE:</span>
+                                    <span class="ranking-metric-value">28.89%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>CV WMAPE:</span>
+                                    <span class="ranking-metric-value">17.75%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>Gap:</span>
+                                    <span class="ranking-metric-value">11.13%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>R²:</span>
+                                    <span class="ranking-metric-value">0.273</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div class="ranking-item ">
+                        <div class="ranking-position ">#10</div>
+                        <div class="ranking-content">
+                            <div class="ranking-name">catboost_log</div>
+                            <div class="ranking-metrics">
+                                <div class="ranking-metric">
+                                    <span>Test WMAPE:</span>
+                                    <span class="ranking-metric-value">29.18%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>CV WMAPE:</span>
+                                    <span class="ranking-metric-value">21.79%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>Gap:</span>
+                                    <span class="ranking-metric-value">7.39%</span>
+                                </div>
+                                <div class="ranking-metric">
+                                    <span>R²:</span>
+                                    <span class="ranking-metric-value">0.360</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+        
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p style="margin-bottom: 0.5rem;">Generated on 2026-06-10 11:28:42</p>
+                <p>Powered by Kentrix.ai</p>
+            </div>
+        </div>
+        
+        <script>
+            // Prepare data for all models
+            const allModelNames = ["lasso", "ada_boost", "knn", "lightgbm", "ridge_boxcox", "elastic_net", "stacking_ensemble", "extra_trees", "automl_flaml", "catboost_log", "ridge_log", "tweedie", "catboost", "random_forest_log", "gradient_boosting", "xgboost_quantile", "poisson", "xgboost", "random_forest", "gamma", "gradient_boosting_log", "xgboost_log", "decision_tree", "xgboost_boxcox"];
+            const cvWMAPE = [35.96, 21.91, 22.92, 24.57, 44.07, 31.6, 23.44, 23.01, 17.75, 21.79, 43.73, 44.1, 24.24, 20.55, 21.1, 26.87, 44.06, 24.51, 24.33, 34.32, 25.34, 25.61, 27.5, 25.86];
+            const testWMAPE = [20.46, 24.88, 25.68, 27.4, 27.44, 27.53, 27.8, 28.42, 28.89, 29.18, 29.22, 29.32, 29.47, 29.53, 29.62, 29.87, 30.66, 30.73, 31.49, 32.45, 33.38, 37.53, 37.63, 39.37];
+            
+            console.log('Model Names:', allModelNames);
+            console.log('CV WMAPE:', cvWMAPE);
+            console.log('Test WMAPE:', testWMAPE);
+            
+            // Create Line Chart with actual model names
+            const ctx = document.getElementById('wmapeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: allModelNames,  // Use actual model names directly
+                    datasets: [
+                        {
+                            label: 'CV WMAPE',
+                            data: cvWMAPE,
+                            borderColor: '#2a5b7f',
+                            backgroundColor: 'rgba(42, 91, 127, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#2a5b7f',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            tension: 0.3,
+                            fill: false
+                        },
+                        {
+                            label: 'Test WMAPE',
+                            data: testWMAPE,
+                            borderColor: '#3ec1bd',
+                            backgroundColor: 'rgba(62, 193, 189, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#3ec1bd',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            tension: 0.3,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                boxWidth: 8,
+                                boxHeight: 8
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: '600'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'WMAPE (%)',
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                color: '#1e4a6b',
+                                padding: {top: 10, bottom: 10}
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                },
+                                color: '#64748b',
+                                padding: 8,
+                                callback: function(value) {
+                                    return value.toFixed(1) + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Models (sorted by Test WMAPE)',
+                                font: {
+                                    size: 14,
+                                    weight: '600'
+                                },
+                                color: '#1e4a6b',
+                                padding: {top: 10, bottom: 10}
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                },
+                                color: '#64748b',
+                                maxRotation: 45,
+                                minRotation: 45,
+                                padding: 5
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+    </body>
+    </html>
+    

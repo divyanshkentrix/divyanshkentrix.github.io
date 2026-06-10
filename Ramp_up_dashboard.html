@@ -1,0 +1,968 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramp-Up Sales Projections - TSC_Pred</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .dashboard-header {
+            background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 3px solid #3ec1bd;
+            border-radius: 20px 20px 0 0;
+            margin: -2rem -2rem 2rem -2rem;
+        }
+        .dashboard-header h1 {
+            color: white;
+            margin: 0;
+        }
+        .subtitle {
+            color: rgba(255,255,255,0.85);
+            margin-top: 0.25rem;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #3ec1bd;
+        }
+        .summary-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        .summary-value {
+            font-size: 2rem;
+            color: #1e4a6b;
+            font-weight: 700;
+        }
+        .controls-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .control-card {
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+        .control-card.store-select {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid #3ec1bd;
+        }
+        .control-card.opening-month {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 4px solid #f59e0b;
+        }
+        .control-card h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .control-card.store-select h3 { color: #1e4a6b; }
+        .control-card.opening-month h3 { color: #92400e; }
+        .control-card select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            color: #1e4a6b;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .control-card.store-select select:hover { border-color: #3ec1bd; }
+        .control-card.opening-month select { border-color: #f59e0b; }
+        .control-card.opening-month select:hover { border-color: #d97706; }
+        .store-detail-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .store-detail-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e4a6b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+        .metric-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .metric-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .metric-value {
+            font-size: 1.25rem;
+            color: #1e4a6b;
+            font-weight: 700;
+        }
+        .metric-value.highlight {
+            color: #0891b2;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: #0891b2;
+            color: white;
+        }
+        .tab-btn:not(.active) {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        .tab-btn:not(.active):hover {
+            background: #e2e8f0;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .chart-container {
+            margin: 1rem 0;
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px solid #e0f2fe;
+            position: relative;
+        }
+        h2 {
+            color: #1e4a6b;
+            margin: 2rem 0 1rem 0;
+            font-size: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #f1f5f9;
+            color: #1e4a6b;
+            font-weight: 600;
+        }
+        tr:hover {
+            background: #f8fafc;
+        }
+        .cluster-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .cluster-0 { background: #d1fae5; color: #065f46; }
+        .cluster-1 { background: #fed7aa; color: #92400e; }
+        .cluster-2 { background: #fecaca; color: #991b1b; }
+        .mom-table {
+            width: 100%;
+            font-size: 0.875rem;
+        }
+        .mom-table th, .mom-table td {
+            padding: 0.5rem;
+            text-align: center;
+        }
+        .mom-table th {
+            background: #f1f5f9;
+        }
+        @media (max-width: 1200px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .controls-row { grid-template-columns: 1fr; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <h1>📈 Ramp-Up Sales Projections</h1>
+                    <p class="subtitle">Monthly sales trajectory forecasts for new stores</p>
+                </div>
+                <img src="data:image/png;base64,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" alt="Kentrix" style="height:32px;opacity:0.95;">
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Total Stores</div>
+                <div class="summary-value">6</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Avg Maturity (Months)</div>
+                <div class="summary-value">6.3</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Revenue (12M)</div>
+                <div class="summary-value">₹ 207,700,931</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Total Revenue (24M)</div>
+                <div class="summary-value">₹ 476,403,411</div>
+            </div>
+        </div>
+
+        <!-- Control Dropdowns Row -->
+        <div class="controls-row">
+            <div class="control-card store-select">
+                <h3>Select Store</h3>
+                <select id="storeSelector">
+                    <option value="TSC110">TSC110 - Fast Ramp</option>
+                    <option value="TSC206">TSC206 - Fast Ramp</option>
+                    <option value="TSC214">TSC214 - Fast Ramp</option>
+                    <option value="TSC218">TSC218 - Fast Ramp</option>
+                    <option value="TSC99">TSC99 - Medium Ramp</option>
+                    <option value="TSC205">TSC205 - Medium Ramp</option>
+                </select>
+            </div>
+            <div class="control-card opening-month">
+                <h3>Opening Month <span id="seasonalityStatus" style="font-size: 0.75rem; font-weight: normal;"></span></h3>
+                <select id="openingMonth">
+                    <option value="0">No Seasonality Adjustment</option>
+                    <option value="1">January</option>
+                    <option value="2" selected>February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Individual Store Detail Card -->
+        <div class="store-detail-card">
+            <div class="store-detail-header">
+                <span id="selectedStoreName">Loading...</span>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <div class="metric-label">Predicted Sales</div>
+                    <div class="metric-value highlight" id="metricPredictedSales">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Ramp-Up Pattern</div>
+                    <div class="metric-value" id="metricRampPattern">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Maturity (Months)</div>
+                    <div class="metric-value" id="metricMaturity">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">12-Month Revenue</div>
+                    <div class="metric-value highlight" id="metricRev12">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">24-Month Revenue</div>
+                    <div class="metric-value highlight" id="metricRev24">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Peak Sales Month</div>
+                    <div class="metric-value" id="metricPeakMonth">-</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Post-Maturity Growth</div>
+                    <div class="metric-value" id="metricGrowthRate" style="color: #22c55e;">-</div>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="chart">Sales Chart</button>
+                <button class="tab-btn" data-tab="table">MoM Table</button>
+            </div>
+
+            <!-- Tab Content: Chart -->
+            <div id="chartTab" class="tab-content active">
+                <div class="chart-container">
+                    <canvas id="storeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Tab Content: MoM Table -->
+            <div id="tableTab" class="tab-content">
+                <div style="overflow-x: auto;">
+                    <table class="mom-table" id="momTable">
+                        <thead>
+                            <tr id="momTableHeader"></tr>
+                        </thead>
+                        <tbody>
+                            <tr id="momTableRow"></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <h2>Detailed Store Projections</h2>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Store ID</th>
+                        <th>Steady State</th>
+                        <th>Cluster</th>
+                        <th>Maturity (Mo)</th>
+                        <th>Month 1</th>
+                        <th>Month 6</th>
+                        <th>Month 12</th>
+                        <th>Month 18</th>
+                        <th>Month 24</th>
+                        <th>Rev 12M</th>
+                        <th>Rev 24M</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td><strong>TSC110</strong></td>
+                        <td>₹ 2,506,056</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>5</td>
+                        <td>₹ 1,551,750</td>
+                        <td>₹ 2,506,056</td>
+                        <td>₹ 2,506,056</td>
+                        <td>₹ 2,531,179</td>
+                        <td>₹ 2,608,070</td>
+                        <td>₹ 28,043,094</td>
+                        <td>₹ 58,572,158</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>TSC206</strong></td>
+                        <td>₹ 3,901,740</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>5</td>
+                        <td>₹ 2,415,958</td>
+                        <td>₹ 3,901,740</td>
+                        <td>₹ 3,901,740</td>
+                        <td>₹ 3,940,855</td>
+                        <td>₹ 4,060,569</td>
+                        <td>₹ 43,660,986</td>
+                        <td>₹ 91,192,440</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>TSC214</strong></td>
+                        <td>₹ 4,031,258</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>5</td>
+                        <td>₹ 2,496,156</td>
+                        <td>₹ 4,031,258</td>
+                        <td>₹ 4,031,258</td>
+                        <td>₹ 4,071,672</td>
+                        <td>₹ 4,195,359</td>
+                        <td>₹ 45,110,309</td>
+                        <td>₹ 94,219,567</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>TSC218</strong></td>
+                        <td>₹ 3,888,656</td>
+                        <td><span class="cluster-badge cluster-0.0">Fast Ramp</span></td>
+                        <td>5</td>
+                        <td>₹ 2,407,857</td>
+                        <td>₹ 3,888,656</td>
+                        <td>₹ 3,888,656</td>
+                        <td>₹ 3,927,640</td>
+                        <td>₹ 4,046,952</td>
+                        <td>₹ 43,514,572</td>
+                        <td>₹ 90,886,634</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>TSC99</strong></td>
+                        <td>₹ 2,606,400</td>
+                        <td><span class="cluster-badge cluster-1.0">Medium Ramp</span></td>
+                        <td>9</td>
+                        <td>₹ 484,009</td>
+                        <td>₹ 752,761</td>
+                        <td>₹ 2,606,400</td>
+                        <td>₹ 2,606,400</td>
+                        <td>₹ 2,658,920</td>
+                        <td>₹ 15,801,168</td>
+                        <td>₹ 47,208,941</td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>TSC205</strong></td>
+                        <td>₹ 5,207,599</td>
+                        <td><span class="cluster-badge cluster-1.0">Medium Ramp</span></td>
+                        <td>9</td>
+                        <td>₹ 967,051</td>
+                        <td>₹ 1,504,019</td>
+                        <td>₹ 5,207,599</td>
+                        <td>₹ 5,207,599</td>
+                        <td>₹ 5,312,534</td>
+                        <td>₹ 31,570,802</td>
+                        <td>₹ 94,323,671</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 2rem; padding: 1rem; background: #f1f5f9; border-radius: 8px; color: #64748b; font-size: 0.875rem;">
+            <p><strong>Generated:</strong> 2026-06-10 11:28:46 | Powered by Kentrix.ai</p>
+        </div>
+    </div>
+
+    <script>
+        // ========================================================================
+        // STORE DATA
+        // ========================================================================
+
+        const salesUnit = '₹ ';
+        const clusterNames = {0: 'Fast Ramp', 1: 'Medium Ramp', 2: 'Slow Ramp'};
+
+        // Seasonal patterns from training data
+        const seasonalPatterns = {"1": 1.088266223985899, "2": 0.8234015951871039, "3": 1.1456490999214586, "4": 1.0290048248306638, "5": 0.9764610777343047, "6": 1.0371835916370498, "7": 0.934356567689137, "8": 0.9880449155782162, "9": 0.8620495144216226, "10": 1.1693510588096228, "11": 0.9427972332672241, "12": 1.0034342969376977};
+        const hasSeasonality = Object.keys(seasonalPatterns).length > 0;
+
+        // Cluster growth rates for post-maturity projection
+        const clusterGrowthRates = {"0": 0.005, "2": 0.005, "1": 0.005, "3": 0.005};
+        const hasGrowthRates = Object.keys(clusterGrowthRates).length > 0;
+
+        // All store data for interactive features
+        const allStoreData = {
+            'TSC110': {
+                place_id: 'TSC110',
+                place_name: '',
+                steady_state: 2506056.0,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 5.0,
+                growth_rate: 0.005,
+                rev_12m: 28043093.858351126,
+                rev_24m: 58572158.32434428,
+                monthly_sales: [1551750.2685626643, 1936179.180918971, 2181139.0238391575, 2325577.3850303353, 2506056.0, 2506056.0, 2506056.0, 2506056.0, 2506056.0, 2506056.0, 2506056.0, 2506056.0, 2506056.0, 2506056.0, 2506056.0, 2506056.0, 2518586.28, 2531179.2113999994, 2543835.107456999, 2556554.282994284, 2569337.054409255, 2582183.739681301, 2595094.6583797075, 2608070.1316716056]
+            },
+            'TSC206': {
+                place_id: 'TSC206',
+                place_name: '',
+                steady_state: 3901740.5,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 5.0,
+                growth_rate: 0.005,
+                rev_12m: 43660985.649335,
+                rev_24m: 91192440.35508633,
+                monthly_sales: [2415958.33003605, 3014485.201227896, 3395869.2325485568, 3620748.8855224918, 3901740.5, 3901740.5, 3901740.5, 3901740.5, 3901740.5, 3901740.5, 3901740.5, 3901740.5, 3901740.5, 3901740.5, 3901740.5, 3901740.5, 3921249.2024999997, 3940855.4485124988, 3960559.725755061, 3980362.524383836, 4000264.3370057545, 4020265.6586907837, 4040366.986984237, 4060568.8219191576]
+            },
+            'TSC214': {
+                place_id: 'TSC214',
+                place_name: '',
+                steady_state: 4031258.5,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 5.0,
+                growth_rate: 0.005,
+                rev_12m: 45110308.98063562,
+                rev_24m: 94219566.96432906,
+                monthly_sales: [2496155.8959658216, 3114550.824324213, 3508594.8715963676, 3740939.388749219, 4031258.5, 4031258.5, 4031258.5, 4031258.5, 4031258.5, 4031258.5, 4031258.5, 4031258.5, 4031258.5, 4031258.5, 4031258.5, 4031258.5, 4051414.7924999995, 4071671.866462499, 4092030.225794811, 4112490.3769237846, 4133052.828808403, 4153718.092952445, 4174486.683417207, 4195359.116834292]
+            },
+            'TSC218': {
+                place_id: 'TSC218',
+                place_name: '',
+                steady_state: 3888656.3333333335,
+                cluster: 0,
+                cluster_name: 'Fast Ramp',
+                maturity: 5.0,
+                growth_rate: 0.005,
+                rev_12m: 43514572.11592168,
+                rev_24m: 90886633.98781356,
+                monthly_sales: [2407856.611982296, 3004376.3724149433, 3384481.4636754426, 3608607.0011823303, 3888656.3333333335, 3888656.3333333335, 3888656.3333333335, 3888656.3333333335, 3888656.3333333335, 3888656.3333333335, 3888656.3333333335, 3888656.3333333335, 3888656.3333333335, 3888656.3333333335, 3888656.3333333335, 3888656.3333333335, 3908099.6149999998, 3927640.1130749993, 3947278.3136403738, 3967014.7052085754, 3986849.7787346174, 4006784.027628291, 4026817.9477664316, 4046952.0375052635]
+            },
+            'TSC99': {
+                place_id: 'TSC99',
+                place_name: '',
+                steady_state: 2606400.0,
+                cluster: 1,
+                cluster_name: 'Medium Ramp',
+                maturity: 9.0,
+                growth_rate: 0.005,
+                rev_12m: 15801167.789848793,
+                rev_24m: 47208941.02047779,
+                monthly_sales: [484008.6053033089, 531151.6350946142, 581628.1025988066, 635432.6688888255, 692512.192734208, 752760.7925067674, 816016.1717814961, 882057.6209407663, 2606400.0, 2606400.0, 2606400.0, 2606400.0, 2606400.0, 2606400.0, 2606400.0, 2606400.0, 2606400.0, 2606400.0, 2606400.0, 2606400.0, 2619431.9999999995, 2632529.159999999, 2645691.8057999993, 2658920.264828999]
+            },
+            'TSC205': {
+                place_id: 'TSC205',
+                place_name: '',
+                steady_state: 5207598.6,
+                cluster: 1,
+                cluster_name: 'Medium Ramp',
+                maturity: 9.0,
+                growth_rate: 0.005,
+                rev_12m: 31570802.35603962,
+                rev_24m: 94323670.64369348,
+                monthly_sales: [967051.3103765592, 1061243.2900960802, 1162095.492945903, 1269597.2517264083, 1383642.3900267002, 1504019.355890551, 1630403.8803509357, 1762354.984626483, 5207598.6, 5207598.6, 5207598.6, 5207598.6, 5207598.6, 5207598.6, 5207598.6, 5207598.6, 5207598.6, 5207598.6, 5207598.6, 5207598.6, 5233636.592999999, 5259804.775964999, 5286103.799844823, 5312534.318844046]
+            },
+        };
+
+        // Log data availability for debugging
+        console.log('Ramp-up dashboard loaded with', Object.keys(allStoreData).length, 'stores');
+        console.log('Seasonal patterns available:', hasSeasonality);
+        console.log('Seasonal patterns keys:', Object.keys(seasonalPatterns));
+        console.log('Seasonal patterns values:', seasonalPatterns);
+        console.log('Sample lookup test - month 1:', seasonalPatterns['1'], seasonalPatterns[1]);
+        console.log('Growth rates available:', hasGrowthRates, clusterGrowthRates);
+
+        // Update seasonality status indicator
+        const statusEl = document.getElementById('seasonalityStatus');
+        if (hasSeasonality) {
+            statusEl.textContent = '(✓ Seasonality data available)';
+            statusEl.style.color = '#22c55e';
+        } else {
+            statusEl.textContent = '(No seasonality data)';
+            statusEl.style.color = '#f59e0b';
+            // If no seasonality data, default to "No Seasonality Adjustment"
+            document.getElementById('openingMonth').value = '0';
+        }
+
+        // ========================================================================
+        // CHART SETUP
+        // ========================================================================
+
+        let storeChart = null;
+
+        // Function to apply seasonality to sales data
+        function applySeasonality(baseSales, openingMonth) {
+            if (!hasSeasonality || openingMonth === 0) {
+                return baseSales;
+            }
+            return baseSales.map((sales, monthIndex) => {
+                const calendarMonth = ((openingMonth - 1 + monthIndex) % 12) + 1;
+                // Use String() for lookup since JSON keys are always strings
+                const seasonalIndex = seasonalPatterns[String(calendarMonth)] || seasonalPatterns[calendarMonth] || 1.0;
+                return sales * seasonalIndex;
+            });
+        }
+
+        // Function to create growth projection line (shows post-maturity growth)
+        function createGrowthProjection(steadyState, maturityMonth, growthRate, numMonths) {
+            const projection = [];
+            const steadyStateEndMonth = Math.round(maturityMonth) + 12;
+
+            for (let i = 0; i < numMonths; i++) {
+                const month = i + 1;
+                if (month < Math.round(maturityMonth)) {
+                    // Phase 1: Ramp-up (use ramp-up fraction)
+                    const progress = month / Math.round(maturityMonth);
+                    const smoothProgress = 0.5 * (1 - Math.cos(Math.PI * progress));
+                    projection.push(steadyState * (0.15 + smoothProgress * 0.85));
+                } else if (month < steadyStateEndMonth) {
+                    // Phase 2: Steady state (flat at 100%)
+                    projection.push(steadyState);
+                } else {
+                    // Phase 3: Growth phase - apply compound growth
+                    const monthsInGrowth = month - steadyStateEndMonth + 1;
+                    const growthMultiplier = Math.pow(1 + growthRate, monthsInGrowth);
+                    projection.push(steadyState * growthMultiplier);
+                }
+            }
+            return projection;
+        }
+
+        // Function to find peak sales month
+        function findPeakMonth(sales) {
+            let maxVal = 0;
+            let peakMonth = 1;
+            sales.forEach((val, idx) => {
+                if (val > maxVal) {
+                    maxVal = val;
+                    peakMonth = idx + 1;
+                }
+            });
+            return peakMonth;
+        }
+
+        // Function to update store display
+        function updateStoreDisplay(storeId) {
+            console.log('updateStoreDisplay called with:', storeId);
+
+            // Check if allStoreData has any entries
+            const storeKeys = Object.keys(allStoreData);
+            console.log('Total stores in data:', storeKeys.length);
+
+            if (storeKeys.length === 0) {
+                console.error('allStoreData is empty - no stores to display');
+                document.getElementById('selectedStoreName').textContent = 'No store data available';
+                return;
+            }
+
+            // Normalize storeId - remove decimals, whitespace
+            let normalizedId = String(storeId).trim();
+            if (normalizedId.includes('.')) {
+                normalizedId = normalizedId.split('.')[0];
+            }
+
+            // Try to find store with various key formats
+            let store = allStoreData[normalizedId] ||
+                       allStoreData[storeId] ||
+                       allStoreData[String(parseInt(storeId))] ||
+                       allStoreData[storeId + '.0'];
+
+            // If still not found, try partial match
+            if (!store) {
+                // Try finding a key that contains the storeId
+                const matchingKey = storeKeys.find(k => k.includes(normalizedId) || normalizedId.includes(k));
+                if (matchingKey) {
+                    store = allStoreData[matchingKey];
+                    console.log('Found via partial match:', matchingKey);
+                }
+            }
+
+            // If still not found, use first available store as fallback
+            if (!store) {
+                console.warn('Store not found:', storeId, 'normalized:', normalizedId);
+                console.log('Available keys (first 10):', storeKeys.slice(0, 10));
+                // Use first available store as fallback
+                store = allStoreData[storeKeys[0]];
+                console.log('Using fallback store:', storeKeys[0]);
+            }
+
+            if (!store) {
+                document.getElementById('selectedStoreName').textContent = 'Store not found: ' + storeId;
+                return;
+            }
+
+            function fmtCompact(val) {
+                var abs = Math.abs(val);
+                if (abs >= 1e7) return salesUnit + (val / 1e7).toFixed(2) + ' Cr';
+                if (abs >= 1e5) return salesUnit + (val / 1e5).toFixed(2) + ' L';
+                return salesUnit + Math.round(val).toLocaleString();
+            }
+
+            console.log('Loaded store:', store.place_id, 'steady_state:', store.steady_state);
+
+            const openingMonth = parseInt(document.getElementById('openingMonth').value);
+            const adjustedSales = applySeasonality(store.monthly_sales, openingMonth);
+
+            // Calculate values
+            const rev12m = adjustedSales.slice(0, 12).reduce((a, b) => a + b, 0);
+            const rev24m = adjustedSales.slice(0, 24).reduce((a, b) => a + b, 0);
+            const peakMonth = findPeakMonth(adjustedSales);
+
+            // Update header
+            const displayName = store.place_name ? `${store.place_id} (${store.place_name})` : store.place_id;
+            document.getElementById('selectedStoreName').textContent = displayName;
+
+            // Update metrics
+            document.getElementById('metricPredictedSales').textContent = fmtCompact(store.steady_state);
+            document.getElementById('metricRampPattern').textContent = store.cluster_name;
+            document.getElementById('metricMaturity').textContent = Math.round(store.maturity);
+            document.getElementById('metricRev12').textContent = fmtCompact(rev12m);
+            document.getElementById('metricRev24').textContent = fmtCompact(rev24m);
+            document.getElementById('metricPeakMonth').textContent = 'Month ' + peakMonth;
+
+            // Update growth rate metric (use String for cluster key lookup since JSON keys are strings)
+            const growthRate = store.growth_rate || clusterGrowthRates[String(store.cluster)] || 0;
+            const growthRateElement = document.getElementById('metricGrowthRate');
+            if (growthRate > 0) {
+                growthRateElement.textContent = '+' + (growthRate * 100).toFixed(1) + '%/mo';
+                growthRateElement.style.color = '#22c55e';  // Green for positive growth
+            } else if (growthRate < 0) {
+                growthRateElement.textContent = (growthRate * 100).toFixed(1) + '%/mo';
+                growthRateElement.style.color = '#ef4444';  // Red for negative
+            } else {
+                growthRateElement.textContent = 'N/A';
+                growthRateElement.style.color = '#64748b';  // Gray for no data
+            }
+
+            // Update chart (with error handling)
+            try {
+                updateStoreChart(store, adjustedSales);
+            } catch (chartError) {
+                console.error('Chart update failed:', chartError);
+            }
+
+            // Update MoM table
+            try {
+                updateMomTable(adjustedSales);
+            } catch (tableError) {
+                console.error('MoM table update failed:', tableError);
+            }
+
+            console.log('Store display updated successfully');
+        }
+
+        // Function to update store chart
+        function updateStoreChart(store, adjustedSales) {
+            const ctx = document.getElementById('storeChart').getContext('2d');
+
+            // Destroy existing chart
+            if (storeChart) {
+                storeChart.destroy();
+            }
+
+            // Create month labels
+            const monthLabels = adjustedSales.map((_, i) => `Month ${i + 1}`);
+
+            // Get growth rate for this store's cluster (use String for cluster key lookup since JSON keys are strings)
+            const growthRate = store.growth_rate || clusterGrowthRates[String(store.cluster)] || 0;
+
+            // Create projection line with post-maturity growth
+            const growthProjectionLine = createGrowthProjection(
+                store.steady_state, store.maturity, growthRate, adjustedSales.length
+            );
+
+            // Also create a flat steady state line for reference
+            const steadyStateLine = adjustedSales.map(() => store.steady_state);
+
+            // Determine chart label based on whether there's growth
+            const projectionLabel = growthRate > 0
+                ? `Growth Projection (${(growthRate * 100).toFixed(1)}% monthly)`
+                : 'Predicted Sales (Steady State)';
+
+            storeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: monthLabels,
+                    datasets: [
+                        {
+                            label: 'Monthly Sales',
+                            data: adjustedSales,
+                            borderColor: '#0891b2',
+                            backgroundColor: 'rgba(8, 145, 178, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#0891b2'
+                        },
+                        {
+                            label: projectionLabel,
+                            data: growthRate > 0 ? growthProjectionLine : steadyStateLine,
+                            borderColor: growthRate > 0 ? '#22c55e' : '#ef4444',
+                            borderWidth: 2,
+                            borderDash: [8, 4],
+                            fill: false,
+                            pointRadius: 0
+                        },
+                        // Show steady state reference if there's growth
+                        ...(growthRate > 0 ? [{
+                            label: 'Steady State Reference',
+                            data: steadyStateLine,
+                            borderColor: '#94a3b8',
+                            borderWidth: 1,
+                            borderDash: [4, 4],
+                            fill: false,
+                            pointRadius: 0
+                        }] : [])
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { font: { size: 12 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + salesUnit + Math.round(context.parsed.y).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return salesUnit + value.toLocaleString();
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Sales (' + salesUnit + ')'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Months Since Opening'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to update MoM table
+        function updateMomTable(adjustedSales) {
+            const headerRow = document.getElementById('momTableHeader');
+            const dataRow = document.getElementById('momTableRow');
+
+            // Clear existing content
+            headerRow.innerHTML = '';
+            dataRow.innerHTML = '';
+
+            // Add month columns (show first 24 months)
+            const monthsToShow = Math.min(24, adjustedSales.length);
+            for (let i = 0; i < monthsToShow; i++) {
+                const th = document.createElement('th');
+                th.textContent = 'M' + (i + 1);
+                headerRow.appendChild(th);
+
+                const td = document.createElement('td');
+                td.textContent = salesUnit + Math.round(adjustedSales[i]).toLocaleString();
+                dataRow.appendChild(td);
+            }
+        }
+
+        // ========================================================================
+        // EVENT LISTENERS
+        // ========================================================================
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update button states
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // Show/hide content
+                const tab = this.getAttribute('data-tab');
+                document.getElementById('chartTab').classList.toggle('active', tab === 'chart');
+                document.getElementById('tableTab').classList.toggle('active', tab === 'table');
+            });
+        });
+
+        // Store selector
+        document.getElementById('storeSelector').addEventListener('change', function(e) {
+            updateStoreDisplay(e.target.value);
+        });
+
+        // Opening month selector
+        document.getElementById('openingMonth').addEventListener('change', function() {
+            const selectedStoreId = document.getElementById('storeSelector').value;
+            updateStoreDisplay(selectedStoreId);
+        });
+
+        // Initialize with first store - with robust error handling
+        function initializeDashboard() {
+            try {
+                // Check if Chart.js is loaded
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js not loaded - retrying in 500ms');
+                    setTimeout(initializeDashboard, 500);
+                    return;
+                }
+
+                const selector = document.getElementById('storeSelector');
+                if (!selector) {
+                    console.error('storeSelector element not found');
+                    return;
+                }
+
+                const firstStoreId = selector.value;
+                console.log('Initializing dashboard with store:', firstStoreId);
+                console.log('Total stores in data:', Object.keys(allStoreData).length);
+
+                if (firstStoreId) {
+                    updateStoreDisplay(firstStoreId);
+                } else if (Object.keys(allStoreData).length > 0) {
+                    // No selection but data exists - use first store
+                    const firstKey = Object.keys(allStoreData)[0];
+                    console.log('No selection, using first store:', firstKey);
+                    updateStoreDisplay(firstKey);
+                } else {
+                    console.warn('No stores available to display');
+                    document.getElementById('selectedStoreName').textContent = 'No stores available';
+                }
+            } catch (e) {
+                console.error('Dashboard initialization error:', e);
+                document.getElementById('selectedStoreName').textContent = 'Error loading: ' + e.message;
+            }
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeDashboard);
+        } else {
+            // DOM already ready, but give Chart.js time to initialize
+            setTimeout(initializeDashboard, 100);
+        }
+    </script>
+</body>
+</html>

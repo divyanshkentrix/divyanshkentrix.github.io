@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction Report - TSC_Pred</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh; color: #0f172a; padding: 20px;
+        }
+        .container {
+            max-width: 1600px; margin: 0 auto; background: white; padding: 40px;
+            border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); border: 2px solid #e0f2fe;
+        }
+        
+        .report-header {
+            background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 3px solid #3ec1bd;
+            border-radius: 20px 20px 0 0;
+            margin: -40px -40px 30px -40px;
+        }
+        .report-header h1 {
+            color: white;
+            font-size: 2em;
+            margin: 0;
+        }
+
+        h1 {
+            color: #1e4a6b;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        h2 {
+            color: #1e4a6b;
+            border-bottom: 3px solid #3ec1bd;
+            padding-bottom: 10px;
+            margin: 30px 0 20px 0;
+        }
+        
+        .metrics-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px; margin: 20px 0;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #2a5b7f 0%, #3ec1bd 100%);
+            color: white; padding: 18px; border-radius: 14px; text-align: center;
+            box-shadow: 0 4px 12px rgba(62, 193, 189, 0.3);
+        }
+        .metric-label { font-size: 0.85em; opacity: 0.9; margin-bottom: 6px; }
+        .metric-value { font-size: 1.8em; font-weight: bold; }
+        .table-wrap { overflow-x: auto; margin: 1.5rem 0; }
+        table {
+            width: 100%; border-collapse: separate; border-spacing: 0;
+            border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            white-space: nowrap;
+        }
+        thead { background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%); }
+        th {
+            color: white; padding: 10px 12px; text-align: left; font-weight: 600;
+            text-transform: uppercase; font-size: 0.78em; position: sticky; top: 0;
+        }
+        td { padding: 9px 12px; border-bottom: 1px solid #e0f2fe; font-size: 0.88em; }
+        tbody tr { background: white; transition: background 0.15s; }
+        tbody tr:hover { background: #f0f9ff; }
+        tbody tr:nth-child(even) { background: #f8fafc; }
+        .positive { color: #059669; font-weight: 600; }
+        .negative { color: #ef4444; font-weight: 600; }
+        .footer {
+            text-align: center; padding: 2rem; color: #64748b;
+            margin-top: 2rem; border-top: 2px solid #e0f2fe; font-size: 0.85em;
+        }
+        
+        @media (max-width: 1200px) {
+            .container { padding: 1rem !important; }
+            .metrics-grid, .summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+            .grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 768px) {
+            .header { padding: 1rem !important; }
+            .header-content { flex-direction: column !important; text-align: center !important; gap: 0.5rem !important; }
+            .header h1 { font-size: 1.1rem !important; }
+            .metrics-grid, .summary-grid { grid-template-columns: 1fr !important; }
+            .controls { flex-direction: column !important; align-items: stretch !important; }
+            .controls select { max-width: 100% !important; }
+            .container { padding: 0.75rem !important; }
+            table { font-size: 0.75rem !important; display: block; overflow-x: auto; }
+            th, td { padding: 0.5rem 0.4rem !important; white-space: nowrap; }
+            .charts { grid-template-columns: 1fr !important; }
+            .controls-row { grid-template-columns: 1fr !important; }
+            .site-header { flex-direction: column !important; gap: 0.75rem !important; }
+            .site-metrics { flex-wrap: wrap !important; justify-content: center !important; }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="report-header">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <h1>📊 Prediction Report</h1>
+                <img src="data:image/png;base64,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" alt="Kentrix" style="height:32px;opacity:0.95;">
+            </div>
+        </div>
+        
+        <h2>Summary Statistics</h2>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Total Predictions</div>
+                <div class="metric-value">6</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Mean Prediction</div>
+                <div class="metric-value">3690284.99</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Max Prediction</div>
+                <div class="metric-value">5207598.60</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Min Prediction</div>
+                <div class="metric-value">2506056.00</div>
+            </div>
+        </div>
+
+    <h2>Site Predictions</h2>
+    <div class="table-wrap">
+    <table>
+        <thead><tr><th>Place ID</th><th>Place Name</th><th>Predicted Sales (Monthly)</th><th>90% CI</th><th>Avg Lookalike Sales</th><th>Neighbors</th><th>Cannib Ratio</th><th>Cannib Impact</th><th>Cluster Lift</th><th>Net Impact</th><th>Maturity Month</th><th>Steady-State Sales</th></tr></thead>
+        <tbody>
+<tr><td>TSC110</td><td><strong>Chikkajala_Bengaluru</strong></td><td><strong>₹ 2,506,056</strong></td><td style='font-size:0.85em;color:#475569;'>₹ 1,542,795 – ₹ 3,469,317</td><td>₹ 2,837,855</td><td>0</td><td class="positive">0.0%</td><td>–</td><td>–</td><td><strong>₹ 2,506,056</strong></td><td>5</td><td>₹ 2,506,056</td></tr>
+<tr><td>TSC206</td><td><strong>Essensai067Mall_Bengaluru</strong></td><td><strong>₹ 3,901,740</strong></td><td style='font-size:0.85em;color:#475569;'>₹ 390,174 – ₹ 7,839,079</td><td>₹ 4,159,570</td><td>2</td><td class="">8.2%</td><td class="negative">₹ -318,545</td><td>–</td><td><strong>₹ 3,583,196</strong></td><td>5</td><td>₹ 3,901,740</td></tr>
+<tr><td>TSC214</td><td><strong>Koramangala100ft_Bengaluru</strong></td><td><strong>₹ 4,031,258</strong></td><td style='font-size:0.85em;color:#475569;'>₹ 928,964 – ₹ 7,133,553</td><td>₹ 3,979,912</td><td>2</td><td class="negative">30.0%</td><td class="negative">₹ -1,209,378</td><td>–</td><td><strong>₹ 2,821,881</strong></td><td>5</td><td>₹ 4,031,258</td></tr>
+<tr><td>TSC218</td><td><strong>Gottigere_Bengaluru</strong></td><td><strong>₹ 3,888,656</strong></td><td style='font-size:0.85em;color:#475569;'>₹ 2,563,610 – ₹ 5,213,703</td><td>₹ 3,717,714</td><td>4</td><td class="negative">30.0%</td><td class="negative">₹ -1,166,597</td><td>–</td><td><strong>₹ 2,722,059</strong></td><td>5</td><td>₹ 3,888,656</td></tr>
+<tr><td>TSC99</td><td><strong>KasturbaRoad_Bengaluru</strong></td><td><strong>₹ 2,606,400</strong></td><td style='font-size:0.85em;color:#475569;'>₹ 1,015,807 – ₹ 4,196,993</td><td>₹ 2,837,855</td><td>0</td><td class="positive">0.0%</td><td>–</td><td>–</td><td><strong>₹ 2,606,400</strong></td><td>9</td><td>₹ 2,606,400</td></tr>
+<tr><td>TSC205</td><td><strong>KanakpuraLuxe_Bengaluru</strong></td><td><strong>₹ 5,207,599</strong></td><td style='font-size:0.85em;color:#475569;'>₹ 4,438,902 – ₹ 5,976,295</td><td>₹ 5,304,294</td><td>3</td><td class="negative">19.8%</td><td class="negative">₹ -1,031,180</td><td>–</td><td><strong>₹ 4,176,419</strong></td><td>9</td><td>₹ 5,207,599</td></tr>
+
+        </tbody>
+    </table>
+    </div>
+
+    <div class="footer">
+        Generated on 2026-06-10 11:28:46 | Powered by Kentrix.ai
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Cannibalization Analysis Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#1e293b;padding:24px}
+h1{font-size:1.5rem;margin-bottom:16px}
+.dash-header{background:linear-gradient(135deg,#2a5b7f 0%,#1e4a6b 100%);color:white;padding:1.5rem 2rem;border-bottom:3px solid #3ec1bd;margin:-24px -24px 24px -24px}
+.dash-header h1{color:white;margin:0}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.metric{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08);text-align:center}
+.metric .label{font-size:0.75rem;color:#64748b;text-transform:uppercase;letter-spacing:0.5px}
+.metric .value{font-size:1.5rem;font-weight:700;margin-top:4px}
+.negative{color:#dc2626} .positive{color:#16a34a} .neutral{color:#2563eb}
+select{width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:1rem;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:0.85rem}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid #f1f5f9}
+th{background:#f8fafc;font-weight:600;color:#64748b;font-size:0.75rem;text-transform:uppercase}
+tr:hover{background:#f8fafc}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.charts{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}h1{font-size:1.1rem}table{font-size:0.75rem;display:block;overflow-x:auto}th,td{padding:0.5rem 0.4rem;white-space:nowrap}}
+</style></head><body>
+<div class="dash-header"><div style="display:flex;align-items:center;justify-content:space-between"><h1>📉 Cannibalization Analysis Dashboard</h1><img src="data:image/png;base64,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" alt="Kentrix" style="height:32px;opacity:0.95;"></div></div>
+<div class="card">
+<label><strong>Select Store:</strong></label>
+<select id="storeSelect" onchange="loadStore(this.value)"><option value="TSC110">TSC110 (Chikkajala_Bengaluru) — Ratio: 0.0%</option>
+<option value="TSC206">TSC206 (Essensai067Mall_Bengaluru) — Ratio: 8.2%</option>
+<option value="TSC214">TSC214 (Koramangala100ft_Bengaluru) — Ratio: 30.0%</option>
+<option value="TSC218">TSC218 (Gottigere_Bengaluru) — Ratio: 30.0%</option>
+<option value="TSC99">TSC99 (KasturbaRoad_Bengaluru) — Ratio: 0.0%</option>
+<option value="TSC205">TSC205 (KanakpuraLuxe_Bengaluru) — Ratio: 19.8%</option></select>
+</div>
+<div class="metrics" id="metricsPanel"></div>
+<div class="charts">
+<div class="card"><canvas id="waterfallChart"></canvas></div>
+<div class="card"><canvas id="neighborChart"></canvas></div>
+</div>
+<div class="card"><table id="neighborTable"><thead><tr><th>Neighbor</th><th>Portfolio</th><th>Distance from Overlap Area</th><th>Current Sales</th><th>% Change</th><th>Impact</th></tr></thead><tbody></tbody></table></div>
+<script>
+const storesData = {"TSC110": {"predicted_sales": 2506056.0, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 2506056.0, "ratio": 0.0, "neighbors": []},
+"TSC206": {"predicted_sales": 3901740.0, "total_cannib": -318545.0, "total_lift": 0, "net_impact": 3583196.0, "ratio": 0.0816, "neighbors": [{"name": "OrionMall_Bengaluru", "id": "TSC147", "distance": 1063.02728330639, "current_sales": 2097450.0, "pct_change": -11.95, "abs_impact": -250689.0, "portfolio": "Unknown"}, {"name": "KRPuram_Bengaluru", "id": "TSC94", "distance": 4460.01653572819, "current_sales": 2257146.0, "pct_change": -3.01, "abs_impact": -67856.0, "portfolio": "Unknown"}]},
+"TSC214": {"predicted_sales": 4031258.0, "total_cannib": -1209378.0, "total_lift": 0, "net_impact": 2821881.0, "ratio": 0.3, "neighbors": [{"name": "Indiranagar_Bengaluru", "id": "TSC13", "distance": 727.582789686763, "current_sales": 8314943.0, "pct_change": -9.58, "abs_impact": -796553.0, "portfolio": "Unknown"}, {"name": "HSRLayout_Bengaluru", "id": "TSC22", "distance": 1507.03376685589, "current_sales": 5914900.0, "pct_change": -6.98, "abs_impact": -412824.0, "portfolio": "Unknown"}]},
+"TSC218": {"predicted_sales": 3888656.0, "total_cannib": -1166597.0, "total_lift": 0, "net_impact": 2722059.0, "ratio": 0.3, "neighbors": [{"name": "ForumMall_Bengaluru", "id": "TSC91", "distance": 1844.01684965217, "current_sales": 5436253.0, "pct_change": -7.58, "abs_impact": -412136.0, "portfolio": "Unknown"}, {"name": "Bannerghatta_Bengaluru", "id": "TSC51", "distance": 1836.07851929312, "current_sales": 5041005.0, "pct_change": -7.61, "abs_impact": -383405.0, "portfolio": "Unknown"}, {"name": "Begur_Bengaluru", "id": "TSC180", "distance": 1696.83026108442, "current_sales": 2927454.0, "pct_change": -8.05, "abs_impact": -235614.0, "portfolio": "Unknown"}, {"name": "KanakpuraLuxe_Bengaluru", "id": "TSC205", "distance": 2773.63829916465, "current_sales": 2606434.0, "pct_change": -5.19, "abs_impact": -135441.0, "portfolio": "Unknown"}]},
+"TSC99": {"predicted_sales": 2606400.0, "total_cannib": 0.0, "total_lift": 0.0, "net_impact": 2606400.0, "ratio": 0.0, "neighbors": []},
+"TSC205": {"predicted_sales": 5207599.0, "total_cannib": -1031180.0, "total_lift": 0, "net_impact": 4176419.0, "ratio": 0.198, "neighbors": [{"name": "ForumMall_Bengaluru", "id": "TSC91", "distance": 1141.86323958737, "current_sales": 5436253.0, "pct_change": -11.58, "abs_impact": -629262.0, "portfolio": "Unknown"}, {"name": "RRNagar_Bengaluru", "id": "TSC83", "distance": 2765.49476869914, "current_sales": 3921115.0, "pct_change": -5.98, "abs_impact": -234663.0, "portfolio": "Unknown"}, {"name": "Gottigere_Bengaluru", "id": "TSC218", "distance": 2490.88153338707, "current_sales": 2499695.0, "pct_change": -6.69, "abs_impact": -167255.0, "portfolio": "Unknown"}]}};
+const salesUnit = '₹ ';
+let waterfallChart, neighborChart;
+
+function formatCurrency(val) { return salesUnit + val.toLocaleString('en-IN'); }
+
+function loadStore(storeId) {
+    const data = storesData[storeId];
+    if (!data) return;
+
+    // Update metrics
+    document.getElementById('metricsPanel').innerHTML = `
+        <div class="metric"><div class="label">Predicted Sales</div><div class="value neutral">${formatCurrency(data.predicted_sales)}</div></div>
+        <div class="metric"><div class="label">Cannibalization</div><div class="value negative">${formatCurrency(data.total_cannib)}</div></div>
+        <div class="metric"><div class="label">Cluster Lift</div><div class="value positive">${formatCurrency(data.total_lift)}</div></div>
+        <div class="metric"><div class="label">Net Network Impact</div><div class="value ${data.net_impact >= 0 ? 'positive' : 'negative'}">${formatCurrency(data.net_impact)}</div></div>
+        <div class="metric"><div class="label">Cannibalization Ratio</div><div class="value">${(data.ratio * 100).toFixed(1)}%</div></div>
+    `;
+
+    // Update charts (only if Chart.js is loaded)
+    if (typeof Chart !== 'undefined') {
+        // Waterfall chart
+        if (waterfallChart) waterfallChart.destroy();
+        const wfCtx = document.getElementById('waterfallChart').getContext('2d');
+        waterfallChart = new Chart(wfCtx, {
+            type: 'bar',
+            data: {
+                labels: ['New Store Sales', 'Cannibalization', 'Cluster Lift', 'Net Impact'],
+                datasets: [{
+                    data: [data.predicted_sales, data.total_cannib, data.total_lift, data.net_impact],
+                    backgroundColor: ['#3b82f6', '#dc2626', '#16a34a', data.net_impact >= 0 ? '#16a34a' : '#dc2626']
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+
+        // Neighbor impact chart
+        if (neighborChart) neighborChart.destroy();
+        const nCtx = document.getElementById('neighborChart').getContext('2d');
+        const neighbors = data.neighbors.slice(0, 10);
+        neighborChart = new Chart(nCtx, {
+            type: 'bar',
+            data: {
+                labels: neighbors.map(n => n.name || `Store ${n.id}`),
+                datasets: [{
+                    label: '% Change',
+                    data: neighbors.map(n => n.pct_change),
+                    backgroundColor: neighbors.map(n => n.pct_change < 0 ? '#dc2626' : '#16a34a')
+                }]
+            },
+            options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } } }
+        });
+    }
+
+    // Update table
+    const tbody = document.querySelector('#neighborTable tbody');
+    tbody.innerHTML = data.neighbors.map(n => `
+        <tr>
+            <td>${n.name || 'Store ' + n.id}</td>
+            <td>${n.portfolio}</td>
+            <td>${n.distance.toFixed(0)}m</td>
+            <td>${formatCurrency(n.current_sales)}</td>
+            <td class="${n.pct_change < 0 ? 'negative' : 'positive'}">${n.pct_change.toFixed(1)}%</td>
+            <td class="${n.abs_impact < 0 ? 'negative' : 'positive'}">${formatCurrency(n.abs_impact)}</td>
+        </tr>
+    `).join('');
+}
+
+// Load first store — wait for Chart.js to load from CDN
+function initDashboard() {
+    if (typeof Chart === 'undefined') {
+        setTimeout(initDashboard, 500);
+        return;
+    }
+    const firstStore = Object.keys(storesData)[0];
+    if (firstStore) {
+        document.getElementById('storeSelect').value = firstStore;
+        loadStore(firstStore);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDashboard);
+} else {
+    setTimeout(initDashboard, 100);
+}
+</script>
+</body></html>

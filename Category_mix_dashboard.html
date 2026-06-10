@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Mix Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            color: #0f172a;
+        }
+        .header {
+            background: linear-gradient(135deg, #2a5b7f 0%, #1e4a6b 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 3px solid #3ec1bd;
+        }
+        .header h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.25rem;
+        }
+        .header p { opacity: 0.9; font-size: 0.95rem; }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(62, 193, 189, 0.3);
+            margin-left: 0.5rem;
+        }
+        .controls {
+            background: white;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .controls label { font-weight: 600; color: #374151; }
+        .controls select {
+            flex: 1;
+            max-width: 500px;
+            padding: 0.6rem 1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .controls select:focus { border-color: #3ec1bd; outline: none; }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .site-header {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .site-title { font-size: 1.5rem; font-weight: 700; color: #1e4a6b; }
+        .predicted-sales {
+            background: linear-gradient(135deg, #3ec1bd, #2a9d8f);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .card h3 {
+            color: #1e4a6b;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0f2fe;
+        }
+        .category-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .category-name {
+            width: 150px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .bar-container {
+            flex: 1;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 0.75rem;
+        }
+        .bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3ec1bd, #2a9d8f);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        .category-pct {
+            width: 60px;
+            text-align: right;
+            font-weight: 600;
+            color: #1e4a6b;
+        }
+        .neighbor-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .neighbor-item:last-child { border-bottom: none; }
+        .neighbor-id { font-weight: 600; color: #3ec1bd; }
+        .neighbor-sales { color: #64748b; }
+        .chart-container { height: 300px; margin-top: 1rem; }
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        {_RESPONSIVE_CSS}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+                <h1>📊 Category Mix Recommendations<span class="badge">6 Sites</span></h1>
+                <p>Recommended product category distribution based on similar high-performing stores</p>
+            </div>
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQUAAAAxCAMAAADk1EysAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAM1BMVEUA//8+wb2+8fAI9vU+wb0A//8D+/v///////////////83x8T///8A//8A//8+wb3///8u2bs7AAAADnRSTlPqdgEW5FaeRtDpjDIX2d8AKdQAAAABYktHRAcWYYjrAAAAB3RJTUUH6QsMBzYj7q2YwQAABJRJREFUaN7lm9t6pCAMgC3pmgO7s7z/0+6FCEkAsTN2+9VypQMG/A050S4P35a3sDV4/9u291/hhm1pIKw7hLUH4S38BAo/EoKn8DMhOAo/FIKl8D0gACBcLGz5dhCQmFngSmFx+XYQOKWUklwpjJaXIIBsDf7fdqCUUkqJ8QppsglLy0uakFles6RzFDgv/BJlIEfhue1wOYWpchUK+AkUnrQJl1PYBcaZEh+MeHpHPGsYv4ACCF83YxYmy0ve4QsoBEARuW5CEcGwvOQiv4LCJ8WOL8QJjgLsrX64iIhoYz01BBAxgg7kdoH7ECUQIoL5xc/WzG40qEylR+Xr5aVgyVJAyg2LuhGnlBKTVBB5lATYupl2/YY8PKW0jaiDYetE9XgAyZdoBBP29J44pcSEEKQICAHyI8tLEaOhEHe/k/3cZnpy47KVs12WWLvzwkGNTymRCu4AhTf3iLVTTOjwm8zsjQ3My4iiHoq7j/j1StisKcC+KIr50yT7UmgokO5mmVDIwiyFMiNqubGFYKRSj8JLuYOmsAPP2yM6CKVDUqdtHIcUmFOHQgHNWEe2MaVwb8YehScTKEUBLYTeyxIMKSQ5pJBSl0LpJgjD/YCcTlI4hgAnKJTPInZuFhExsX+lwESslQFo/+aJmVnmFKppGPtsNR/zEYVDCLCucUoBxCU5pI3BjohArYoFobjGjV7rKQ0F5obCvu94CKFIIARQFrmhcKwJ6/L4E2cUxCh9nRvbW8dr75Ju1FQpkAgieApOWTpZmNiuYrM9hYkmLI/HEEMxSewMdPFw1kyLSofQFgyOKXCJNxwFY2YojrMvtM97ChNN2HLOAQa3batCSvmAW6OGgn8NOqRQLb+nANSZvq3KSPeHQuGEJowxWApqFX1HoGMd6b7WgIKS7CmoNfSqEsCDpVkK74cQalWyi8HtyvBpFGBMoZRKujldPEfhJIQ+BkuB4LMoEJzQhS4FeJZCux2GGJxdqIv1diE3vJ7CNXZhahiPMHgfIR44DI32VRSEu1vS75ciwdjbIYWRJnQx+HihRPHubVAVVa+lYMMqUYWNXLdw4YkN70YUdLD0mGKooR4NogAoJ0DMTKcpIJyjYPNFFRUQc45bS3AKIYQo6QSFI03oYFB5xCCZIkQU6uQRfQqF5l5lmVAQH7ZpBdgSVVLRp9o+BxSONaHFoNy5Cx/L5CqFYZxS0M6F5hSKXbKKXj4JjN3VmMIcwuOxDusL1lG0Ca2tLwwoqMfmFPZ3J7And2iqFvQxCrWesD4+TsEX3DyG3XQdU1BrnlPQ06tSg6Xgil488RGqqAJjZRhSCCZJbmYnPOMpdY1qSiEa/6z2BFj3qBdS3NmAgqkswfpxCrVyUGvKbfF1RqE+NaVg00Voym/FY9TyK+Fx7OjKa0MMq3USW1M1f3Wfz5FERB9I5FHR3WMzAmedbjZQ99Ed+eaFIIQQ9VP5ehnVGEcY1lv+XdOw0DrAcGMK/Wpz10Tel8Kg5N7VhttSGJ479BzmXSkcHL50tOGmFA5PoFptuCeFyTFcow33pDD7fwdY/5h2Swr/AAHNPXWsA9LWAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDI1LTExLTEyVDA4OjI2OjU0KzAwOjAwRkj0kAAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyNS0xMS0xMlQwNzo1NDozNSswMDowMF2zXpQAAAAASUVORK5CYII=" alt="Kentrix" style="height:32px;opacity:0.95;">
+        </div>
+    </div>
+
+    <div class="controls">
+        <label for="site-select">Select Site:</label>
+        <select id="site-select" onchange="loadSite(this.value)">
+            <option value="TSC110">Chikkajala_Bengaluru (TSC110) - Predicted: 2,506,056.00</option>
+<option value="TSC206">Essensai067Mall_Bengaluru (TSC206) - Predicted: 3,901,740.50</option>
+<option value="TSC214">Koramangala100ft_Bengaluru (TSC214) - Predicted: 4,031,258.50</option>
+<option value="TSC218">Gottigere_Bengaluru (TSC218) - Predicted: 3,888,656.33</option>
+<option value="TSC99">KasturbaRoad_Bengaluru (TSC99) - Predicted: 2,606,400.00</option>
+<option value="TSC205">KanakpuraLuxe_Bengaluru (TSC205) - Predicted: 5,207,598.60</option>
+
+        </select>
+    </div>
+
+    <div class="container">
+        <div class="site-header">
+            <div class="site-title" id="site-title">Select a site</div>
+            <div class="predicted-sales" id="predicted-sales">-</div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>📈 Recommended Category Mix</h3>
+                <div id="category-bars"></div>
+            </div>
+            <div class="card">
+                <h3>🏪 Similar Stores Used</h3>
+                <div id="neighbors-list"></div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+            <h3>📊 Category Distribution</h3>
+            <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Generated on 2026-06-10 11:28:44 | Powered by Kentrix.ai
+    </div>
+
+    <script>
+        const sitesData = {"TSC110": {"place_id": "TSC110", "place_name": "Chikkajala_Bengaluru", "display_name": "Chikkajala_Bengaluru (TSC110)", "predicted_sales": 2506056.0, "categories": [{"name": "Mattress", "percentage": 58.88709691405403}, {"name": "Sofas", "percentage": 9.465416915314423}, {"name": "Chairs", "percentage": 9.197798035397689}, {"name": "Desk", "percentage": 6.284911198110238}, {"name": "Elite Sofa", "percentage": 4.779556146733803}, {"name": "Pillows", "percentage": 3.724940447578138}, {"name": "Beds", "percentage": 3.6309896230357337}, {"name": "Bedding", "percentage": 2.5723326513406115}, {"name": "Massager", "percentage": 0.983582641009164}, {"name": "Cushions", "percentage": 0.47337542742616706}], "neighbors": [{"place_id": "TSC198", "actual_sales": 2396922.62}, {"place_id": "TSC167", "actual_sales": 3054272.0}, {"place_id": "TSC148", "actual_sales": 5043776.0}, {"place_id": "TSC147", "actual_sales": 2506056.0}, {"place_id": "TSC98", "actual_sales": 3101361.0}]}, "TSC206": {"place_id": "TSC206", "place_name": "Essensai067Mall_Bengaluru", "display_name": "Essensai067Mall_Bengaluru (TSC206)", "predicted_sales": 3901740.5, "categories": [{"name": "Mattress", "percentage": 58.34057941537558}, {"name": "Sofas", "percentage": 9.832989827147836}, {"name": "Chairs", "percentage": 9.027184149164166}, {"name": "Desk", "percentage": 6.075129739862444}, {"name": "Elite Sofa", "percentage": 5.3767307228182855}, {"name": "Pillows", "percentage": 3.7397315737259413}, {"name": "Beds", "percentage": 3.6580750443035708}, {"name": "Bedding", "percentage": 2.4501862451712855}, {"name": "Massager", "percentage": 1.0182411997158245}, {"name": "Cushions", "percentage": 0.48115208271508086}], "neighbors": [{"place_id": "TSC07", "actual_sales": 5527253.0}, {"place_id": "TSC198", "actual_sales": 2396922.62}, {"place_id": "TSC98", "actual_sales": 3101361.0}, {"place_id": "TSC147", "actual_sales": 2506056.0}, {"place_id": "TSC167", "actual_sales": 3054272.0}]}, "TSC214": {"place_id": "TSC214", "place_name": "Koramangala100ft_Bengaluru", "display_name": "Koramangala100ft_Bengaluru (TSC214)", "predicted_sales": 4031258.5, "categories": [{"name": "Mattress", "percentage": 58.932222599493144}, {"name": "Sofas", "percentage": 10.313765279686363}, {"name": "Chairs", "percentage": 9.344651321271721}, {"name": "Desk", "percentage": 4.802374582486562}, {"name": "Beds", "percentage": 4.267042030398907}, {"name": "Elite Sofa", "percentage": 4.194708530340686}, {"name": "Pillows", "percentage": 3.8816064490586917}, {"name": "Bedding", "percentage": 2.296356000186859}, {"name": "Massager", "percentage": 1.3754288001233423}, {"name": "Cushions", "percentage": 0.5918444069537125}], "neighbors": [{"place_id": "TSC173", "actual_sales": 3232318.0}, {"place_id": "TSC40", "actual_sales": 3891016.0}, {"place_id": "TSC51", "actual_sales": 5021415.0}, {"place_id": "TSC63", "actual_sales": 5393492.0}, {"place_id": "TSC68", "actual_sales": 3441507.0}]}, "TSC218": {"place_id": "TSC218", "place_name": "Gottigere_Bengaluru", "display_name": "Gottigere_Bengaluru (TSC218)", "predicted_sales": 3888656.3333333335, "categories": [{"name": "Mattress", "percentage": 60.41544093185007}, {"name": "Sofas", "percentage": 9.783023805606083}, {"name": "Chairs", "percentage": 9.62772280100197}, {"name": "Desk", "percentage": 5.7228020675460325}, {"name": "Pillows", "percentage": 3.92032938204714}, {"name": "Beds", "percentage": 3.6862508681691586}, {"name": "Bedding", "percentage": 2.54251550593074}, {"name": "Elite Sofa", "percentage": 2.522397848806629}, {"name": "Massager", "percentage": 1.2333257643124156}, {"name": "Cushions", "percentage": 0.5461910247297497}], "neighbors": [{"place_id": "TSC40", "actual_sales": 3891016.0}, {"place_id": "TSC173", "actual_sales": 3232318.0}, {"place_id": "TSC198", "actual_sales": 2396922.62}, {"place_id": "TSC03", "actual_sales": 3886785.0}, {"place_id": "TSC98", "actual_sales": 3101361.0}]}, "TSC99": {"place_id": "TSC99", "place_name": "KasturbaRoad_Bengaluru", "display_name": "KasturbaRoad_Bengaluru (TSC99)", "predicted_sales": 2606400.0, "categories": [{"name": "Mattress", "percentage": 58.43392944689706}, {"name": "Sofas", "percentage": 10.125649888652728}, {"name": "Chairs", "percentage": 8.96308204337613}, {"name": "Desk", "percentage": 5.735605690985696}, {"name": "Elite Sofa", "percentage": 4.836597948359554}, {"name": "Pillows", "percentage": 3.880775604684472}, {"name": "Beds", "percentage": 3.8735614740015976}, {"name": "Bedding", "percentage": 2.5525438888713867}, {"name": "Massager", "percentage": 1.0798956540063742}, {"name": "Cushions", "percentage": 0.5183583601649977}], "neighbors": [{"place_id": "TSC147", "actual_sales": 2506056.0}, {"place_id": "TSC198", "actual_sales": 2396922.62}, {"place_id": "TSC167", "actual_sales": 3054272.0}, {"place_id": "TSC173", "actual_sales": 3232318.0}, {"place_id": "TSC37", "actual_sales": 4361974.0}]}, "TSC205": {"place_id": "TSC205", "place_name": "KanakpuraLuxe_Bengaluru", "display_name": "KanakpuraLuxe_Bengaluru (TSC205)", "predicted_sales": 5207598.6, "categories": [{"name": "Mattress", "percentage": 58.36119422244899}, {"name": "Sofas", "percentage": 10.013204047222287}, {"name": "Chairs", "percentage": 8.160959907626022}, {"name": "Elite Sofa", "percentage": 6.159897647656206}, {"name": "Desk", "percentage": 5.159687789693355}, {"name": "Beds", "percentage": 4.1351539139689395}, {"name": "Pillows", "percentage": 3.8376050450270602}, {"name": "Bedding", "percentage": 2.335076389449235}, {"name": "Massager", "percentage": 1.2766980178398555}, {"name": "Cushions", "percentage": 0.5605230190680488}], "neighbors": [{"place_id": "TSC68", "actual_sales": 3441507.0}, {"place_id": "TSC51", "actual_sales": 5021415.0}, {"place_id": "TSC13", "actual_sales": 7336656.959999996}, {"place_id": "TSC43", "actual_sales": 4136944.0}, {"place_id": "TSC63", "actual_sales": 5393492.0}]}};
+        let chart = null;
+
+        function loadSite(placeId) {
+            const site = sitesData[placeId];
+            if (!site) return;
+
+            document.getElementById('site-title').textContent = site.display_name;
+            document.getElementById('predicted-sales').textContent = 'Predicted: ' +
+                (site.predicted_sales ? site.predicted_sales.toLocaleString(undefined, {maximumFractionDigits: 0}) : 'N/A');
+
+            // Render category bars
+            const barsHtml = site.categories.slice(0, 10).map(cat => `
+                <div class="category-bar">
+                    <div class="category-name" title="${cat.name}">${cat.name}</div>
+                    <div class="bar-container">
+                        <div class="bar" style="width: ${cat.percentage}%"></div>
+                    </div>
+                    <div class="category-pct">${cat.percentage.toFixed(1)}%</div>
+                </div>
+            `).join('');
+            document.getElementById('category-bars').innerHTML = barsHtml;
+
+            // Render neighbors
+            const neighborsHtml = site.neighbors.length > 0 ? site.neighbors.map((n, i) => `
+                <div class="neighbor-item">
+                    <span class="neighbor-id">#${i+1} ${n.place_id || n}</span>
+                    <span class="neighbor-sales">${n.actual_sales ? n.actual_sales.toLocaleString() : ''}</span>
+                </div>
+            `).join('') : '<p style="color: #64748b; padding: 1rem;">No neighbor data available</p>';
+            document.getElementById('neighbors-list').innerHTML = neighborsHtml;
+
+            // Update chart
+            updateChart(site.categories.slice(0, 8));
+        }
+
+        function updateChart(categories) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: categories.map(c => c.name),
+                    datasets: [{
+                        data: categories.map(c => c.percentage),
+                        backgroundColor: ['#3ec1bd', '#2a9d8f', '#1e4a6b', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { padding: 15, font: { size: 12 } } }
+                    }
+                }
+            });
+        }
+
+        // Load first site on page load
+        setTimeout(() => {
+            const select = document.getElementById('site-select');
+            if (select.options.length > 0) {
+                loadSite(select.value);
+            }
+        });
+    </script>
+</body>
+</html>
